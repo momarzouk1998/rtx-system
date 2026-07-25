@@ -55,42 +55,23 @@ body {
 }
 
 /* ========================================
-   جداول متجاوبة (Mobile-first)
-   - ديسكتوب (≥1024px): الجدول على عرض الصفحة بالكامل (100%)،
-     بدون شريط تمرير أفقي، والنص يُلفّ لو العمود ضيق.
-   - موبايل (<1024px): الأعمدة على سطر واحد (nowrap) + شريط تمرير أفقي.
-   - خط أصغر و padding متجاوب.
-   ======================================== */
-
-/* شريط تمرير أفقي أنيق على الويبكيت (يظهر على الموبايل فقط) */
-.overflow-x-auto {
-  -webkit-overflow-scrolling: touch;
-}
-.overflow-x-auto::-webkit-scrollbar {
-  height: 7px;
-}
-.overflow-x-auto::-webkit-scrollbar-track {
-  background: transparent;
-}
-.overflow-x-auto::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.18);
-  border-radius: 4px;
-}
-.dark .overflow-x-auto::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.2);
-}
-
-/* ========================================
    جداول متجاوبة
-   - افتراضي (تابلت/لاب توب/ديسكتوب ≥768px):
-     الجدول يملأ عرض الحاوية، بدون شريط أفقي، والنص يُلفّ لو ضيق.
-   - موبايل (<768px): الأعمدة على سطر واحد + شريط تمرير أفقي.
+   - السلوك الأساسي على كل الأحجام (ويندوز + موبايل):
+     الأعمدة تتوسّع حسب محتواها (لا تلتف الأسطر)، ويظهر
+     شريط تمرير أفقي داخل الجدول نفسه لو الجدول أعرض من الصفحة.
+   - الشريط الأفقي بيظهر داخل الحاوية فقط، الصفحة نفسها
+     ما بتعمل overflow أفقي (overflow-x: hidden على body).
    ======================================== */
 
-/* السلوك الافتراضي = الديسكتوب (العرض الكامل بدون شريط أفقي) */
+/* الصفحة نفسها: مفيش overflow أفقي إطلاقاً (الشريط بيظهر داخل الجدول بس) */
+html, body {
+  overflow-x: hidden;
+}
+
+/* حاوية الجدول: شريط تمرير أفقي */
 .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
-  overflow-x: hidden !important; /* مفيش شريط أفقي إلا على الموبايل */
+  overflow-x: auto;
 }
 .overflow-x-auto::-webkit-scrollbar {
   height: 7px;
@@ -106,59 +87,38 @@ body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* الجدول يملأ عرض الحاوية دائماً (ما يخرجش بره الصفحة) */
+/* الجدول: الأعمدة على عرض محتواها، min 100% عشان لو المحتوى قليل يملأ الصفحة */
 .overflow-x-auto > table.w-full,
 .overflow-x-auto > table.text-right,
 .overflow-x-auto > table:not([class]) {
-  width: 100% !important;
-  max-width: 100% !important;
+  width: max-content !important;
+  min-width: 100% !important;
   table-layout: auto !important;
 }
 
-/* الخلايا: النص يُلفّ على أكتر من سطر لو العمود ضيق
-   (ده اللي بيخلي الجدول يناسب أي عرض بدون شريط أفقي) */
+/* كل خلية على سطر واحد (لا تلتف الأسطر) */
 .overflow-x-auto > table th,
 .overflow-x-auto > table td {
-  white-space: normal;
-  word-break: break-word;
-  overflow-wrap: break-word;
+  white-space: nowrap;
 }
 
-/* === موبايل فقط (<768px): شريط تمرير أفقي + كل عمود على سطر واحد === */
+/* === خط أصغر وأنظف على كل الأحجام === */
+.overflow-x-auto > table {
+  font-size: 0.8125rem; /* 13px */
+}
+
+/* === padding وخط أصغر شوية على الموبايل === */
 @media (max-width: 767px) {
-  .overflow-x-auto {
-    overflow-x: auto !important; /* شريط أفقي على الموبايل */
-  }
-  .overflow-x-auto > table.w-full,
-  .overflow-x-auto > table.text-right,
-  .overflow-x-auto > table:not([class]) {
-    /* الجدول بياخد عرض محتواه، ولو أكبر من الشاشة يظهر شريط أفقي */
-    width: max-content !important;
-    min-width: 100% !important;
-  }
-  /* كل خلية على سطر واحد على الموبايل */
   .overflow-x-auto > table th,
   .overflow-x-auto > table td {
-    white-space: nowrap;
-    word-break: normal;
-    overflow-wrap: normal;
-  }
-  /* padding وخط أصغر على الموبايل */
-  .overflow-x-auto > table th,
-  .overflow-x-auto > table td {
-    padding-left: 0.75rem;  /* 12px */
-    padding-right: 0.75rem;
-    padding-top: 0.625rem;  /* 10px */
-    padding-bottom: 0.625rem;
+    padding-left: 0.625rem;  /* 10px */
+    padding-right: 0.625rem;
+    padding-top: 0.5rem;     /* 8px */
+    padding-bottom: 0.5rem;
   }
   .overflow-x-auto > table {
-    font-size: 0.8125rem; /* 13px */
+    font-size: 0.75rem; /* 12px على الموبايل */
   }
-}
-
-/* === تقليل حجم الخط العام للجداول على كل الأحجام === */
-.overflow-x-auto > table {
-  font-size: 0.8125rem; /* 13px — أصغر وأنظف */
 }
 
 
