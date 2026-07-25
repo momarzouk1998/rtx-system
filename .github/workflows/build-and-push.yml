@@ -58,5 +58,19 @@ jobs:
           cache-to: ${{ github.event.inputs.no_cache == 'true' && '' || 'type=gha,mode=max' }}
           no-cache: ${{ github.event.inputs.no_cache == 'true' }}
 
+      # اجعل باقة الحاوية عامة (public) عشان السيرفر يقدر يسحبها بدون توكن.
+      # (نفس إعداد mazaya و open_gym — الاتنين public والسيرفر بيقدر يـ pull).
+      - name: Make GHCR package public
+        continue-on-error: true
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          gh api --method PATCH \
+            "/user/packages/container/rtx-system" \
+            -f visibility=public 2>&1 || \
+          echo "Note: could not set visibility via API (token scope). \
+          If deploy fails with 'unauthorized', open this URL and set to public: \
+          https://github.com/users/momarzouk1998/packages/container/rtx-system/settings"
+
       # الـ Deploy الفعلي بيتعمل في .github/workflows/deploy.yml
       # عبر SSH مباشرة من GitHub إلى السيرفر.
