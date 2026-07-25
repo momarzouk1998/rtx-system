@@ -88,7 +88,7 @@ export function AddClientButton() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              الرصيد الافتتاحي (ج.م)
+              الرصيد الافتتاحي
             </label>
             <input 
               type="number" 
@@ -97,7 +97,14 @@ export function AddClientButton() {
               step="0.01"
               className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white"
             />
-            <p className="text-xs text-gray-500 mt-1">القيمة الموجبة (عليه مديونية)، القيمة السالبة (له مبالغ مدفوعة مقدمًا)</p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 mt-2">
+              <p className="text-xs font-semibold text-blue-800 mb-1">💡 شرح الرصيد الافتتاحي:</p>
+              <ul className="text-xs text-blue-700 space-y-1 list-disc list-inside">
+                <li>بالموجب (مثلاً 1000): العميل مدين لك بهذا المبلغ (عنده دين عليك ما دفعه)</li>
+                <li>بالسالب (مثلاً -500): رصيد دائن للعميل (أنت مدين له / دفع مقدماً)</li>
+                <li>صفر: حساب جديد لا يوجد عليه رصيد سابق</li>
+              </ul>
+            </div>
           </div>
 
           <div className="pt-4 flex justify-end gap-3">

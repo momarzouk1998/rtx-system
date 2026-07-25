@@ -53,7 +53,7 @@ export default async function ExpensesPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
           <div className="text-sm text-gray-500 dark:text-gray-400">إجمالي المصروفات</div>
-          <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{total.toLocaleString("ar-EG")} ج.م</div>
+          <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{total.toLocaleString("ar-EG")}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
           <div className="text-sm text-gray-500 dark:text-gray-400">مصاريف داخلية</div>
@@ -110,8 +110,7 @@ export default async function ExpensesPage() {
                       {e.factory?.name || e.supplier?.name || "—"}
                     </td>
                     <td className="px-6 py-4 font-semibold text-red-600 dark:text-red-400">
-                      {e.amount.toLocaleString("ar-EG")} ج.م
-                    </td>
+                      {e.amount.toLocaleString("ar-EG")}                    </td>
                   </tr>
                 ))
               )}

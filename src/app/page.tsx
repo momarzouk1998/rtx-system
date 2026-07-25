@@ -4,22 +4,22 @@ import { motion } from 'framer-motion';
 import { TrendingUp, Users, ShoppingCart, Activity, ArrowUpRight, ArrowDownRight, Wallet, Factory, Package, DollarSign } from 'lucide-react';
 
 const stats = [
-  { icon: '🛒', label: 'مبيعات اليوم', value: '124,500 ج.م', subValue: '12 فاتورة', color: 'green' },
-  { icon: '📅', label: 'مبيعات الشهر', value: '342,000 ج.م', subValue: '45 فاتورة', color: 'blue' },
-  { icon: '💰', label: 'صافي ربح الشهر', value: '45,200 ج.م', subValue: 'بعد التكلفة', color: 'orange' },
+  { icon: '🛒', label: 'مبيعات اليوم', value: '124,500', subValue: '12 فاتورة', color: 'green' },
+  { icon: '📅', label: 'مبيعات الشهر', value: '342,000', subValue: '45 فاتورة', color: 'blue' },
+  { icon: '💰', label: 'صافي ربح الشهر', value: '45,200', subValue: 'بعد التكلفة', color: 'orange' },
   { icon: '📂', label: 'فواتير مفتوحة', value: '4', subValue: 'قيد التنفيذ', color: 'purple' },
 ];
 
 const moneyStats = [
-  { icon: '💳', label: 'ديون العملاء', value: '45,200 ج.م', subValue: 'ليستحقة لك', color: 'red' },
-  { icon: '🏦', label: 'ديون الموردين', value: '12,500 ج.م', subValue: 'عليك لموردين', color: 'yellow' },
+  { icon: '💳', label: 'ديون العملاء', value: '45,200', subValue: 'ليستحقة لك', color: 'red' },
+  { icon: '🏦', label: 'ديون الموردين', value: '12,500', subValue: 'عليك لموردين', color: 'yellow' },
   { icon: '🧾', label: 'شيكات معلقة', value: '3', subValue: 'تحت التحصيل', color: 'purple' },
-  { icon: '📦', label: 'قيمة المخزون', value: '89,000 ج.م', subValue: 'بآخر سعر شراء', color: 'green' },
+  { icon: '📦', label: 'قيمة المخزون', value: '89,000', subValue: 'بآخر سعر شراء', color: 'green' },
 ];
 
 const systemStats = [
-  { icon: '⏳', label: 'فواتير لم تُحصّل', value: '23,000 ج.م', subValue: 'مكتملة ورصيد متبقي', color: 'red' },
-  { icon: '📋', label: 'مشتريات لم تُسدّد', value: '8,500 ج.م', subValue: 'مكتملة ورصيد متبقي', color: 'yellow' },
+  { icon: '⏳', label: 'فواتير لم تُحصّل', value: '23,000', subValue: 'مكتملة ورصيد متبقي', color: 'red' },
+  { icon: '📋', label: 'مشتريات لم تُسدّد', value: '8,500', subValue: 'مكتملة ورصيد متبقي', color: 'yellow' },
   { icon: '📊', label: 'إجمالي المنتجات', value: '156', subValue: 'في 3 مخازن', color: 'blue' },
   { icon: '👥', label: 'إجمالي العملاء', value: '42', subValue: '+ 8 مورد', color: 'green' },
 ];

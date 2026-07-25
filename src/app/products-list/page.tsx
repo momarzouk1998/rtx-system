@@ -56,17 +56,14 @@ export default async function ProductsListPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-emerald-600 font-semibold text-sm">
-                      {product.bagPrice} ج.م
-                    </td>
+                      {product.bagPrice}                    </td>
                     <td className="px-4 py-3 text-orange-600 text-sm">
-                      {product.operatingCost} ج.م
-                    </td>
+                      {product.operatingCost}                    </td>
                     <td className="px-4 py-3 text-gray-600 text-sm">
                       {product.bagsPerKg}
                     </td>
                     <td className="px-4 py-3 text-indigo-600 font-medium text-sm">
-                      {product.profitPerBag} ج.م
-                    </td>
+                      {product.profitPerBag}                    </td>
                   </tr>
                 ))
               )}

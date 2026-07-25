@@ -228,7 +228,7 @@ html, body {
 /* السماح بالتفاف النص في الخلايا لتقليل العرض */
 .overflow-x-auto > table th,
 .overflow-x-auto > table td {
-  white-space: normal;
+  white-space: nowrap;
 }
 
 /* === خط أصغر وأنظف على كل الأحجام === */

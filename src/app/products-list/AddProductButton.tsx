@@ -69,25 +69,25 @@ export function AddProductButton({ materials }: { materials: Material[] }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                سعر الكيس (ج.م)
+                سعر الكيس
               </label>
               <input 
                 type="number" 
                 name="bagPrice" 
                 defaultValue="0"
-                step="0.01"
+                step="any"
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                تكلفة التشغيل/كجم (ج.م)
+                تكلفة التشغيل/كجم
               </label>
               <input 
                 type="number" 
                 name="operatingCost" 
                 defaultValue="0"
-                step="0.01"
+                step="any"
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white"
               />
             </div>
@@ -102,19 +102,19 @@ export function AddProductButton({ materials }: { materials: Material[] }) {
                 type="number" 
                 name="bagsPerKg" 
                 defaultValue="1"
-                step="0.01"
+                step="any"
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white"
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                ربح الكيس (ج.م)
+                ربح الكيس
               </label>
               <input 
                 type="number" 
                 name="profitPerBag" 
                 defaultValue="0"
-                step="0.01"
+                step="any"
                 className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white"
               />
             </div>

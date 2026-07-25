@@ -89,8 +89,7 @@ export default async function OrdersTrackPage() {
                       {inv.items.length} صنف
                     </td>
                     <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                      {inv.netTotal.toLocaleString("ar-EG")} ج.م
-                    </td>
+                      {inv.netTotal.toLocaleString("ar-EG")}                    </td>
                     <td className="px-6 py-4">
                       <StatusUpdater invoiceId={inv.id} current={inv.status as Status} />
                     </td>

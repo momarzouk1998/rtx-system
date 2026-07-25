@@ -89,8 +89,7 @@ export default async function ProductionStagePage() {
                       {order.packagedBags} كيس
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
-                      {order.totalOperatingCost.toLocaleString()} ج.م
-                    </td>
+                      {order.totalOperatingCost.toLocaleString()}                    </td>
                   </tr>
                 ))
               )}

@@ -84,11 +84,9 @@ export default async function SalesStagePage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-sm line-through decoration-gray-300">
-                      {invoice.subTotal.toLocaleString()} ج.م
-                    </td>
+                      {invoice.subTotal.toLocaleString()}                    </td>
                     <td className="px-4 py-3 text-emerald-600 font-bold text-sm">
-                      {invoice.netTotal.toLocaleString()} ج.م
-                    </td>
+                      {invoice.netTotal.toLocaleString()}                    </td>
                     <td className="px-4 py-3 text-sm font-medium">
                       <button className="text-[#12829b] hover:text-[#0ea5e9] hover:underline bg-blue-50 px-2 py-1 rounded transition-colors text-xs">
                         عرض التفاصيل

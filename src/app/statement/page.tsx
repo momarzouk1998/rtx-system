@@ -155,8 +155,7 @@ export default async function StatementPage({
               <div className="text-center">
                 <div className="text-xs text-gray-500 dark:text-gray-400">الرصيد الحالي</div>
                 <div className={`text-lg font-bold mt-1 ${totals.balance >= 0 ? "text-[#12829b]" : "text-green-600"}`}>
-                  {totals.balance.toLocaleString("ar-EG")} ج.م
-                </div>
+                  {totals.balance.toLocaleString("ar-EG")}                </div>
               </div>
             </div>
           </div>
@@ -214,8 +213,7 @@ export default async function StatementPage({
                       <tr className="bg-gray-50 dark:bg-zinc-800/50 font-bold">
                         <td colSpan={3} className="px-6 py-4 text-gray-900 dark:text-white">الرصيد الحالي</td>
                         <td colSpan={2} className="px-6 py-4 text-[#12829b]">
-                          {totals.balance.toLocaleString("ar-EG")} ج.م
-                        </td>
+                          {totals.balance.toLocaleString("ar-EG")}                        </td>
                       </tr>
                     </>
                   )}

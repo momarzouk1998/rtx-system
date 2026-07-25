@@ -46,8 +46,7 @@ export default async function MaterialsListPage() {
                       {mat.notes && <div className="text-sm text-gray-500 mt-1">{mat.notes}</div>}
                     </td>
                     <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400 font-semibold">
-                      {mat.price} ج.م
-                    </td>
+                      {mat.price}                    </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
                       {mat.openingBalance} كجم
                     </td>

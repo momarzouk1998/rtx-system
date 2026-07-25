@@ -131,7 +131,7 @@ export function AddProductionButton({ factories, products }: { factories: Factor
             {category === 'EXTERNAL' && (
               <div className="flex justify-between items-center text-sm">
                 <span className="text-gray-600 dark:text-gray-300">إجمالي تكلفة التشغيل:</span>
-                <span className="font-bold text-orange-600 dark:text-orange-400">{expectedCost.toLocaleString()} ج.م</span>
+                <span className="font-bold text-orange-600 dark:text-orange-400">{expectedCost.toLocaleString()}</span>
               </div>
             )}
           </div>

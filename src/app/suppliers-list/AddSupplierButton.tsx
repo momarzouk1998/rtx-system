@@ -85,7 +85,7 @@ export function AddSupplierButton() {
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              الرصيد الافتتاحي (ج.م)
+              الرصيد الافتتاحي
             </label>
             <input 
               type="number" 

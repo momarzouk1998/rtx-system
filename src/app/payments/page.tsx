@@ -47,7 +47,7 @@ export default async function PaymentsPage() {
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
           <div className="text-sm text-gray-500 dark:text-gray-400">إجمالي المدفوعات</div>
-          <div className="text-2xl font-bold text-[#12829b] mt-1">{total.toLocaleString("ar-EG")} ج.م</div>
+          <div className="text-2xl font-bold text-[#12829b] mt-1">{total.toLocaleString("ar-EG")}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
           <div className="text-sm text-gray-500 dark:text-gray-400">عدد الدفعات</div>
@@ -95,8 +95,7 @@ export default async function PaymentsPage() {
                       {p.client?.name || "—"}
                     </td>
                     <td className="px-6 py-4 font-semibold text-green-600 dark:text-green-400">
-                      {p.amount.toLocaleString("ar-EG")} ج.م
-                    </td>
+                      {p.amount.toLocaleString("ar-EG")}                    </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
                       {p.method ? methodLabels[p.method] || p.method : "—"}
                     </td>

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { UserPlus, Phone, MessageCircle } from "lucide-react";
+import { UserPlus, Phone, MessageCircle, PhoneCall } from "lucide-react";
 import { AddSupplierButton } from "./AddSupplierButton";
 
 export default async function SuppliersListPage() {
@@ -14,31 +14,28 @@ export default async function SuppliersListPage() {
   });
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
-          <UserPlus className="w-8 h-8 text-[#12829b]" />
-          قائمة الموردين
-        </h1>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <p className="text-sm text-gray-500">{suppliers.length} مورد</p>
         <AddSupplierButton />
       </div>
 
-      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden">
+      <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-right" dir="rtl">
-            <thead className="bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800">
+            <thead className="table-header border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">اسم المورد</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">التواصل</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">إجمالي المشتريات</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">إجمالي المدفوعات</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">الرصيد الحالي</th>
+                <th className="px-4 py-3 text-xs">الاسم</th>
+                <th className="px-4 py-3 text-xs">الهاتف</th>
+                <th className="px-4 py-3 text-xs">رصيد سابق</th>
+                <th className="px-4 py-3 text-xs">الرصيد الحالي</th>
+                <th className="px-4 py-3 text-xs">الحالة</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-zinc-800/50">
+            <tbody className="divide-y divide-gray-100">
               {suppliers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
                     لا يوجد موردين مسجلين. اضغط على "إضافة مورد" لإضافة موردين جدد.
                   </td>
                 </tr>
@@ -48,40 +45,52 @@ export default async function SuppliersListPage() {
                   const totalPayments = supplier.expenses.reduce((sum, exp) => sum + exp.amount, 0);
                   const currentBalance = (totalPurchases - totalPayments) + supplier.openingBalance;
 
+                  // Determine status
+                  let status = 'حساب خالص';
+                  let statusClass = 'bg-gray-100 text-gray-800 border-gray-200';
+                  if (currentBalance > 0.01) {
+                    status = 'لم يتم السداد';
+                    statusClass = 'bg-red-100 text-red-800 border-red-200';
+                  } else if (currentBalance < -0.01) {
+                    status = 'مدفوعات زائدة';
+                    statusClass = 'bg-green-100 text-green-800 border-green-200';
+                  }
+
                   return (
-                    <tr key={supplier.id} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/50 transition-colors">
-                      <td className="px-6 py-4">
-                        <div className="font-medium text-gray-900 dark:text-gray-100">{supplier.name}</div>
-                        {supplier.address && <div className="text-sm text-gray-500 mt-1">{supplier.address}</div>}
+                    <tr key={supplier.id} className="hover:bg-gray-50 transition-colors cursor-pointer">
+                      <td className="px-4 py-3">
+                        <div className="font-medium text-gray-900 text-sm">{supplier.name}</div>
                       </td>
-                      <td className="px-6 py-4 space-y-1">
-                        {supplier.phone && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                            <Phone className="w-4 h-4 text-gray-400" />
-                            <a href={`tel:${supplier.phone}`} className="hover:text-[#12829b]" dir="ltr">{supplier.phone}</a>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          {supplier.phone && (
+                            <a href={`tel:${supplier.phone}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} className="hover:text-[#12829b] text-sm" dir="ltr">
+                              {supplier.phone}
+                            </a>
+                          )}
+                          <div className="flex items-center gap-1">
+                            {supplier.phone && (
+                              <a href={`tel:${supplier.phone}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} className="text-gray-400 hover:text-[#12829b]">
+                                <PhoneCall className="w-4 h-4" />
+                              </a>
+                            )}
+                            {supplier.whatsapp && (
+                              <a href={`https://wa.me/2${supplier.whatsapp}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} target="_blank" rel="noreferrer" className="text-green-500 hover:text-green-600">
+                                <MessageCircle className="w-4 h-4" />
+                              </a>
+                            )}
                           </div>
-                        )}
-                        {supplier.whatsapp && (
-                          <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
-                            <MessageCircle className="w-4 h-4 text-green-500" />
-                            <a href={`https://wa.me/2${supplier.whatsapp}`} target="_blank" rel="noreferrer" className="hover:text-green-600" dir="ltr">{supplier.whatsapp}</a>
-                          </div>
-                        )}
+                        </div>
                       </td>
-                      <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400 font-medium">
-                        {totalPurchases.toLocaleString()} ج.م
+                      <td className="px-4 py-3 text-gray-600 text-sm">
+                        {supplier.openingBalance.toLocaleString()}
                       </td>
-                      <td className="px-6 py-4 text-blue-600 dark:text-blue-400 font-medium">
-                        {totalPayments.toLocaleString()} ج.م
+                      <td className="px-4 py-3 text-gray-900 font-medium text-sm">
+                        {currentBalance.toLocaleString()}
                       </td>
-                      <td className="px-6 py-4">
-                        <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-bold ${
-                          currentBalance > 0 ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400' :
-                          currentBalance < 0 ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' :
-                          'bg-gray-100 text-gray-800 dark:bg-gray-800 dark:text-gray-300'
-                        }`}>
-                          {Math.abs(currentBalance).toLocaleString()} ج.م
-                          <span className="mr-1">{currentBalance > 0 ? '(له)' : currentBalance < 0 ? '(عليه)' : ''}</span>
+                      <td className="px-4 py-3">
+                        <span className={`badge text-xs ${statusClass}`}>
+                          {status}
                         </span>
                       </td>
                     </tr>

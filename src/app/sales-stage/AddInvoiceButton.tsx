@@ -142,7 +142,7 @@ export function AddInvoiceButton({ clients, products }: { clients: Client[], pro
                 <option value="">اختر المنتج...</option>
                 {products.map((product) => (
                   <option key={product.id} value={product.id}>
-                    {product.name} ({product.bagPrice} ج.م)
+                    {product.name} ({product.bagPrice})
                   </option>
                 ))}
               </select>
@@ -183,9 +183,9 @@ export function AddInvoiceButton({ clients, products }: { clients: Client[], pro
                       return (
                         <tr key={index}>
                           <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{product?.name}</td>
-                          <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{product?.bagPrice} ج.م</td>
+                          <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{product?.bagPrice}</td>
                           <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{item.quantity} كيس</td>
-                          <td className="px-4 py-2 text-[#12829b] font-medium">{(product?.bagPrice || 0) * item.quantity} ج.م</td>
+                          <td className="px-4 py-2 text-[#12829b] font-medium">{(product?.bagPrice || 0) * item.quantity}</td>
                           <td className="px-4 py-2">
                             <button 
                               type="button" 
@@ -224,11 +224,11 @@ export function AddInvoiceButton({ clients, products }: { clients: Client[], pro
             <div className="bg-[#12829b]/10 p-4 rounded-lg border border-[#12829b]/20">
               <div className="flex justify-between items-center text-sm mb-1">
                 <span className="text-gray-600 dark:text-gray-300">الإجمالي قبل الخصم:</span>
-                <span className="font-medium text-gray-900 dark:text-gray-100">{subTotal.toLocaleString()} ج.م</span>
+                <span className="font-medium text-gray-900 dark:text-gray-100">{subTotal.toLocaleString()}</span>
               </div>
               <div className="flex justify-between items-center border-t border-[#12829b]/20 pt-2 mt-2">
                 <span className="font-bold text-[#12829b]">الصافي المطلوب:</span>
-                <span className="font-black text-xl text-emerald-600 dark:text-emerald-400">{netTotal.toLocaleString()} ج.م</span>
+                <span className="font-black text-xl text-emerald-600 dark:text-emerald-400">{netTotal.toLocaleString()}</span>
               </div>
             </div>
           </div>

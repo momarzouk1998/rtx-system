@@ -32,3 +32,17 @@ export async function createClient(data: FormData) {
     return { success: false, error: "حدث خطأ أثناء إضافة العميل" };
   }
 }
+
+export async function deleteClient(id: string) {
+  try {
+    await prisma.client.delete({
+      where: { id },
+    });
+
+    revalidatePath("/clients-list");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting client:", error);
+    return { success: false, error: "حدث خطأ أثناء حذف العميل" };
+  }
+}
