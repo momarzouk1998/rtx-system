@@ -56,48 +56,74 @@ body {
 
 /* ========================================
    جداول متجاوبة (Mobile-first)
-   - الأعمدة تتمدد حسب المحتوى (لا تلتف الأسطر)
-   - شريط تمرير أفقي على الشاشات الضيقة
-   - padding أصغر على الموبايل
+   - ديسكتوب (≥1024px): الجدول على عرض الصفحة بالكامل (100%)،
+     بدون شريط تمرير أفقي، والنص يُلفّ لو العمود ضيق.
+   - موبايل (<1024px): الأعمدة على سطر واحد (nowrap) + شريط تمرير أفقي.
+   - خط أصغر و padding متجاوب.
    ======================================== */
 
-/* شريط تمرير أفقي أنيق على الويبكيت */
+/* شريط تمرير أفقي أنيق على الويبكيت (يظهر على الموبايل فقط) */
 .overflow-x-auto {
   -webkit-overflow-scrolling: touch;
 }
 .overflow-x-auto::-webkit-scrollbar {
-  height: 8px;
+  height: 7px;
 }
 .overflow-x-auto::-webkit-scrollbar-track {
   background: transparent;
 }
 .overflow-x-auto::-webkit-scrollbar-thumb {
-  background: rgba(0, 0, 0, 0.2);
+  background: rgba(0, 0, 0, 0.18);
   border-radius: 4px;
 }
 .dark .overflow-x-auto::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* كل الجداول جوه حاوية scroll: الأعمدة تحافظ على عرض محتواها */
-/* min-width:100% + width:max-content = الجدول بياخد على الأقل عرض الحاوية،
-   ولو المحتوى أكبر يتمدد بره الحاوية فيظهر شريط التمرير الأفقي. */
-/* specificity عالية (3 فئات) عشان نضمن تتغلب على .w-full بتاعة Tailwind */
-.overflow-x-auto > table.w-full,
-.overflow-x-auto > table.text-right,
-.overflow-x-auto > table:not([class]) {
-  width: max-content !important;
-  min-width: 100% !important;
-  table-layout: auto !important;
+/* === ديسكتوب (lg فأكبر): الجدول يملأ الصفحة، بدون شريط أفقي === */
+@media (min-width: 1024px) {
+  .overflow-x-auto {
+    /* منع ظهور شريط تمرير أفقي على الديسكتوب تماماً */
+    overflow-x: hidden !important;
+  }
+  .overflow-x-auto > table.w-full,
+  .overflow-x-auto > table.text-right,
+  .overflow-x-auto > table:not([class]) {
+    width: 100% !important;
+    table-layout: auto !important;
+  }
+  /* على الديسكتوب: اسمح بلفّ النص داخل الخلايا لو العمود ضيق */
+  .overflow-x-auto > table th,
+  .overflow-x-auto > table td {
+    white-space: normal;
+    /* النص الطويل يُقطع بـ ellipsis لو العمود ضيق جداً بدل لفّ سطرين */
+    max-width: 320px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
 }
 
-/* منع لفّ النص في خلايا الجدول — كل عمود على سطر واحد */
-.overflow-x-auto > table th,
-.overflow-x-auto > table td {
-  white-space: nowrap;
+/* === موبايل (أقل من lg): الأعمدة على سطر واحد + شريط تمرير أفقي === */
+@media (max-width: 1023px) {
+  .overflow-x-auto > table.w-full,
+  .overflow-x-auto > table.text-right,
+  .overflow-x-auto > table:not([class]) {
+    /* الجدول بياخد عرض محتواه، ولو أكبر من الشاشة يظهر شريط أفقي */
+    width: max-content !important;
+    min-width: 100% !important;
+    table-layout: auto !important;
+  }
+  /* منع لفّ النص على الموبايل — كل خلية على سطر واحد */
+  .overflow-x-auto > table th,
+  .overflow-x-auto > table td {
+    white-space: nowrap;
+    max-width: none;
+    overflow: visible;
+    text-overflow: clip;
+  }
 }
 
-/* تقليل padding على الموبايل (px-6 = 24px كبير على شاشة 360px) */
+/* === padding وخط أصغر على الموبايل === */
 @media (max-width: 640px) {
   .overflow-x-auto > table th,
   .overflow-x-auto > table td {
@@ -110,6 +136,12 @@ body {
     font-size: 0.8125rem; /* 13px */
   }
 }
+
+/* === تقليل حجم الخط العام للجداول على كل الأحجام === */
+.overflow-x-auto > table {
+  font-size: 0.875rem; /* 14px بدل الافتراضي 16px */
+}
+
 
 /* عدّاد مخصص للسكرول العمودي في السايدبار */
 .custom-scrollbar::-webkit-scrollbar {
