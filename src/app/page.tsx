@@ -1,61 +1,140 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { TrendingUp, Users, ShoppingCart, Activity, ArrowUpRight, ArrowDownRight, Wallet } from 'lucide-react';
+import { TrendingUp, Users, ShoppingCart, Activity, ArrowUpRight, ArrowDownRight, Wallet, Factory, Package, DollarSign } from 'lucide-react';
 
 const stats = [
-  { name: 'السيولة المتاحة (الخزينة)', value: '342,000 EGP', icon: Wallet, change: '+4.75%', changeType: 'positive' },
-  { name: 'إجمالي المبيعات (هذا الشهر)', value: '124,500 EGP', icon: TrendingUp, change: '+54.02%', changeType: 'positive' },
-  { name: 'مستحقات خارجية (ديون)', value: '45,200 EGP', icon: Users, change: '-1.39%', changeType: 'negative' },
-  { name: 'أوامر التشغيل المفتوحة', value: '4', icon: Activity, change: '+1', changeType: 'positive' },
+  { icon: '🛒', label: 'مبيعات اليوم', value: '124,500 ج.م', subValue: '12 فاتورة', color: 'green' },
+  { icon: '📅', label: 'مبيعات الشهر', value: '342,000 ج.م', subValue: '45 فاتورة', color: 'blue' },
+  { icon: '💰', label: 'صافي ربح الشهر', value: '45,200 ج.م', subValue: 'بعد التكلفة', color: 'orange' },
+  { icon: '📂', label: 'فواتير مفتوحة', value: '4', subValue: 'قيد التنفيذ', color: 'purple' },
 ];
+
+const moneyStats = [
+  { icon: '💳', label: 'ديون العملاء', value: '45,200 ج.م', subValue: 'ليستحقة لك', color: 'red' },
+  { icon: '🏦', label: 'ديون الموردين', value: '12,500 ج.م', subValue: 'عليك لموردين', color: 'yellow' },
+  { icon: '🧾', label: 'شيكات معلقة', value: '3', subValue: 'تحت التحصيل', color: 'purple' },
+  { icon: '📦', label: 'قيمة المخزون', value: '89,000 ج.م', subValue: 'بآخر سعر شراء', color: 'green' },
+];
+
+const systemStats = [
+  { icon: '⏳', label: 'فواتير لم تُحصّل', value: '23,000 ج.م', subValue: 'مكتملة ورصيد متبقي', color: 'red' },
+  { icon: '📋', label: 'مشتريات لم تُسدّد', value: '8,500 ج.م', subValue: 'مكتملة ورصيد متبقي', color: 'yellow' },
+  { icon: '📊', label: 'إجمالي المنتجات', value: '156', subValue: 'في 3 مخازن', color: 'blue' },
+  { icon: '👥', label: 'إجمالي العملاء', value: '42', subValue: '+ 8 مورد', color: 'green' },
+];
+
+const smallStats = [
+  { icon: '🏷️', label: 'المنتجات', value: '156' },
+  { icon: '👥', label: 'العملاء', value: '42' },
+  { icon: '🏭', label: 'الموردين', value: '8' },
+  { icon: '🏢', label: 'المخازن', value: '3' },
+  { icon: '⚠️', label: 'تحت الحد الأدنى', value: '5', highlight: true },
+];
+
+function KpiCard({ icon, label, value, subValue, color }: { icon: string; label: string; value: string; subValue: string; color: string }) {
+  const colorClasses: Record<string, string> = {
+    green: 'from-green-500/10 to-green-500/5 border-green-500/30',
+    blue: 'from-blue-500/10 to-blue-500/5 border-blue-500/30',
+    orange: 'from-orange-500/15 to-orange-500/5 border-orange-500/40',
+    red: 'from-red-500/10 to-red-500/5 border-red-500/30',
+    purple: 'from-purple-500/10 to-purple-500/5 border-purple-500/30',
+    yellow: 'from-yellow-500/10 to-yellow-500/5 border-yellow-500/30',
+  };
+  return (
+    <div className={`bg-gradient-to-br ${colorClasses[color]} border rounded-xl p-4 shadow-card`}>
+      <div className="text-2xl mb-1">{icon}</div>
+      <div className="text-xs text-gray-600 mb-1">{label}</div>
+      <div className="text-xl md:text-2xl font-extrabold text-gray-800">{value}</div>
+      <div className="text-[10px] text-gray-500 mt-0.5">{subValue}</div>
+    </div>
+  );
+}
+
+function SmallStat({ icon, label, value, highlight }: { icon: string; label: string; value: string; highlight?: boolean }) {
+  return (
+    <div className={`card text-center ${highlight ? 'ring-2 ring-red-300 bg-red-50' : ''}`}>
+      <div className="text-2xl mb-1">{icon}</div>
+      <div className="text-xs text-gray-600">{label}</div>
+      <div className={`text-lg font-bold ${highlight ? 'text-red-600' : 'text-gray-800'}`}>{value}</div>
+    </div>
+  );
+}
 
 export default function Dashboard() {
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      {/* Header */}
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
-          <h2 className="text-3xl font-bold text-[#38bdf8]">قائمة المركز المالي</h2>
-          <p className="mt-2 text-gray-400">ملخص الأداء المالي والتشغيلي لنظام RTX</p>
+          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800">📊 الرئيسية</h1>
+          <p className="text-sm text-gray-500 mt-1">أهلاً بك — {new Date().toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-4">
+      {/* KPIs — sales */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         {stats.map((stat, index) => (
           <motion.div
-            key={stat.name}
+            key={stat.label}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="glass-dark p-6 rounded-2xl hover-lift relative overflow-hidden group"
           >
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <stat.icon className="w-24 h-24 text-[#38bdf8]" />
-            </div>
-            <div className="relative z-10 flex items-center">
-              <div className="p-3 bg-[#12829b]/20 rounded-xl">
-                <stat.icon className="h-6 w-6 text-[#38bdf8]" aria-hidden="true" />
-              </div>
-              <p className="mr-4 text-sm font-medium text-gray-400 truncate">{stat.name}</p>
-            </div>
-            <div className="relative z-10 mt-4 flex items-baseline pb-6">
-              <p className="text-3xl font-semibold text-white">{stat.value}</p>
-              <p
-                className={`mr-2 flex items-baseline text-sm font-semibold ${
-                  stat.changeType === 'positive' ? 'text-green-400' : 'text-red-400'
-                }`}
-              >
-                {stat.changeType === 'positive' ? (
-                  <ArrowUpRight className="self-center flex-shrink-0 h-4 w-4 text-green-400" aria-hidden="true" />
-                ) : (
-                  <ArrowDownRight className="self-center flex-shrink-0 h-4 w-4 text-red-400" aria-hidden="true" />
-                )}
-                <span className="mr-1">{stat.change}</span>
-              </p>
-            </div>
+            <KpiCard {...stat} />
           </motion.div>
         ))}
       </div>
+
+      {/* KPIs — money & debt */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {moneyStats.map((stat, index) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 + 0.2 }}
+          >
+            <KpiCard {...stat} />
+          </motion.div>
+        ))}
+      </div>
+
+      {/* KPIs — المعلقات */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        {systemStats.map((stat, index) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 + 0.4 }}
+          >
+            <KpiCard {...stat} />
+          </motion.div>
+        ))}
+      </div>
+
+      {/* System stats */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+        {smallStats.map((stat, index) => (
+          <motion.div
+            key={stat.label}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: index * 0.1 + 0.6 }}
+          >
+            <SmallStat {...stat} />
+          </motion.div>
+        ))}
+      </div>
+
+      {/* Alert for low stock */}
+      {smallStats[4].highlight && (
+        <div className="bg-red-50 border-r-4 border-red-500 rounded-lg p-4">
+          <h3 className="font-bold text-red-800 mb-2">⚠️ تنبيه: 5 أصناف تحت الحد الأدنى</h3>
+          <a href="/inventory" className="text-sm text-red-700 underline">عرض المخزون ←</a>
+        </div>
+      )}
     </div>
   );
 }

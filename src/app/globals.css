@@ -3,10 +3,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --color-brand-primary: #12829b; /* Cyan/Teal matching the header */
-  --color-brand-secondary: #0ea5e9; /* Light Cyan */
-  --color-brand-dark: #2b2b2b; /* AppSheet dark background */
-  --color-brand-accent: #38bdf8; 
+  --color-brand-primary: #12829b;
+  --color-brand-secondary: #38bdf8;
+  --color-brand-dark: #2b2b2b;
+  --color-brand-accent: #38bdf8;
   
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'Fira Code', monospace;
@@ -19,7 +19,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #2b2b2b; /* Matching the attached image background */
+    --background: #2b2b2b;
     --foreground: #ffffff;
   }
 }
@@ -30,6 +30,104 @@ body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Utility Classes like Elnazlawi */
+.btn-primary {
+  background-color: #12829b;
+  color: white;
+  font-weight: 600;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+}
+.btn-primary:hover {
+  background-color: #0ea5e9;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+.btn-primary:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background-color: white;
+  color: #374151;
+  border: 1px solid #d1d5db;
+  font-weight: 500;
+  padding: 0.625rem 1.25rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+.btn-secondary:hover {
+  background-color: #f9fafb;
+}
+
+.btn-danger {
+  background-color: #ef4444;
+  color: white;
+  font-weight: 500;
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  transition: all 0.2s;
+}
+.btn-danger:hover {
+  background-color: #dc2626;
+}
+
+.input-field {
+  width: 100%;
+  padding: 0.625rem 1rem;
+  border: 1px solid #d1d5db;
+  border-radius: 0.5rem;
+  outline: none;
+  transition: all 0.2s;
+  background-color: white;
+  color: #111827;
+}
+.input-field:focus {
+  border-color: #12829b;
+  box-shadow: 0 0 0 3px rgba(18, 130, 155, 0.4);
+}
+
+.card {
+  background-color: white;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 10px 30px -12px rgba(17, 19, 21, 0.12);
+}
+
+.table-header {
+  background-color: #f9fafb;
+  color: #374151;
+  font-size: 0.875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: 1px solid;
+}
+
+/* Table nowrap */
+table td, table th {
+  white-space: nowrap;
+}
+
+.shadow-card {
+  box-shadow: 0 1px 3px 0 rgba(0,0,0,0.08), 0 1px 2px 0 rgba(0,0,0,0.04);
+}
+.shadow-elevated {
+  box-shadow: 0 10px 25px -5px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04);
 }
 
 /* Solid Panels (Replaced Glassmorphism based on feedback) */
