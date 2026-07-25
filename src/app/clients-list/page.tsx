@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
 import { Users, Phone, MessageCircle } from "lucide-react";
 import Link from "next/link";
 import { AddClientButton } from "./AddClientButton";

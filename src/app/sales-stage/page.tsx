@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
 import { ShoppingCart, Calendar } from "lucide-react";
 import { AddInvoiceButton } from "./AddInvoiceButton";
 

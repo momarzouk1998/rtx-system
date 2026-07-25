@@ -1,4 +1,6 @@
 import { prisma } from "@/lib/prisma";
+
+export const dynamic = "force-dynamic";
 import { Package } from "lucide-react";
 import { AddProductButton } from "./AddProductButton";
 
