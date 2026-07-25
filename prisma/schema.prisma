@@ -1,0 +1,353 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ------------------------------------
+// Users / Auth (المستخدمين)
+// ------------------------------------
+enum UserRole {
+  MANAGER  // مدير - صلاحيات كاملة
+  USER     // مستخدم - إضافة وتعديل فقط
+}
+
+model User {
+  id               String   @id @default(uuid())
+  name             String   @unique
+  phone            String   @unique
+  whatsapp         String?
+  email            String?
+  password         String   @default("123456")
+  job              String?  // الوظيفة
+  role             UserRole @default(USER)
+  createdAt        DateTime @default(now())
+  
+  // Relations - CreatedBy tracking
+  salesInvoices    SalesInvoice[]
+  productionOrders ProductionOrder[]
+  packagingOrders  PackagingOrder[]
+  addMaterials     AddMaterial[]
+  expenses         Expense[]
+  payments         Payment[]
+  inventoryTransactions InventoryTransaction[]
+}
+
+// ------------------------------------
+// Inventory - Materials (المواد الخام)
+// ------------------------------------
+model Material {
+  id               String   @id @default(uuid())
+  name             String   // اسم الخامة (تصنيع 60 80, بروبلين ريسيكل)
+  price            Float    @default(0) // سعر الكيلو
+  openingBalance   Float    @default(0) // رصيد افتتاحي بالكيلو
+  notes            String?
+  createdAt        DateTime @default(now())
+
+  // Relations
+  products         Product[]         // المنتجات المرتبطة بالخامة
+  addMaterials     AddMaterial[]     // عمليات إضافة الخامات
+  productionOrders ProductionOrder[] // عمليات التصنيع
+  transactions     InventoryTransaction[]
+}
+
+// ------------------------------------
+// Inventory - Products (المنتجات النهائية)
+// ------------------------------------
+model Product {
+  id               String   @id @default(uuid())
+  name             String   // اسم المنتج (فواصل 1.5, مشبك)
+  bagsPerKg        Float    @default(1) // الأكياس لكل كيلو (معامل التحويل)
+  bagPrice         Float    @default(0) // سعر الكيس
+  profitPerBag     Float    @default(0) // ربح الكيس
+  operatingCost    Float    @default(0) // تكلفة التشغيل لكل كيلو
+  openingBalanceKg   Float  @default(0) // رصيد افتتاحي بالكيلو
+  openingBalanceBags Float  @default(0) // رصيد افتتاحي بالأكياس
+  notes            String?
+  createdAt        DateTime @default(now())
+  
+  // Ref to raw material
+  materialId       String
+  material         Material @relation(fields: [materialId], references: [id])
+
+  // Relations
+  productionOrders ProductionOrder[] // عمليات التصنيع
+  packagingOrders  PackagingOrder[]  // عمليات التغليف
+  orderItems       OrderItem[]       // أصناف الفواتير
+  transactions     InventoryTransaction[]
+}
+
+// ------------------------------------
+// AddMaterials (إضافة خامات من الموردين)
+// ------------------------------------
+model AddMaterial {
+  id               String   @id @default(uuid())
+  date             DateTime @default(now())
+  
+  supplierId       String
+  supplier         Supplier @relation(fields: [supplierId], references: [id])
+  materialId       String
+  material         Material @relation(fields: [materialId], references: [id])
+  
+  quantityKg       Float    // الكمية بالكيلو
+  unitPrice        Float    // سعر الكيلو
+  totalCost        Float    // الإجمالي = الكمية × السعر
+  notes            String?
+  
+  createdById      String?
+  createdBy        User?    @relation(fields: [createdById], references: [id])
+}
+
+// ------------------------------------
+// Production (التصنيع)
+// ------------------------------------
+enum ProductionCategory {
+  INTERNAL   // تصنيع داخلي
+  EXTERNAL   // مصنع آخر (تشغيل خارجي)
+}
+
+model ProductionOrder {
+  id               String   @id @default(uuid())
+  date             DateTime @default(now())
+  category         ProductionCategory @default(EXTERNAL)
+  
+  // المصنع (اختياري - يظهر فقط لو مصنع آخر)
+  factoryId        String?
+  factory          Factory? @relation(fields: [factoryId], references: [id])
+  
+  // المنتج والخامة
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id])
+  materialId       String
+  material         Material @relation(fields: [materialId], references: [id])
+  
+  quantityKg       Float    // الكمية بالكيلو (مادة خام منصرفة)
+  operatingCost    Float    @default(0) // تكلفة التشغيل/كجم
+  totalOperatingCost Float  @default(0) // إجمالي = الكمية × التكلفة
+  packagedBags     Float    @default(0) // الأكياس المنتجة = ROUND(الكمية × BagsPerKg)
+  bagsPerKg        Float    @default(1) // معامل التحويل من المنتج
+  notes            String?
+  
+  createdById      String?
+  createdBy        User?    @relation(fields: [createdById], references: [id])
+}
+
+// ------------------------------------
+// Packaging (التغليف - خطوة منفصلة عن التصنيع)
+// ------------------------------------
+model PackagingOrder {
+  id               String   @id @default(uuid())
+  date             DateTime @default(now())
+  
+  productId        String
+  product          Product  @relation(fields: [productId], references: [id])
+  
+  quantityKg       Float    // الكمية بالكيلو
+  packagedBags     Float    // الأكياس المغلفة = ROUND(الكمية × BagsPerKg)
+  bagsPerKg        Float    // معامل التحويل من المنتج
+  notes            String?
+  
+  createdById      String?
+  createdBy        User?    @relation(fields: [createdById], references: [id])
+}
+
+// ------------------------------------
+// Suppliers (الموردين)
+// ------------------------------------
+model Supplier {
+  id               String   @id @default(uuid())
+  name             String
+  phone            String?
+  whatsapp         String?
+  address          String?
+  openingBalance   Float    @default(0) // رصيد افتتاحي
+  createdAt        DateTime @default(now())
+  
+  addMaterials     AddMaterial[]  // عمليات شراء الخامات
+  expenses         Expense[]      // مدفوعات للمورد
+}
+
+// ------------------------------------
+// Clients / Customers (العملاء)
+// ------------------------------------
+model Client {
+  id               String   @id @default(uuid())
+  name             String
+  phone            String?
+  whatsapp         String?
+  address          String?
+  openingBalance   Float    @default(0) // رصيد افتتاحي
+  createdAt        DateTime @default(now())
+  
+  invoices         SalesInvoice[]
+  payments         Payment[]
+}
+
+// ------------------------------------
+// Sales Orders (الطلبات / فواتير المبيعات)
+// ------------------------------------
+enum OrderStatus {
+  PROCESSING       // 1. قيد التشغيل
+  ORDERED          // 2. تم الطلب
+  SHIPPED          // 3. تم الشحن
+  DELIVERED        // 4. تم التسليم
+  CANCELLED        // 5. إلغاء الطلب
+}
+
+enum PaymentMethod {
+  CASH             // نقدي
+  WALLET           // محفظة
+  INSTAPAY         // انستاباى
+  BANK_TRANSFER    // حساب بنكي
+}
+
+model SalesInvoice {
+  id               String        @id @default(uuid())
+  orderNumber      Int           @unique @default(autoincrement())
+  date             DateTime      @default(now())
+  
+  clientId         String
+  client           Client        @relation(fields: [clientId], references: [id])
+  
+  subTotal         Float         @default(0) // إجمالي قبل الخصم (محسوب من الأصناف)
+  discountValue    Float         @default(0) // قيمة الخصم
+  netTotal         Float         @default(0) // الصافي = SubTotal - Discount
+  totalProfit      Float         @default(0) // صافي الربح (محسوب من الأصناف)
+  
+  status           OrderStatus   @default(PROCESSING)
+  paymentMethod    PaymentMethod?
+  paidAmount       Float         @default(0)
+  notes            String?
+  
+  createdById      String?
+  createdBy        User?         @relation(fields: [createdById], references: [id])
+  
+  items            OrderItem[]
+}
+
+// ------------------------------------
+// Order Items (أصناف الفاتورة)
+// ------------------------------------
+model OrderItem {
+  id               String       @id @default(uuid())
+  invoiceId        String
+  invoice          SalesInvoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+  
+  productId        String
+  product          Product      @relation(fields: [productId], references: [id])
+  
+  quantity         Float        // الكمية (أكياس)
+  bagPrice         Float        // سعر الكيس
+  lineTotal        Float        // الإجمالي = الكمية × السعر
+  profitPerBag     Float        @default(0) // ربح الكيس
+  lineProfitTotal  Float        @default(0) // إجمالي الربح = الكمية × ربح الكيس
+}
+
+// ------------------------------------
+// Payments (مدفوعات العملاء)
+// ------------------------------------
+enum PaymentType {
+  DEBT_PAYMENT     // سداد مديونية
+  REFUND           // إرتجاع
+  DEPOSIT          // تأمين
+  ON_ACCOUNT       // تحت الحساب
+  OTHER            // أخرى
+}
+
+model Payment {
+  id               String       @id @default(uuid())
+  date             DateTime     @default(now())
+  
+  clientId         String
+  client           Client       @relation(fields: [clientId], references: [id])
+  
+  amount           Float        // المبلغ المدفوع
+  method           PaymentMethod? // طريقة الدفع
+  paymentType      PaymentType  @default(DEBT_PAYMENT)
+  notes            String?
+  
+  createdById      String?
+  createdBy        User?        @relation(fields: [createdById], references: [id])
+}
+
+// ------------------------------------
+// Factories (المصانع / التشغيل الخارجي)
+// ------------------------------------
+model Factory {
+  id               String   @id @default(uuid())
+  name             String
+  phone            String?
+  whatsapp         String?
+  address          String?
+  openingBalance   Float    @default(0) // رصيد افتتاحي
+  createdAt        DateTime @default(now())
+  
+  productionOrders ProductionOrder[]
+  expenses         Expense[]
+}
+
+// ------------------------------------
+// Expenses (المصروفات)
+// ------------------------------------
+enum ExpenseCategory {
+  INTERNAL         // داخلي (مصاريف تشغيل)
+  FACTORY          // مصانع أخرى (دفعة لمصنع)
+  SUPPLIER         // موردين (دفعة لمورد)
+}
+
+model Expense {
+  id               String          @id @default(uuid())
+  date             DateTime        @default(now())
+  category         ExpenseCategory
+  
+  // اختياري حسب التصنيف
+  factoryId        String?
+  factory          Factory?        @relation(fields: [factoryId], references: [id])
+  supplierId       String?
+  supplier         Supplier?       @relation(fields: [supplierId], references: [id])
+  
+  item             String          // وصف المصروف
+  amount           Float           // المبلغ
+  
+  createdById      String?
+  createdBy        User?           @relation(fields: [createdById], references: [id])
+}
+
+// ------------------------------------
+// Inventory Transactions (سجل حركات المخزن)
+// ------------------------------------
+enum TransactionType {
+  IN   // وارد
+  OUT  // منصرف
+}
+
+enum TransactionReason {
+  PURCHASE                  // شراء من مورد (وارد مواد خام)
+  SALES                     // بيع لعميل (منصرف أكياس)
+  PRODUCTION_MATERIAL_OUT   // منصرف خامة للتصنيع
+  PRODUCTION_PRODUCT_IN     // وارد منتج من التصنيع
+  PACKAGING_IN              // وارد من التغليف (أكياس جاهزة)
+  PACKAGING_OUT             // منصرف للتغليف (كجم)
+  ADJUSTMENT                // تسوية جردية
+}
+
+model InventoryTransaction {
+  id               String            @id @default(uuid())
+  type             TransactionType
+  reason           TransactionReason
+  quantity         Float
+  date             DateTime          @default(now())
+  referenceId      String?           // رقم المستند المرتبط
+  notes            String?
+  
+  // يشير لخامة أو منتج
+  materialId       String?
+  material         Material?         @relation(fields: [materialId], references: [id])
+  productId        String?
+  product          Product?          @relation(fields: [productId], references: [id])
+  
+  createdById      String?
+  createdBy        User?             @relation(fields: [createdById], references: [id])
+}
