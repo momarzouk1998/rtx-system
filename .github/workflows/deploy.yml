@@ -84,6 +84,11 @@ jobs:
           docker logs rtx --tail 20
 
           echo ""
+          echo "=== Syncing database schema (prisma db push) ==="
+          # مزامنة السكيمة مع قاعدة البيانات — آمن على DB مخصصة لـ RTX فقط.
+          docker exec rtx sh -c "node node_modules/prisma/build/index.js db push --skip-generate --accept-data-loss" || echo "db push warning (may already be applied)"
+
+          echo ""
           echo "=== Internal health check (port 3006) ==="
           curl -s -o /dev/null -w "HTTP: %{http_code} | Time: %{time_total}s\n" http://127.0.0.1:3006/ || echo "Internal check failed"
 

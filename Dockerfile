@@ -17,8 +17,9 @@ COPY package*.json ./
 COPY prisma ./prisma
 # Limit Node memory during install (1GB cap)
 ENV NODE_OPTIONS="--max-old-space-size=1024"
-# Install deps (skip postinstall - Prisma generate will run in builder)
-RUN npm ci --ignore-scripts
+# ثبّت الـ deps مع تشغيل postinstall — لازم عشان Prisma ينزّل
+# binary الـ schema/query engine الخاص بـ linux-musl (لـ db push على السيرفر).
+RUN npm ci
 
 # 3. Builder — compile the Next.js app (most RAM-intensive step)
 FROM base AS builder
@@ -48,24 +49,31 @@ RUN apk add --no-cache openssl libc6-compat
 # Create non-root user
 RUN addgroup --system --gid 1001 nodejs ; adduser --system --uid 1001 nextjs
 
-# Copy generated Prisma client so it's available at runtime
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.prisma ./node_modules/.prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/client ./node_modules/@prisma/client
-# Copy Prisma CLI for running db push on startup
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
-COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
-
-# Copy built standalone app (smaller than full build)
+# Copy built standalone app (server.js + traced node_modules)
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+
+# Prisma 7 standalone tracing does NOT include the generated client or the
+# driver adapter, so copy them explicitly.
+# 1) Generated Prisma client (lives in src/generated/prisma with new generator)
+COPY --from=builder --chown=nextjs:nodejs /app/src/generated/prisma ./src/generated/prisma
+# 2) Driver adapter + its deps (not traced because imported dynamically)
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/adapter-pg ./node_modules/@prisma/adapter-pg
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/driver-adapter-utils ./node_modules/@prisma/driver-adapter-utils
+# 3) Prisma runtime that the generated client imports
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/client ./node_modules/@prisma/client
+# 4) Prisma CLI + schema + engines (لتنفيذ db push يدوياً على السيرفر)
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
+COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 USER nextjs
 
 EXPOSE 3006
 
-# RTX لا يحتوي على migrations مجلد prisma — لذا نستخدم db push
-# لمزامنة السكيمة مع قاعدة البيانات عند كل تشغيل.
-# (آمن على قاعدة بيانات منفصلة مخصصة لـ RTX فقط)
-CMD ["sh", "-c", "./node_modules/.bin/prisma db push --skip-generate 2>&1; HOSTNAME=0.0.0.0 node server.js"]
+# الكونتينر يشغّل خادم Next.js فقط.
+# مزامنة السكيمة (db push) بتتعمل مرة واحدة على السيرفر بعد أول deploy
+# عبر: docker exec rtx sh -c "npx prisma db push --skip-generate --accept-data-loss"
+CMD ["sh", "-c", "HOSTNAME=0.0.0.0 node server.js"]
