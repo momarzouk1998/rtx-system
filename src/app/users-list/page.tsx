@@ -1,26 +1,94 @@
-﻿'use client';
-import { motion } from 'framer-motion';
-import { UsersRound, Search, Plus } from 'lucide-react';
+import { prisma } from "@/lib/prisma";
 
-export default function Page() {
+export const dynamic = "force-dynamic";
+import { UsersRound, Phone, MessageCircle, Mail } from "lucide-react";
+import { AddUserButton } from "./AddUserButton";
+
+export default async function UsersListPage() {
+  const users = await prisma.user.findMany({
+    orderBy: { createdAt: "desc" },
+  });
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-[#38bdf8] flex items-center gap-2">
-            <UsersRound className="text-[#38bdf8]" /> قائمة المستخدمين
-          </h2>
-          <p className="mt-1 text-gray-400">إدارة صلاحيات المستخدمين في النظام</p>
-        </div>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
+          <UsersRound className="w-8 h-8 text-[#12829b]" />
+          قائمة المستخدمين
+        </h1>
+        <AddUserButton />
       </div>
-      <div className="glass-dark p-12 rounded-xl text-center space-y-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 text-[#38bdf8] mb-4">
-          <UsersRound className="w-8 h-8" />
+
+      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-right" dir="rtl">
+            <thead className="bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800">
+              <tr>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">الاسم</th>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">الوظيفة</th>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">التواصل</th>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">الصلاحية</th>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">تاريخ الإضافة</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50 dark:divide-zinc-800/50">
+              {users.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                    لا يوجد مستخدمين مسجلين. اضغط على &quot;إضافة مستخدم&quot; لإضافة مستخدمين جدد.
+                  </td>
+                </tr>
+              ) : (
+                users.map((user) => (
+                  <tr key={user.id} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/50 transition-colors">
+                    <td className="px-6 py-4">
+                      <div className="font-medium text-gray-900 dark:text-gray-100">{user.name}</div>
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      {user.job || "—"}
+                    </td>
+                    <td className="px-6 py-4 space-y-1">
+                      <div className="flex items-center gap-2 text-gray-600 dark:text-gray-300" dir="ltr">
+                        <Phone className="w-4 h-4 text-[#12829b]" />
+                        {user.phone || "—"}
+                      </div>
+                      {user.whatsapp && (
+                        <div className="flex items-center gap-2 text-green-600 dark:text-green-400" dir="ltr">
+                          <MessageCircle className="w-4 h-4" />
+                          {user.whatsapp}
+                        </div>
+                      )}
+                      {user.email && (
+                        <div className="flex items-center gap-2 text-gray-500" dir="ltr">
+                          <Mail className="w-4 h-4" />
+                          {user.email}
+                        </div>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
+                      {user.role === "MANAGER" ? (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-[#12829b]/10 text-[#12829b]">
+                          مدير
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300">
+                          مستخدم
+                        </span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
+                      {new Date(user.createdAt).toLocaleDateString("ar-EG", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-        <h3 className="text-xl font-bold text-[#38bdf8]">الواجهة جاهزة للربط</h3>
-        <p className="text-gray-400 max-w-md mx-auto">
-          تم تصميم الهيكل الأساسي لهذه الواجهة وهي جاهزة لربطها بقاعدة البيانات الخاصة بك فور اعتمادك للتصميم النهائي.
-        </p>
       </div>
     </div>
   );

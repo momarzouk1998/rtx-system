@@ -1,26 +1,123 @@
-﻿'use client';
-import { motion } from 'framer-motion';
-import { Coins, Search, Plus } from 'lucide-react';
+import { prisma } from "@/lib/prisma";
 
-export default function Page() {
+export const dynamic = "force-dynamic";
+import { Coins } from "lucide-react";
+import { AddExpenseButton } from "./AddExpenseButton";
+
+const categoryLabels: Record<string, string> = {
+  INTERNAL: "داخلي",
+  FACTORY: "مصنع",
+  SUPPLIER: "مورد",
+};
+
+const categoryColors: Record<string, string> = {
+  INTERNAL: "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300",
+  FACTORY: "bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400",
+  SUPPLIER: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
+};
+
+export default async function ExpensesPage() {
+  const [expenses, factories, suppliers] = await Promise.all([
+    prisma.expense.findMany({
+      orderBy: { date: "desc" },
+      include: { factory: true, supplier: true },
+    }),
+    prisma.factory.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+    prisma.supplier.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" },
+    }),
+  ]);
+
+  const total = expenses.reduce((sum, e) => sum + e.amount, 0);
+  const byCategory = {
+    INTERNAL: expenses.filter((e) => e.category === "INTERNAL").reduce((s, e) => s + e.amount, 0),
+    FACTORY: expenses.filter((e) => e.category === "FACTORY").reduce((s, e) => s + e.amount, 0),
+    SUPPLIER: expenses.filter((e) => e.category === "SUPPLIER").reduce((s, e) => s + e.amount, 0),
+  };
+
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-3xl font-bold text-[#38bdf8] flex items-center gap-2">
-            <Coins className="text-[#38bdf8]" /> المصروفات
-          </h2>
-          <p className="mt-1 text-gray-400">إدارة المصروفات التشغيلية والإدارية</p>
+        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
+          <Coins className="w-8 h-8 text-[#12829b]" />
+          المصروفات
+        </h1>
+        <AddExpenseButton factories={factories} suppliers={suppliers} />
+      </div>
+
+      {/* ملخص */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
+          <div className="text-sm text-gray-500 dark:text-gray-400">إجمالي المصروفات</div>
+          <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{total.toLocaleString("ar-EG")} ج.م</div>
+        </div>
+        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
+          <div className="text-sm text-gray-500 dark:text-gray-400">مصاريف داخلية</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{byCategory.INTERNAL.toLocaleString("ar-EG")}</div>
+        </div>
+        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
+          <div className="text-sm text-gray-500 dark:text-gray-400">مدفوعات مصانع</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{byCategory.FACTORY.toLocaleString("ar-EG")}</div>
+        </div>
+        <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
+          <div className="text-sm text-gray-500 dark:text-gray-400">مدفوعات موردين</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{byCategory.SUPPLIER.toLocaleString("ar-EG")}</div>
         </div>
       </div>
-      <div className="glass-dark p-12 rounded-xl text-center space-y-4">
-        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-white/5 text-[#38bdf8] mb-4">
-          <Coins className="w-8 h-8" />
+
+      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-right" dir="rtl">
+            <thead className="bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800">
+              <tr>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">التاريخ</th>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">التصنيف</th>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">الوصف</th>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">جهة الدفع</th>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">المبلغ</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-50 dark:divide-zinc-800/50">
+              {expenses.length === 0 ? (
+                <tr>
+                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                    لا توجد مصروفات مسجلة. اضغط على &quot;تسجيل مصروف&quot; لإضافة مصروف جديد.
+                  </td>
+                </tr>
+              ) : (
+                expenses.map((e) => (
+                  <tr key={e.id} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/50 transition-colors">
+                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                      {new Date(e.date).toLocaleDateString("ar-EG", {
+                        year: "numeric",
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${categoryColors[e.category]}`}>
+                        {categoryLabels[e.category] || e.category}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
+                      {e.item}
+                    </td>
+                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                      {e.factory?.name || e.supplier?.name || "—"}
+                    </td>
+                    <td className="px-6 py-4 font-semibold text-red-600 dark:text-red-400">
+                      {e.amount.toLocaleString("ar-EG")} ج.م
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-        <h3 className="text-xl font-bold text-[#38bdf8]">الواجهة جاهزة للربط</h3>
-        <p className="text-gray-400 max-w-md mx-auto">
-          تم تصميم الهيكل الأساسي لهذه الواجهة وهي جاهزة لربطها بقاعدة البيانات الخاصة بك فور اعتمادك للتصميم النهائي.
-        </p>
       </div>
     </div>
   );

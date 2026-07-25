@@ -94,3 +94,24 @@ export async function createSalesInvoice(data: FormData) {
     return { success: false, error: "حدث خطأ أثناء إضافة الفاتورة" };
   }
 }
+
+// تحديث حالة طلب (لصفحة متابعة الطلبات)
+export async function updateInvoiceStatus(invoiceId: string, status: string) {
+  try {
+    const validStatus = ["PROCESSING", "ORDERED", "SHIPPED", "DELIVERED", "CANCELLED"].includes(status)
+      ? (status as "PROCESSING" | "ORDERED" | "SHIPPED" | "DELIVERED" | "CANCELLED")
+      : "PROCESSING";
+
+    await prisma.salesInvoice.update({
+      where: { id: invoiceId },
+      data: { status: validStatus },
+    });
+
+    revalidatePath("/orders-track");
+    revalidatePath("/sales-stage");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating invoice status:", error);
+    return { success: false, error: "حدث خطأ أثناء تحديث الحالة" };
+  }
+}
