@@ -54,19 +54,15 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
-# Prisma 7 standalone tracing does NOT include the generated client or the
-# driver adapter, so copy them explicitly.
-# 1) Generated Prisma client (lives in src/generated/prisma with new generator)
+# نسخ node_modules كاملة من الـ builder (موثوق وأبسط من انتقاء كل تبعية).
+# Prisma 7 + standalone tracing لا يتتبّع الـ driver adapter (@prisma/adapter-pg)
+# وتبعياته المتسلسلة (postgres-array, pg-protocol, ...) لأنها تُستورد ديناميكياً،
+# فلو اعتمدنا على tracing وحده بتظهر أخطاء MODULE_NOT_FOUND وقت الـ runtime.
+# نسخ الكل بيضمن توفر كل التبعيات دون أن ننسى واحدة.
+COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
+
+# السكيمة + الكلاينت المولّد لـ prisma db push على السيرفر
 COPY --from=builder --chown=nextjs:nodejs /app/src/generated/prisma ./src/generated/prisma
-# 2) Driver adapter + its deps (not traced because imported dynamically)
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/adapter-pg ./node_modules/@prisma/adapter-pg
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/driver-adapter-utils ./node_modules/@prisma/driver-adapter-utils
-# 3) Prisma runtime that the generated client imports
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/client ./node_modules/@prisma/client
-# 4) Prisma CLI + schema + engines (لتنفيذ db push يدوياً على السيرفر)
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/.bin/prisma ./node_modules/.bin/prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/prisma ./node_modules/prisma
-COPY --from=builder --chown=nextjs:nodejs /app/node_modules/@prisma/engines ./node_modules/@prisma/engines
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
 
 USER nextjs
