@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { UserPlus, Phone, MessageCircle, PhoneCall } from "lucide-react";
+import { UserPlus, Phone, MessageCircle, PhoneCall, Edit, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { AddSupplierButton } from "./AddSupplierButton";
+import { deleteSupplier } from "../actions/partners";
 
 export default async function SuppliersListPage() {
   const suppliers = await prisma.supplier.findMany({
@@ -30,12 +32,13 @@ export default async function SuppliersListPage() {
                 <th className="px-4 py-3 text-xs">رصيد سابق</th>
                 <th className="px-4 py-3 text-xs">الرصيد الحالي</th>
                 <th className="px-4 py-3 text-xs">الحالة</th>
+                <th className="px-4 py-3 text-xs">الإجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {suppliers.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     لا يوجد موردين مسجلين. اضغط على "إضافة مورد" لإضافة موردين جدد.
                   </td>
                 </tr>
@@ -57,7 +60,7 @@ export default async function SuppliersListPage() {
                   }
 
                   return (
-                    <tr key={supplier.id} className="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <tr key={supplier.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => window.location.href = `/suppliers-list/${supplier.id}`}>
                       <td className="px-4 py-3">
                         <div className="font-medium text-gray-900 text-sm">{supplier.name}</div>
                       </td>
@@ -92,6 +95,21 @@ export default async function SuppliersListPage() {
                         <span className={`badge text-xs ${statusClass}`}>
                           {status}
                         </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Link href={`/suppliers-list/${supplier.id}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} className="text-blue-600 hover:text-blue-800">
+                            <Edit className="w-4 h-4" />
+                          </Link>
+                          <form action={async () => {
+                            'use server';
+                            await deleteSupplier(supplier.id);
+                          }} className="inline">
+                            <button type="submit" onClick={(e: React.MouseEvent) => e.stopPropagation()} className="text-red-600 hover:text-red-800">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </form>
+                        </div>
                       </td>
                     </tr>
                   );

@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { Settings, Factory } from "lucide-react";
+import { Settings, Factory, Edit, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { AddProductionButton } from "./AddProductionButton";
+import { deleteProductionOrder } from "../actions/production";
 
 export default async function ProductionStagePage() {
   const productionOrders = await prisma.productionOrder.findMany({
@@ -26,49 +28,47 @@ export default async function ProductionStagePage() {
   });
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
-          <Settings className="w-8 h-8 text-[#12829b]" />
-          مرحلة التصنيع
-        </h1>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <p className="text-sm text-gray-500">{productionOrders.length} أمر تصنيع</p>
         <AddProductionButton factories={factories} products={products} />
       </div>
 
-      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden">
+      <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-right" dir="rtl">
-            <thead className="bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800">
+            <thead className="table-header border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">التاريخ</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">التصنيف</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">المنتج / الخامة</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">الكمية (كجم)</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">الأكياس المنتجة</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">تكلفة التشغيل</th>
+                <th className="px-4 py-3 text-xs">التاريخ</th>
+                <th className="px-4 py-3 text-xs">التصنيف</th>
+                <th className="px-4 py-3 text-xs">المنتج / الخامة</th>
+                <th className="px-4 py-3 text-xs">الكمية (كجم)</th>
+                <th className="px-4 py-3 text-xs">الأكياس المنتجة</th>
+                <th className="px-4 py-3 text-xs">تكلفة التشغيل</th>
+                <th className="px-4 py-3 text-xs">الإجراءات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-zinc-800/50">
+            <tbody className="divide-y divide-gray-100">
               {productionOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                     لا يوجد أوامر تصنيع. اضغط على "إضافة أمر تصنيع" للبدء.
                   </td>
                 </tr>
               ) : (
                 productionOrders.map((order) => (
-                  <tr key={order.id} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                  <tr key={order.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 text-sm text-gray-600">
                       {new Date(order.date).toLocaleDateString('ar-EG')}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       {order.category === 'INTERNAL' ? (
-                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300">
+                        <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
                           تصنيع داخلي
                         </span>
                       ) : (
                         <div className="flex flex-col gap-1">
-                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 w-fit">
+                          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800 w-fit">
                             مصنع آخر
                           </span>
                           <span className="text-xs text-gray-500 font-medium flex items-center gap-1">
@@ -78,18 +78,33 @@ export default async function ProductionStagePage() {
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900 dark:text-gray-100">{order.product.name}</div>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-gray-900 text-sm">{order.product.name}</div>
                       <div className="text-xs text-gray-500 mt-1">خامة: {order.material.name}</div>
                     </td>
-                    <td className="px-6 py-4 text-orange-600 dark:text-orange-400 font-medium">
+                    <td className="px-4 py-3 text-orange-600 font-medium text-sm">
                       {order.quantityKg} كجم
                     </td>
-                    <td className="px-6 py-4 text-emerald-600 dark:text-emerald-400 font-medium">
+                    <td className="px-4 py-3 text-emerald-600 font-medium text-sm">
                       {order.packagedBags} كيس
                     </td>
-                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
+                    <td className="px-4 py-3 font-medium text-gray-900 text-sm">
                       {order.totalOperatingCost.toLocaleString()}                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Link href={`/production-stage/${order.id}/edit`} className="text-blue-600 hover:text-blue-800">
+                          <Edit className="w-4 h-4" />
+                        </Link>
+                        <form action={async () => {
+                          'use server';
+                          await deleteProductionOrder(order.id);
+                        }} className="inline">
+                          <button type="submit" className="text-red-600 hover:text-red-800">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </form>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}

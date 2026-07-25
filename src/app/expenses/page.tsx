@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { Coins } from "lucide-react";
+import { Coins, Edit, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { AddExpenseButton } from "./AddExpenseButton";
+import { deleteExpense } from "../actions/expenses";
 
 const categoryLabels: Record<string, string> = {
   INTERNAL: "داخلي",
@@ -69,48 +71,64 @@ export default async function ExpensesPage() {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden">
+      <div className="card overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-right" dir="rtl">
-            <thead className="bg-gray-50 dark:bg-zinc-800/50 border-b border-gray-100 dark:border-zinc-800">
+            <thead className="table-header border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">التاريخ</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">التصنيف</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">الوصف</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">جهة الدفع</th>
-                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">المبلغ</th>
+                <th className="px-4 py-3 text-xs">التاريخ</th>
+                <th className="px-4 py-3 text-xs">التصنيف</th>
+                <th className="px-4 py-3 text-xs">الوصف</th>
+                <th className="px-4 py-3 text-xs">جهة الدفع</th>
+                <th className="px-4 py-3 text-xs">المبلغ</th>
+                <th className="px-4 py-3 text-xs">الإجراءات</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-50 dark:divide-zinc-800/50">
+            <tbody className="divide-y divide-gray-100">
               {expenses.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
-                    لا توجد مصروفات مسجلة. اضغط على &quot;تسجيل مصروف&quot; لإضافة مصروف جديد.
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                    لا توجد مصروفات مسجلة. اضغط على "تسجيل مصروف" لإضافة مصروف جديد.
                   </td>
                 </tr>
               ) : (
                 expenses.map((e) => (
-                  <tr key={e.id} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/50 transition-colors">
-                    <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
+                  <tr key={e.id} className="hover:bg-gray-50 transition-colors">
+                    <td className="px-4 py-3 text-sm text-gray-600">
                       {new Date(e.date).toLocaleDateString("ar-EG", {
                         year: "numeric",
                         month: "short",
                         day: "numeric",
                       })}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-4 py-3">
                       <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium ${categoryColors[e.category]}`}>
                         {categoryLabels[e.category] || e.category}
                       </span>
                     </td>
-                    <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
+                    <td className="px-4 py-3 font-medium text-gray-900 text-sm">
                       {e.item}
                     </td>
-                    <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
+                    <td className="px-4 py-3 text-gray-600 text-sm">
                       {e.factory?.name || e.supplier?.name || "—"}
                     </td>
-                    <td className="px-6 py-4 font-semibold text-red-600 dark:text-red-400">
+                    <td className="px-4 py-3 font-semibold text-red-600 text-sm">
                       {e.amount.toLocaleString("ar-EG")}                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Link href={`/expenses/${e.id}/edit`} className="text-blue-600 hover:text-blue-800">
+                          <Edit className="w-4 h-4" />
+                        </Link>
+                        <form action={async () => {
+                          'use server';
+                          await deleteExpense(e.id);
+                        }} className="inline">
+                          <button type="submit" className="text-red-600 hover:text-red-800">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </form>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}

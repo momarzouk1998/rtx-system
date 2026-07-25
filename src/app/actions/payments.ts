@@ -43,3 +43,17 @@ export async function createPayment(data: FormData) {
     return { success: false, error: "حدث خطأ أثناء تسجيل الدفعة" };
   }
 }
+
+export async function deletePayment(id: string) {
+  try {
+    await prisma.payment.delete({
+      where: { id },
+    });
+
+    revalidatePath("/payments");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting payment:", error);
+    return { success: false, error: "حدث خطأ أثناء حذف الدفعة" };
+  }
+}

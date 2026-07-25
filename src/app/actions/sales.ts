@@ -115,3 +115,32 @@ export async function updateInvoiceStatus(invoiceId: string, status: string) {
     return { success: false, error: "حدث خطأ أثناء تحديث الحالة" };
   }
 }
+
+export async function deleteInvoice(id: string) {
+  try {
+    // Get invoice with items
+    const invoice = await prisma.salesInvoice.findUnique({
+      where: { id },
+      include: { items: true }
+    });
+
+    if (!invoice) {
+      return { success: false, error: "الفاتورة غير موجودة" };
+    }
+
+    if (invoice.items.length > 0) {
+      return { success: false, error: `لا يمكن حذف الفاتورة لأنها تحتوي على ${invoice.items.length} صنف.` };
+    }
+
+    await prisma.salesInvoice.delete({
+      where: { id },
+    });
+
+    revalidatePath("/sales-stage");
+    revalidatePath("/orders-track");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting invoice:", error);
+    return { success: false, error: "حدث خطأ أثناء حذف الفاتورة" };
+  }
+}

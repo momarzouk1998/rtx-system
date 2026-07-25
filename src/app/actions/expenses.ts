@@ -40,3 +40,17 @@ export async function createExpense(data: FormData) {
     return { success: false, error: "حدث خطأ أثناء تسجيل المصروف" };
   }
 }
+
+export async function deleteExpense(id: string) {
+  try {
+    await prisma.expense.delete({
+      where: { id },
+    });
+
+    revalidatePath("/expenses");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting expense:", error);
+    return { success: false, error: "حدث خطأ أثناء حذف المصروف" };
+  }
+}

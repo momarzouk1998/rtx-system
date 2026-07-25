@@ -80,3 +80,26 @@ export async function createProductionOrder(data: FormData) {
     return { success: false, error: "حدث خطأ أثناء إضافة أمر التصنيع" };
   }
 }
+
+export async function deleteProductionOrder(id: string) {
+  try {
+    // Check if production order has inventory transactions
+    const transactionsCount = await prisma.inventoryTransaction.count({
+      where: { referenceId: id },
+    });
+
+    if (transactionsCount > 0) {
+      return { success: false, error: `لا يمكن حذف أمر التصنيع لأنه لديه ${transactionsCount} حركة مخزون. يجب حذف الحركات أولاً.` };
+    }
+
+    await prisma.productionOrder.delete({
+      where: { id },
+    });
+
+    revalidatePath("/production-stage");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting production order:", error);
+    return { success: false, error: "حدث خطأ أثناء حذف أمر التصنيع" };
+  }
+}

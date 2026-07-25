@@ -35,6 +35,24 @@ export async function createClient(data: FormData) {
 
 export async function deleteClient(id: string) {
   try {
+    // Check if client has invoices
+    const invoicesCount = await prisma.salesInvoice.count({
+      where: { clientId: id },
+    });
+
+    if (invoicesCount > 0) {
+      return { success: false, error: `لا يمكن حذف العميل لأنه لديه ${invoicesCount} فاتورة. يجب حذف الفواتير أولاً.` };
+    }
+
+    // Check if client has payments
+    const paymentsCount = await prisma.payment.count({
+      where: { clientId: id },
+    });
+
+    if (paymentsCount > 0) {
+      return { success: false, error: `لا يمكن حذف العميل لأنه لديه ${paymentsCount} دفعة. يجب حذف المدفوعات أولاً.` };
+    }
+
     await prisma.client.delete({
       where: { id },
     });

@@ -40,3 +40,44 @@ export async function createProduct(data: FormData) {
     return { success: false, error: "حدث خطأ أثناء إضافة المنتج" };
   }
 }
+
+export async function deleteProduct(id: string) {
+  try {
+    // Check if product has production orders
+    const productionOrdersCount = await prisma.productionOrder.count({
+      where: { productId: id },
+    });
+
+    if (productionOrdersCount > 0) {
+      return { success: false, error: `لا يمكن حذف المنتج لأنه لديه ${productionOrdersCount} أمر إنتاج. يجب حذف أوامر الإنتاج أولاً.` };
+    }
+
+    // Check if product has packaging orders
+    const packagingOrdersCount = await prisma.packagingOrder.count({
+      where: { productId: id },
+    });
+
+    if (packagingOrdersCount > 0) {
+      return { success: false, error: `لا يمكن حذف المنتج لأنه لديه ${packagingOrdersCount} أمر تغليف. يجب حذف أوامر التغليف أولاً.` };
+    }
+
+    // Check if product has order items (in invoices)
+    const orderItemsCount = await prisma.orderItem.count({
+      where: { productId: id },
+    });
+
+    if (orderItemsCount > 0) {
+      return { success: false, error: `لا يمكن حذف المنتج لأنه موجود في ${orderItemsCount} فاتورة. يجب حذف الفواتير أولاً.` };
+    }
+
+    await prisma.product.delete({
+      where: { id },
+    });
+
+    revalidatePath("/products-list");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting product:", error);
+    return { success: false, error: "حدث خطأ أثناء حذف المنتج" };
+  }
+}

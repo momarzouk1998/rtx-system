@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { ShoppingCart, Calendar } from "lucide-react";
+import { ShoppingCart, Calendar, Edit, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { AddInvoiceButton } from "./AddInvoiceButton";
+import { deleteInvoice } from "../actions/sales";
 
 export default async function SalesStagePage() {
   const invoices = await prisma.salesInvoice.findMany({
@@ -46,12 +48,13 @@ export default async function SalesStagePage() {
                 <th className="px-4 py-3 text-xs">الإجمالي</th>
                 <th className="px-4 py-3 text-xs">الصافي</th>
                 <th className="px-4 py-3 text-xs">التفاصيل</th>
+                <th className="px-4 py-3 text-xs">الإجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {invoices.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                     لا يوجد فواتير مبيعات حتى الآن. اضغط على "فاتورة جديدة" للبدء.
                   </td>
                 </tr>
@@ -91,6 +94,21 @@ export default async function SalesStagePage() {
                       <button className="text-[#12829b] hover:text-[#0ea5e9] hover:underline bg-blue-50 px-2 py-1 rounded transition-colors text-xs">
                         عرض التفاصيل
                       </button>
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Link href={`/sales-stage/${invoice.id}/edit`} className="text-blue-600 hover:text-blue-800">
+                          <Edit className="w-4 h-4" />
+                        </Link>
+                        <form action={async () => {
+                          'use server';
+                          await deleteInvoice(invoice.id);
+                        }} className="inline">
+                          <button type="submit" className="text-red-600 hover:text-red-800">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </form>
+                      </div>
                     </td>
                   </tr>
                 ))

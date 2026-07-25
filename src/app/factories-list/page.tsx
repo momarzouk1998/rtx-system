@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { Factory, Phone, MessageCircle, PhoneCall } from "lucide-react";
+import { Factory, Phone, MessageCircle, PhoneCall, Edit, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { AddFactoryButton } from "./AddFactoryButton";
+import { deleteFactory } from "../actions/partners";
 
 export default async function FactoriesListPage() {
   const factories = await prisma.factory.findMany({
@@ -30,12 +32,13 @@ export default async function FactoriesListPage() {
                 <th className="px-4 py-3 text-xs">رصيد سابق</th>
                 <th className="px-4 py-3 text-xs">الرصيد الحالي</th>
                 <th className="px-4 py-3 text-xs">الحالة</th>
+                <th className="px-4 py-3 text-xs">الإجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {factories.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
                     لا يوجد مصانع مسجلة. اضغط على "إضافة مصنع" لإضافة مصانع جديدة.
                   </td>
                 </tr>
@@ -57,7 +60,7 @@ export default async function FactoriesListPage() {
                   }
 
                   return (
-                    <tr key={factory.id} className="hover:bg-gray-50 transition-colors cursor-pointer">
+                    <tr key={factory.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => window.location.href = `/factories-list/${factory.id}`}>
                       <td className="px-4 py-3">
                         <div className="font-medium text-gray-900 text-sm">{factory.name}</div>
                       </td>
@@ -92,6 +95,21 @@ export default async function FactoriesListPage() {
                         <span className={`badge text-xs ${statusClass}`}>
                           {status}
                         </span>
+                      </td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Link href={`/factories-list/${factory.id}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} className="text-blue-600 hover:text-blue-800">
+                            <Edit className="w-4 h-4" />
+                          </Link>
+                          <form action={async () => {
+                            'use server';
+                            await deleteFactory(factory.id);
+                          }} className="inline">
+                            <button type="submit" onClick={(e: React.MouseEvent) => e.stopPropagation()} className="text-red-600 hover:text-red-800">
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </form>
+                        </div>
                       </td>
                     </tr>
                   );

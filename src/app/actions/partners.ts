@@ -62,3 +62,67 @@ export async function createFactory(data: FormData) {
     return { success: false, error: "حدث خطأ أثناء إضافة المصنع" };
   }
 }
+
+export async function deleteSupplier(id: string) {
+  try {
+    // Check if supplier has add materials
+    const addMaterialsCount = await prisma.addMaterial.count({
+      where: { supplierId: id },
+    });
+
+    if (addMaterialsCount > 0) {
+      return { success: false, error: `لا يمكن حذف المورد لأنه لديه ${addMaterialsCount} عملية شراء خامات. يجب حذف العمليات أولاً.` };
+    }
+
+    // Check if supplier has expenses
+    const expensesCount = await prisma.expense.count({
+      where: { supplierId: id },
+    });
+
+    if (expensesCount > 0) {
+      return { success: false, error: `لا يمكن حذف المورد لأنه لديه ${expensesCount} مصروف. يجب حذف المصروفات أولاً.` };
+    }
+
+    await prisma.supplier.delete({
+      where: { id },
+    });
+
+    revalidatePath("/suppliers-list");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting supplier:", error);
+    return { success: false, error: "حدث خطأ أثناء حذف المورد" };
+  }
+}
+
+export async function deleteFactory(id: string) {
+  try {
+    // Check if factory has production orders
+    const productionOrdersCount = await prisma.productionOrder.count({
+      where: { factoryId: id },
+    });
+
+    if (productionOrdersCount > 0) {
+      return { success: false, error: `لا يمكن حذف المصنع لأنه لديه ${productionOrdersCount} أمر إنتاج. يجب حذف أوامر الإنتاج أولاً.` };
+    }
+
+    // Check if factory has expenses
+    const expensesCount = await prisma.expense.count({
+      where: { factoryId: id },
+    });
+
+    if (expensesCount > 0) {
+      return { success: false, error: `لا يمكن حذف المصنع لأنه لديه ${expensesCount} مصروف. يجب حذف المصروفات أولاً.` };
+    }
+
+    await prisma.factory.delete({
+      where: { id },
+    });
+
+    revalidatePath("/factories-list");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting factory:", error);
+    return { success: false, error: "حدث خطأ أثناء حذف المصنع" };
+  }
+}

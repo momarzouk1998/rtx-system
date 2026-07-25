@@ -1,8 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { Package } from "lucide-react";
+import { Package, Edit, Trash2 } from "lucide-react";
+import Link from "next/link";
 import { AddProductButton } from "./AddProductButton";
+import { deleteProduct } from "../actions/products";
 
 export default async function ProductsListPage() {
   const products = await prisma.product.findMany({
@@ -35,12 +37,13 @@ export default async function ProductsListPage() {
                 <th className="px-4 py-3 text-xs">تكلفة التشغيل/كجم</th>
                 <th className="px-4 py-3 text-xs">الأكياس/كجم</th>
                 <th className="px-4 py-3 text-xs">ربح الكيس</th>
+                <th className="px-4 py-3 text-xs">الإجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
               {products.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
                     لا توجد منتجات مسجلة. اضغط على "إضافة منتج" لإضافة منتجات جديدة.
                   </td>
                 </tr>
@@ -64,6 +67,21 @@ export default async function ProductsListPage() {
                     </td>
                     <td className="px-4 py-3 text-indigo-600 font-medium text-sm">
                       {product.profitPerBag}                    </td>
+                    <td className="px-4 py-3">
+                      <div className="flex items-center gap-2">
+                        <Link href={`/products-list/${product.id}/edit`} className="text-blue-600 hover:text-blue-800">
+                          <Edit className="w-4 h-4" />
+                        </Link>
+                        <form action={async () => {
+                          'use server';
+                          await deleteProduct(product.id);
+                        }} className="inline">
+                          <button type="submit" className="text-red-600 hover:text-red-800">
+                            <Trash2 className="w-4 h-4" />
+                          </button>
+                        </form>
+                      </div>
+                    </td>
                   </tr>
                 ))
               )}
