@@ -53,3 +53,102 @@ body {
   transform: translateY(-2px);
   box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 }
+
+/* ========================================
+   جداول متجاوبة (Mobile-first)
+   - الأعمدة تتمدد حسب المحتوى (لا تلتف الأسطر)
+   - شريط تمرير أفقي على الشاشات الضيقة
+   - padding أصغر على الموبايل
+   ======================================== */
+
+/* شريط تمرير أفقي أنيق على الويبكيت */
+.overflow-x-auto {
+  -webkit-overflow-scrolling: touch;
+}
+.overflow-x-auto::-webkit-scrollbar {
+  height: 8px;
+}
+.overflow-x-auto::-webkit-scrollbar-track {
+  background: transparent;
+}
+.overflow-x-auto::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 4px;
+}
+.dark .overflow-x-auto::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* كل الجداول جوه حاوية scroll: الأعمدة تحافظ على عرض محتواها */
+/* min-width:100% + width:max-content = الجدول بياخد على الأقل عرض الحاوية،
+   ولو المحتوى أكبر يتمدد بره الحاوية فيظهر شريط التمرير الأفقي. */
+/* specificity عالية (3 فئات) عشان نضمن تتغلب على .w-full بتاعة Tailwind */
+.overflow-x-auto > table.w-full,
+.overflow-x-auto > table.text-right,
+.overflow-x-auto > table:not([class]) {
+  width: max-content !important;
+  min-width: 100% !important;
+  table-layout: auto !important;
+}
+
+/* منع لفّ النص في خلايا الجدول — كل عمود على سطر واحد */
+.overflow-x-auto > table th,
+.overflow-x-auto > table td {
+  white-space: nowrap;
+}
+
+/* تقليل padding على الموبايل (px-6 = 24px كبير على شاشة 360px) */
+@media (max-width: 640px) {
+  .overflow-x-auto > table th,
+  .overflow-x-auto > table td {
+    padding-left: 0.75rem;  /* 12px */
+    padding-right: 0.75rem;
+    padding-top: 0.625rem;  /* 10px */
+    padding-bottom: 0.625rem;
+  }
+  .overflow-x-auto > table {
+    font-size: 0.8125rem; /* 13px */
+  }
+}
+
+/* عدّاد مخصص للسكرول العمودي في السايدبار */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 5px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 3px;
+}
+
+/* ========================================
+   الطباعة (لصفحة كشف الحساب)
+   ======================================== */
+@media print {
+  /* إخفاء كل ما لا يُطبع */
+  .no-print {
+    display: none !important;
+  }
+  /* إخفاء السايدبار وزر الهمبرغر */
+  aside,
+  button[aria-label] {
+    display: none !important;
+  }
+  /* المحتوى يملأ الصفحة بالكامل */
+  body,
+  main {
+    overflow: visible !important;
+  }
+  main > div {
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  /* تجنب قطع الصفوف بين الصفحات */
+  table {
+    page-break-inside: auto;
+  }
+  tr {
+    page-break-inside: avoid;
+    page-break-after: auto;
+  }
+}
+

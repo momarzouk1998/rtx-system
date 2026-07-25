@@ -23,13 +23,13 @@ export default function RootLayout({
         <ToastProvider />
         <div className="flex h-screen overflow-hidden">
           {/* Main content wrapper */}
-          <main className="flex-1 overflow-y-auto mr-64 bg-slate-50 dark:bg-zinc-950 transition-all">
-            {/* Header placeholder if needed later */}
-            <div className="w-full p-8 pb-4">
+          <main className="flex-1 overflow-y-auto bg-slate-50 dark:bg-zinc-950 transition-all">
+            {/* padding: أقل على الموبايل (pt-16 عشان زر الهمبرغر)، أكبر على الديسكتوب */}
+            <div className="w-full p-4 pt-16 pb-4 lg:p-8 lg:pt-8 lg:mr-64">
               {children}
             </div>
           </main>
-          
+
           <Sidebar />
         </div>
       </body>

@@ -93,7 +93,7 @@ export function AddInvoiceButton({ clients, products }: { clients: Client[], pro
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="إصدار فاتورة مبيعات" maxWidth="2xl">
         <form action={onSubmit} className="space-y-6">
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 العميل *
