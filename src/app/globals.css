@@ -185,19 +185,18 @@ html, body {
   background: rgba(255, 255, 255, 0.2);
 }
 
-/* الجدول: الأعمدة على عرض محتواها، min 100% عشان لو المحتوى قليل يملأ الصفحة */
+/* الجدول: عرض طبيعي 100% مع إمكانية التوسع عند الحاجة */
 .overflow-x-auto > table.w-full,
 .overflow-x-auto > table.text-right,
 .overflow-x-auto > table:not([class]) {
-  width: max-content !important;
-  min-width: 100% !important;
-  table-layout: auto !important;
+  width: 100%;
+  table-layout: auto;
 }
 
-/* كل خلية على سطر واحد (لا تلتف الأسطر) */
+/* السماح بالتفاف النص في الخلايا لتقليل العرض */
 .overflow-x-auto > table th,
 .overflow-x-auto > table td {
-  white-space: nowrap;
+  white-space: normal;
 }
 
 /* === خط أصغر وأنظف على كل الأحجام === */

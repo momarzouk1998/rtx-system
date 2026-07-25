@@ -32,15 +32,15 @@ export default async function ProductsListPage() {
 
       <div className="card overflow-hidden">
         <div className="overflow-x-auto">
-          <table className="w-full text-right" dir="rtl" style={{ width: 'max-content', minWidth: '100%' }}>
+          <table className="w-full text-right" dir="rtl">
             <thead className="table-header border-b border-gray-200">
               <tr>
-                <th className="px-6 py-4">المنتج</th>
-                <th className="px-6 py-4">الخامة المرتبطة</th>
-                <th className="px-6 py-4">سعر الكيس</th>
-                <th className="px-6 py-4">تكلفة التشغيل/كجم</th>
-                <th className="px-6 py-4">الأكياس/كجم</th>
-                <th className="px-6 py-4">ربح الكيس</th>
+                <th className="px-4 py-3 text-xs">المنتج</th>
+                <th className="px-4 py-3 text-xs">الخامة المرتبطة</th>
+                <th className="px-4 py-3 text-xs">سعر الكيس</th>
+                <th className="px-4 py-3 text-xs">تكلفة التشغيل/كجم</th>
+                <th className="px-4 py-3 text-xs">الأكياس/كجم</th>
+                <th className="px-4 py-3 text-xs">ربح الكيس</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100">
@@ -53,24 +53,24 @@ export default async function ProductsListPage() {
               ) : (
                 products.map((product) => (
                   <tr key={product.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4">
-                      <div className="font-medium text-gray-900">{product.name}</div>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-gray-900 text-sm">{product.name}</div>
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="badge bg-blue-100 text-blue-800 border-blue-200">
+                    <td className="px-4 py-3">
+                      <span className="badge bg-blue-100 text-blue-800 border-blue-200 text-xs">
                         {product.material.name}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-emerald-600 font-semibold">
+                    <td className="px-4 py-3 text-emerald-600 font-semibold text-sm">
                       {product.bagPrice} ج.م
                     </td>
-                    <td className="px-6 py-4 text-orange-600">
+                    <td className="px-4 py-3 text-orange-600 text-sm">
                       {product.operatingCost} ج.م
                     </td>
-                    <td className="px-6 py-4 text-gray-600">
+                    <td className="px-4 py-3 text-gray-600 text-sm">
                       {product.bagsPerKg}
                     </td>
-                    <td className="px-6 py-4 text-indigo-600 font-medium">
+                    <td className="px-4 py-3 text-indigo-600 font-medium text-sm">
                       {product.profitPerBag} ج.م
                     </td>
                   </tr>
