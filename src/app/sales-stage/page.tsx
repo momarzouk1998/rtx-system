@@ -28,15 +28,9 @@ export default async function SalesStagePage() {
   });
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800 flex items-center gap-3">
-            <ShoppingCart className="w-8 h-8 text-[#12829b]" />
-            مرحلة البيع (الطلبات)
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">إدارة فواتير المبيعات والطلبات</p>
-        </div>
+        <p className="text-sm text-gray-500">{invoices.length} فاتورة</p>
         <AddInvoiceButton clients={clients} products={products} />
       </div>
 

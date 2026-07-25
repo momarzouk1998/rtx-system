@@ -1,36 +1,68 @@
 @import "tailwindcss";
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-brand-primary: #12829b;
-  --color-brand-secondary: #38bdf8;
-  --color-brand-dark: #2b2b2b;
-  --color-brand-accent: #38bdf8;
-  
-  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
-  --font-mono: 'Fira Code', monospace;
+@theme {
+  /* RTX Brand Primary — Blue #12829b */
+  --color-rtx-50:  #e0f2fe;
+  --color-rtx-100: #bae6fd;
+  --color-rtx-200: #7dd3fc;
+  --color-rtx-300: #38bdf8;
+  --color-rtx-400: #0ea5e9;
+  --color-rtx-500: #12829b;
+  --color-rtx-600: #0c4a6e;
+  --color-rtx-700: #075985;
+  --color-rtx-800: #0369a1;
+  --color-rtx-900: #0c4a6e;
+  --color-slate-650:  #677077;
+
+  --font-family-sans: var(--font-cairo, "Cairo", "Segoe UI", Tahoma, sans-serif);
+
+  /* Mobile animations */
+  --animate-slide-in: slide-in 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  --animate-fade-in: fade-in 0.18s ease-out;
+  --animate-shimmer: shimmer 1.4s linear infinite;
+}
+
+@keyframes slide-in {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes shimmer {
+  0%   { background-position: -1000px 0; }
+  100% { background-position: 1000px 0; }
 }
 
 :root {
-  --background: #f4f4f4;
-  --foreground: #2b2b2b;
+  --font-cairo: var(--font-cairo, "Cairo"), "Segoe UI", Tahoma, sans-serif;
+  --color-bg-body: #f4f4f5;
+  --color-bg-card: #ffffff;
+  --color-surface-2: #f8f8f8;
+  --color-sidebar: linear-gradient(180deg, #111315 0%, #1d1f22 100%);
+  --color-sidebar-accent: #12829b;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #2b2b2b;
-    --foreground: #ffffff;
-  }
-}
-
+html { direction: rtl; }
 body {
-  background-color: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-sans);
+  font-family: var(--font-cairo);
+  background: linear-gradient(135deg, #f5f5f5 0%, #ececec 100%);
+  color: #1c1c1c;
   -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
 }
+
+.bg-header-gradient {
+  background: var(--color-sidebar);
+}
+
+* { box-sizing: border-box; }
+
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: #f1f1f1; }
+::-webkit-scrollbar-thumb { background: #c1c1c1; border-radius: 5px; }
+::-webkit-scrollbar-thumb:hover { background: #a1a1a1; }
 
 /* Utility Classes like Elnazlawi */
 .btn-primary {

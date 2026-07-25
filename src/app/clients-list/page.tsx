@@ -15,15 +15,9 @@ export default async function ClientsListPage() {
   });
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800 flex items-center gap-3">
-            <Users className="w-8 h-8 text-[#12829b]" />
-            قائمة العملاء
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">إدارة بيانات العملاء وحساباتهم</p>
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <p className="text-sm text-gray-500">{clients.length} عميل</p>
         <AddClientButton />
       </div>
 

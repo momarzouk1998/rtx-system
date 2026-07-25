@@ -18,15 +18,9 @@ export default async function ProductsListPage() {
   });
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800 flex items-center gap-3">
-            <Package className="w-8 h-8 text-[#12829b]" />
-            قائمة المنتجات
-          </h1>
-          <p className="text-sm text-gray-500 mt-1">إدارة المنتجات والأسعار والتكاليف</p>
-        </div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between flex-wrap gap-3">
+        <p className="text-sm text-gray-500">{products.length} منتج</p>
         <AddProductButton materials={materials} />
       </div>
 

@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import {
   ShoppingCart,
@@ -21,151 +21,179 @@ import {
   UsersRound,
   UserCircle,
   LogOut,
-  Menu,
-  X,
 } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
 
 const menuItems = [
-  { name: 'مرحلة البيع', href: '/sales-stage', icon: ShoppingCart },
-  { name: 'مرحلة التصنيع', href: '/production-stage', icon: Settings },
-  { name: 'مرحلة الخامات', href: '/materials-stage', icon: Briefcase },
-  { name: 'قائمة الخامات', href: '/materials-list', icon: List },
-  { name: 'قائمة المنتجات', href: '/products-list', icon: LayoutList },
-  { name: 'قائمة العملاء', href: '/clients-list', icon: Users },
-  { name: 'قائمة المصانع', href: '/factories-list', icon: Factory },
-  { name: 'قائمة الموردين', href: '/suppliers-list', icon: UserPlus },
-  { name: 'متابعة الطلبات', href: '/orders-track', icon: ClipboardList },
-  { name: 'المصروفات', href: '/expenses', icon: Coins },
-  { name: 'المدفوعات', href: '/payments', icon: Banknote },
-  { name: 'خزنة RTX', href: '/treasury', icon: Banknote },
-  { name: 'لوحة المتابعة', href: '/', icon: LayoutDashboard },
-  { name: 'كشف حساب', href: '/statement', icon: FileText },
-  { name: 'قائمة المستخدمين', href: '/users-list', icon: UsersRound },
-  { name: 'الصفحة الشخصية', href: '/profile', icon: UserCircle },
+  { name: 'لوحة المتابعة', href: '/', icon: LayoutDashboard, emoji: '📊' },
+  { name: 'مرحلة البيع', href: '/sales-stage', icon: ShoppingCart, emoji: '🛒' },
+  { name: 'مرحلة التصنيع', href: '/production-stage', icon: Settings, emoji: '⚙️' },
+  { name: 'مرحلة الخامات', href: '/materials-stage', icon: Briefcase, emoji: '📦' },
+  { name: 'قائمة الخامات', href: '/materials-list', icon: List, emoji: '📋' },
+  { name: 'قائمة المنتجات', href: '/products-list', icon: LayoutList, emoji: '🏷️' },
+  { name: 'قائمة العملاء', href: '/clients-list', icon: Users, emoji: '👥' },
+  { name: 'قائمة المصانع', href: '/factories-list', icon: Factory, emoji: '🏭' },
+  { name: 'قائمة الموردين', href: '/suppliers-list', icon: UserPlus, emoji: '🏢' },
+  { name: 'متابعة الطلبات', href: '/orders-track', icon: ClipboardList, emoji: '📑' },
+  { name: 'المصروفات', href: '/expenses', icon: Coins, emoji: '💸' },
+  { name: 'المدفوعات', href: '/payments', icon: Banknote, emoji: '💰' },
+  { name: 'خزنة RTX', href: '/treasury', icon: Banknote, emoji: '🏦' },
+  { name: 'كشف حساب', href: '/statement', icon: FileText, emoji: '📄' },
+  { name: 'قائمة المستخدمين', href: '/users-list', icon: UsersRound, emoji: '👨‍👩‍👧' },
+  { name: 'الصفحة الشخصية', href: '/profile', icon: UserCircle, emoji: '👤' },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
+  const router = useRouter();
+  const [open, setOpen] = useState(false);
 
-  // اقفل السايدبار تلقائياً بعد اختيار صفحة على الموبايل
+  // أغلق الـ drawer عند تغيير الصفحة
   useEffect(() => {
-    setIsOpen(false);
+    setOpen(false);
   }, [pathname]);
 
-  // منع تمرير الصفحة لما السايدبار مفتوح على الموبايل
+  // قفل/فتح scroll الـ body عند فتح الـ drawer
   useEffect(() => {
-    if (isOpen) {
+    if (open) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
     }
-    return () => {
-      document.body.style.overflow = '';
-    };
-  }, [isOpen]);
+    return () => { document.body.style.overflow = ''; };
+  }, [open]);
+
+  // إغلاق بـ ESC
+  useEffect(() => {
+    function onKey(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOpen(false);
+    }
+    if (open) document.addEventListener('keydown', onKey);
+    return () => document.removeEventListener('keydown', onKey);
+  }, [open]);
+
+  async function logout() {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/login');
+    router.refresh();
+  }
 
   return (
     <>
-      {/* زر الهمبرغر — يظهر على الموبايل فقط */}
-      <button
-        onClick={() => setIsOpen(true)}
-        aria-label="فتح القائمة"
-        className="lg:hidden fixed top-4 right-4 z-50 w-11 h-11 flex items-center justify-center rounded-lg bg-[#12829b] text-white shadow-lg"
-      >
-        <Menu className="w-6 h-6" />
-      </button>
+      {/* Mobile top bar */}
+      <header className="md:hidden fixed top-0 left-0 right-0 z-40 bg-header-gradient text-white px-3 py-2.5 flex items-center justify-between shadow-lg">
+        <button
+          onClick={() => setOpen(!open)}
+          className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 text-2xl shrink-0"
+          aria-label={open ? "إغلاق القائمة" : "فتح القائمة"}
+        >
+          {open ? '✕' : '☰'}
+        </button>
+        <div className="flex items-center gap-2 min-w-0">
+          <div className="w-9 h-9 rounded-lg bg-white p-0.5 border-2 border-[#12829b] shrink-0 flex items-center justify-center">
+            <span className="text-[#12829b] font-bold text-sm">RTX</span>
+          </div>
+          <div className="font-bold text-sm truncate">RTX System</div>
+        </div>
+      </header>
 
-      {/* خلفية معتمة (overlay) — تظهر لما السايدبار مفتوح على الموبايل */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            onClick={() => setIsOpen(false)}
-            className="lg:hidden fixed inset-0 bg-black/50 z-40"
-          />
-        )}
-      </AnimatePresence>
-
-      {/* السايدبار نفسه */}
-      <aside
-        className={cn(
-          'w-64 h-screen fixed top-0 right-0 bg-[#2b2b2b] text-white border-l border-white/5 flex flex-col z-50 transition-transform duration-300',
-          // على الموبايل: ينزلق من اليمين، مغلق افتراضياً
-          // على الديسكتوب (lg+): ثابت دائماً
-          isOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'
-        )}
-      >
-        {/* الهيدر */}
-        <div className="h-20 flex items-center justify-center bg-[#12829b] shadow-md relative z-10 px-4">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="relative w-12 h-12 bg-white rounded-lg p-1 shadow-sm flex items-center justify-center overflow-hidden">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="/logo.png"
-                alt="RTX Logo"
-                className="w-full h-full object-contain"
-              />
-            </div>
-            <div className="flex flex-col text-white">
-              <span className="text-xl font-bold tracking-wide">RTX</span>
-              <span className="text-xs text-white/80">للتجارة والتصنيع</span>
-            </div>
-          </Link>
-          {/* زر الإغلاق على الموبايل */}
-          <button
-            onClick={() => setIsOpen(false)}
-            aria-label="إغلاق القائمة"
-            className="lg:hidden absolute left-3 top-1/2 -translate-y-1/2 w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/10 text-white"
+      {/* Mobile drawer */}
+      {open && (
+        <div
+          className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+          onClick={() => setOpen(false)}
+        >
+          <aside
+            onClick={(e) => e.stopPropagation()}
+            className="absolute right-0 top-0 h-full w-[280px] max-w-[85vw] bg-header-gradient text-white shadow-2xl flex flex-col animate-slide-in"
           >
-            <X className="w-5 h-5" />
+            <div className="flex items-center justify-between p-3 border-b border-white/10">
+              <div className="flex items-center gap-2 min-w-0">
+                <div className="w-10 h-10 rounded-lg bg-white p-0.5 border-2 border-[#12829b] shrink-0 flex items-center justify-center">
+                  <span className="text-[#12829b] font-bold text-sm">RTX</span>
+                </div>
+                <div className="min-w-0">
+                  <div className="font-extrabold text-sm leading-tight truncate">RTX System</div>
+                  <div className="text-[10px] text-[#38bdf8] font-medium">للتجارة والتصنيع</div>
+                </div>
+              </div>
+              <button
+                onClick={() => setOpen(false)}
+                className="w-9 h-9 flex items-center justify-center rounded-lg hover:bg-white/10 text-xl"
+                aria-label="إغلاق"
+              >✕</button>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              <SidebarContent menuItems={menuItems} pathname={pathname} onNavigate={() => setOpen(false)} />
+            </div>
+            <div className="p-3 border-t border-white/10">
+              <Link href="/profile" onClick={() => setOpen(false)} className="block w-full py-2.5 rounded-lg bg-[#12829b]/20 text-[#38bdf8] hover:bg-[#12829b]/30 text-sm font-medium text-center mb-2">
+                👤 الملف الشخصي
+              </Link>
+              <button onClick={logout} className="w-full py-2.5 rounded-lg bg-red-500/20 text-red-100 hover:bg-red-500/30 text-sm font-medium">
+                🚪 تسجيل خروج
+              </button>
+            </div>
+          </aside>
+        </div>
+      )}
+
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex flex-col w-64 bg-header-gradient text-white h-screen sticky top-0 shadow-2xl shrink-0">
+        <SidebarContent menuItems={menuItems} pathname={pathname} onNavigate={() => {}} />
+        <div className="p-4 border-t border-white/10">
+          <Link href="/profile" className="block w-full py-2 rounded-lg bg-[#12829b]/20 text-[#38bdf8] hover:bg-[#12829b]/30 text-sm text-center mb-2">
+            👤 الملف الشخصي
+          </Link>
+          <button onClick={logout} className="w-full py-2 rounded-lg bg-red-500/20 text-red-100 hover:bg-red-500/30 text-sm">
+            🚪 تسجيل خروج
           </button>
         </div>
-
-        <nav className="flex-1 py-4 px-3 space-y-1 overflow-y-auto custom-scrollbar" dir="rtl">
-          {menuItems.map((item) => {
-            const isActive = pathname === item.href;
-            const Icon = item.icon;
-
-            return (
-              <Link key={item.href} href={item.href}>
-                <div
-                  className={cn(
-                    'flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors',
-                    isActive
-                      ? 'bg-[#12829b]/20 text-[#38bdf8] font-semibold'
-                      : 'text-gray-300 hover:bg-white/5 hover:text-white'
-                  )}
-                >
-                  <Icon className={cn('w-5 h-5', isActive ? 'text-[#38bdf8]' : 'text-gray-400')} />
-                  <span className="text-sm">{item.name}</span>
-
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeTab"
-                      className="absolute right-0 w-1 h-6 bg-[#38bdf8] rounded-l-full"
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      transition={{ duration: 0.3 }}
-                    />
-                  )}
-                </div>
-              </Link>
-            );
-          })}
-
-          <div className="pt-4 mt-4 border-t border-white/10">
-            <button className="w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-red-400 hover:bg-red-400/10 transition-colors text-sm">
-              <LogOut className="w-5 h-5" />
-              <span>خروج</span>
-            </button>
-          </div>
-        </nav>
       </aside>
+    </>
+  );
+}
+
+function SidebarContent({ menuItems, pathname, onNavigate }: { menuItems: any[]; pathname: string; onNavigate: () => void }) {
+  const activeItem = menuItems.reduce<any | null>((best, item) => {
+    if (pathname === item.href) return item;
+    if (pathname.startsWith(`${item.href}/`)) {
+      if (!best || item.href.length > best.href.length) return item;
+    }
+    return best;
+  }, null);
+
+  return (
+    <>
+      <div className="p-4 border-b-4 border-[#12829b] flex items-center gap-3 hidden md:flex">
+        <div className="w-12 h-12 rounded-lg bg-white p-0.5 border-2 border-[#12829b] shrink-0 flex items-center justify-center">
+          <span className="text-[#12829b] font-bold text-lg">RTX</span>
+        </div>
+        <div>
+          <div className="font-extrabold text-base leading-tight">RTX System</div>
+          <div className="text-[10px] text-[#38bdf8] font-medium">للتجارة والتصنيع</div>
+        </div>
+      </div>
+      <nav className="flex-1 overflow-y-auto py-2">
+        {menuItems.map((item) => {
+          const active = activeItem?.href === item.href;
+          return (
+            <Link
+              key={item.href}
+              href={item.href}
+              onClick={onNavigate}
+              prefetch={true}
+              className={`flex items-center gap-3 px-4 py-3 mx-2 my-0.5 rounded-lg text-sm transition-all ${
+                active
+                  ? 'bg-[#12829b] text-white shadow-md font-bold'
+                  : 'text-gray-200 hover:bg-white/10 hover:text-white active:bg-white/5'
+              }`}
+            >
+              <span className="text-lg shrink-0">{item.emoji}</span>
+              <span className="truncate">{item.name}</span>
+            </Link>
+          );
+        })}
+      </nav>
     </>
   );
 }
