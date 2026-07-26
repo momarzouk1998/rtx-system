@@ -45,13 +45,13 @@ export default function MaterialsStage() {
           </div>
           <div>
             <label className="block text-sm font-medium text-gray-400 mb-2">سعر الكيلو</label>
-            <input type="number" placeholder="0.00 EGP" className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-4 text-white focus:border-[#38bdf8]" />
+            <input type="number" placeholder="0.00" className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-4 text-white focus:border-[#38bdf8]" />
           </div>
         </div>
 
         <div className="pt-4 border-t border-white/10 flex justify-between items-center text-xl font-bold text-white">
           <span>إجمالي الفاتورة:</span>
-          <span className="text-amber-400">0.00 EGP</span>
+          <span className="text-amber-400">0.00</span>
         </div>
 
         <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#12829b] hover:bg-[#107085] text-white rounded-lg font-bold mt-4">

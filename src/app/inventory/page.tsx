@@ -1,4 +1,4 @@
-﻿'use client';
+'use client';
 
 import { motion } from 'framer-motion';
 import { Package, Box, RefreshCw, PlusCircle, ArrowUpRight, ArrowDownRight } from 'lucide-react';
@@ -109,12 +109,12 @@ export default function InventoryDashboard() {
                 <tr className="border-b border-white/5 hover:bg-white/5">
                   <td className="px-4 py-3 text-white font-medium">Ø£ÙƒÙŠØ§Ø³ Ù…Ù‚Ø§Ø³ 20x30</td>
                   <td className="px-4 py-3 text-green-400 font-bold">5,400</td>
-                  <td className="px-4 py-3 text-white">10,800 EGP</td>
+                  <td className="px-4 py-3 text-white">10,800</td>
                 </tr>
                 <tr className="border-b border-white/5 hover:bg-white/5">
                   <td className="px-4 py-3 text-white font-medium">Ø£ÙƒÙŠØ§Ø³ Ù…Ø·Ø¨ÙˆØ¹Ø© RTX</td>
                   <td className="px-4 py-3 text-green-400 font-bold">2,100</td>
-                  <td className="px-4 py-3 text-white">6,300 EGP</td>
+                  <td className="px-4 py-3 text-white">6,300</td>
                 </tr>
               </tbody>
             </table>

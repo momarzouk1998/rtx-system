@@ -92,19 +92,19 @@ export default function Treasury() {
           </button>
           <p className="text-gray-400 text-xs md:text-sm">الرصيد الحالي بالخزينة</p>
           <h3 className="text-2xl md:text-4xl font-bold text-[#38bdf8] mt-2 break-words">
-            {loading ? '...' : currentBalance.toLocaleString()} EGP
+            {loading ? '...' : currentBalance.toLocaleString()}
           </h3>
         </div>
         <div className="glass-dark p-4 md:p-6 rounded-xl border-l-4 border-green-400">
           <p className="text-gray-400 text-xs md:text-sm">إجمالي الوارد (هذا الشهر)</p>
           <h3 className="text-xl md:text-3xl font-bold text-[#38bdf8] mt-2 break-words">
-            {loading ? '...' : monthIn.toLocaleString()} EGP
+            {loading ? '...' : monthIn.toLocaleString()}
           </h3>
         </div>
         <div className="glass-dark p-4 md:p-6 rounded-xl border-l-4 border-red-400">
           <p className="text-gray-400 text-xs md:text-sm">إجمالي المنصرف (هذا الشهر)</p>
           <h3 className="text-xl md:text-3xl font-bold text-[#38bdf8] mt-2 break-words">
-            {loading ? '...' : monthOut.toLocaleString()} EGP
+            {loading ? '...' : monthOut.toLocaleString()}
           </h3>
         </div>
       </div>
@@ -188,7 +188,7 @@ export default function Treasury() {
             
             <div className="space-y-4">
               <div>
-                <label className="block text-sm text-gray-400 mb-2">المبلغ (EGP)</label>
+                <label className="block text-sm text-gray-400 mb-2">المبلغ</label>
                 <input 
                   type="number"
                   value={newOpeningBalance}

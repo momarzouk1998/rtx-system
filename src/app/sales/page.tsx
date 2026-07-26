@@ -1,12 +1,12 @@
-﻿'use client';
+'use client';
 
 import { motion } from 'framer-motion';
 import { ShoppingCart, Users, Receipt, PlusCircle, CheckCircle, Clock } from 'lucide-react';
 
 const salesStats = [
-  { name: 'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…Ø¨ÙŠØ¹Ø§Øª (Ø§Ù„Ø´Ù‡Ø±)', value: 'EGP 124,500', icon: ShoppingCart, change: '+15%' },
-  { name: 'Ù…Ø³ØªØ­Ù‚Ø§Øª Ø®Ø§Ø±Ø¬ÙŠØ© (Ø¯ÙŠÙˆÙ†)', value: 'EGP 15,400', icon: Clock, change: '-5%' },
-  { name: 'Ø¹Ø¯Ø¯ Ø§Ù„Ø¹Ù…Ù„Ø§Ø¡ Ø§Ù„Ù†Ø´Ø·ÙŠÙ†', value: '34', icon: Users, change: '+2' },
+  { name: 'إجمالي المبيعات (الشهر)', value: '124,500', icon: ShoppingCart, change: '+15%' },
+  { name: 'مستحقات خارجية (ديون)', value: '15,400', icon: Clock, change: '-5%' },
+  { name: 'عدد العملاء النشطين', value: '34', icon: Users, change: '+2' },
 ];
 
 export default function SalesDashboard() {
@@ -79,13 +79,13 @@ export default function SalesDashboard() {
                 <tr className="border-b border-white/5 hover:bg-white/5">
                   <td className="px-4 py-3">INV-1023</td>
                   <td className="px-4 py-3 text-white font-medium">Ø´Ø±ÙƒØ© Ø§Ù„Ø£Ù…Ù„</td>
-                  <td className="px-4 py-3">12,500 EGP</td>
+                  <td className="px-4 py-3">12,500</td>
                   <td className="px-4 py-3 text-green-400 flex items-center gap-1"><CheckCircle className="w-4 h-4"/> Ù…Ø³Ø¯Ø¯Ø©</td>
                 </tr>
                 <tr className="border-b border-white/5 hover:bg-white/5">
                   <td className="px-4 py-3">INV-1024</td>
                   <td className="px-4 py-3 text-white font-medium">Ù…Ø­Ù„Ø§Øª Ø§Ù„Ù†ÙˆØ±</td>
-                  <td className="px-4 py-3">8,200 EGP</td>
+                  <td className="px-4 py-3">8,200</td>
                   <td className="px-4 py-3 text-amber-400 flex items-center gap-1"><Clock className="w-4 h-4"/> Ø¢Ø¬Ù„</td>
                 </tr>
               </tbody>
