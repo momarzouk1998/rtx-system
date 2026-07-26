@@ -10,10 +10,19 @@ export default async function ClientsListPage() {
   const clients = await prisma.client.findMany({
     orderBy: { createdAt: "desc" },
     include: {
-      invoices: true,
-      payments: true,
+      invoices: {
+        select: {
+          status: true,
+          netTotal: true
+        }
+      },
+      payments: {
+        select: {
+          amount: true
+        }
+      },
     }
-  });
+  }).catch(() => []);
 
   return (
     <div className="space-y-4">
