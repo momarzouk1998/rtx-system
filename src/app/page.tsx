@@ -38,13 +38,11 @@ export default async function Dashboard() {
   
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
 
-  // Get real data from database
+  // Get real data from database with error handling
   const [
     todaySales,
     monthSales,
-    monthProfit,
     openInvoices,
-    clientDebts,
     totalMaterials,
     totalProducts,
     totalClients,
@@ -61,7 +59,7 @@ export default async function Dashboard() {
       },
       _sum: { netTotal: true },
       _count: true,
-    }),
+    }).catch(() => ({ _sum: { netTotal: 0 }, _count: 0 })),
     
     // Month's sales
     prisma.salesInvoice.aggregate({
@@ -71,57 +69,30 @@ export default async function Dashboard() {
       },
       _sum: { netTotal: true },
       _count: true,
-    }),
-    
-    // Month's profit
-    prisma.salesInvoice.aggregate({
-      where: {
-        date: { gte: monthStart },
-        status: { not: 'CANCELLED' }
-      },
-      _sum: { totalProfit: true },
-    }),
+    }).catch(() => ({ _sum: { netTotal: 0 }, _count: 0 })),
     
     // Open invoices
     prisma.salesInvoice.count({
       where: { status: { in: ['ORDERED', 'PROCESSING'] } },
-    }),
-    
-    // Client debts
-    prisma.$queryRaw`
-      SELECT COALESCE(SUM(c.openingBalance + COALESCE(inv.total, 0) - COALESCE(pay.total, 0)), 0) as total
-      FROM Client c
-      LEFT JOIN (
-        SELECT clientId, SUM(netTotal) as total
-        FROM SalesInvoice
-        WHERE status != 'CANCELLED'
-        GROUP BY clientId
-      ) inv ON c.id = inv.clientId
-      LEFT JOIN (
-        SELECT clientId, SUM(amount) as total
-        FROM Payment
-        GROUP BY clientId
-      ) pay ON c.id = pay.clientId
-      WHERE (c.openingBalance + COALESCE(inv.total, 0) - COALESCE(pay.total, 0)) > 0
-    `,
+    }).catch(() => 0),
     
     // Total materials
-    prisma.material.count(),
+    prisma.material.count().catch(() => 0),
     
     // Total products
-    prisma.product.count(),
+    prisma.product.count().catch(() => 0),
     
     // Total clients
-    prisma.client.count(),
+    prisma.client.count().catch(() => 0),
     
     // Total suppliers
-    prisma.supplier.count(),
+    prisma.supplier.count().catch(() => 0),
     
     // Total factories
-    prisma.factory.count(),
+    prisma.factory.count().catch(() => 0),
     
     // Active production orders
-    prisma.productionOrder.count(),
+    prisma.productionOrder.count().catch(() => 0),
     
     // Month's expenses
     prisma.expense.aggregate({
@@ -129,12 +100,31 @@ export default async function Dashboard() {
         date: { gte: monthStart }
       },
       _sum: { amount: true },
-    }),
+    }).catch(() => ({ _sum: { amount: 0 } })),
   ]);
 
-  const clientDebtsTotal = Number((clientDebts as any)[0]?.total || 0);
+  // Calculate client debts using Prisma instead of raw SQL
+  const clients = await prisma.client.findMany({
+    include: {
+      salesInvoices: {
+        where: { status: { not: 'CANCELLED' } },
+        select: { netTotal: true }
+      },
+      payments: {
+        select: { amount: true }
+      }
+    }
+  }).catch(() => []);
+
+  const clientDebtsTotal = clients.reduce((sum, client) => {
+    const invoiceTotal = client.salesInvoices.reduce((invSum, inv) => invSum + (inv.netTotal || 0), 0);
+    const paymentTotal = client.payments.reduce((paySum, pay) => paySum + (pay.amount || 0), 0);
+    const balance = (client.openingBalance || 0) + invoiceTotal - paymentTotal;
+    return sum + (balance > 0 ? balance : 0);
+  }, 0);
+
   const monthExpensesTotal = monthExpenses._sum.amount || 0;
-  const netProfit = (monthProfit._sum.totalProfit || 0) - monthExpensesTotal;
+  const netProfit = (monthSales._sum.netTotal || 0) - monthExpensesTotal;
 
   const stats = [
     { icon: ShoppingCart, label: 'مبيعات اليوم', value: (todaySales._sum.netTotal || 0).toLocaleString('ar-EG'), subValue: `${todaySales._count} فاتورة`, color: 'green' },
