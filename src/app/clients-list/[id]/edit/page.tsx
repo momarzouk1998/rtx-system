@@ -7,9 +7,10 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditClientPage({ params }: { params: { id: string } }) {
+export default async function EditClientPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const client = await prisma.client.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   if (!client) {
@@ -18,15 +19,15 @@ export default async function EditClientPage({ params }: { params: { id: string 
 
   async function onSubmit(formData: FormData) {
     'use server';
-    const result = await updateClient(params.id, formData);
+    const result = await updateClient(id, formData);
     if (result.success) {
-      redirect(`/clients-list/${params.id}`);
+      redirect(`/clients-list/${id}`);
     }
   }
 
   return (
     <div className="space-y-4">
-      <Link href={`/clients-list/${params.id}`} className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#12829b]">
+      <Link href={`/clients-list/${id}`} className="flex items-center gap-2 text-sm text-gray-600 hover:text-[#12829b]">
         <ArrowRight className="w-4 h-4" />
         العودة لصفحة العميل
       </Link>
@@ -113,7 +114,7 @@ export default async function EditClientPage({ params }: { params: { id: string 
 
           <div className="pt-4 flex justify-end gap-3">
             <Link
-              href={`/clients-list/${params.id}`}
+              href={`/clients-list/${id}`}
               className="px-4 py-2 rounded-lg font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800 transition-colors"
             >
               إلغاء

@@ -6,9 +6,10 @@ import { EditProductionForm } from "./EditProductionForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditProductionPage({ params }: { params: { id: string } }) {
+export default async function EditProductionPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const order = await prisma.productionOrder.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       product: {
         include: { material: true }

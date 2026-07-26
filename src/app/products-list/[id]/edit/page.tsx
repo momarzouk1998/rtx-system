@@ -7,9 +7,10 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditProductPage({ params }: { params: { id: string } }) {
+export default async function EditProductPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const product = await prisma.product.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { material: true },
   });
 
@@ -24,7 +25,7 @@ export default async function EditProductPage({ params }: { params: { id: string
 
   async function onSubmit(formData: FormData) {
     'use server';
-    const result = await updateProduct(params.id, formData);
+    const result = await updateProduct(id, formData);
     if (result.success) {
       redirect("/products-list");
     }

@@ -13,9 +13,10 @@ const categoryLabels: Record<string, string> = {
   SUPPLIER: "مورد (دفعة لمورد)",
 };
 
-export default async function EditExpensePage({ params }: { params: { id: string } }) {
+export default async function EditExpensePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const expense = await prisma.expense.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: { factory: true, supplier: true },
   });
 
@@ -35,7 +36,7 @@ export default async function EditExpensePage({ params }: { params: { id: string
 
   async function onSubmit(formData: FormData) {
     'use server';
-    const result = await updateExpense(params.id, formData);
+    const result = await updateExpense(id, formData);
     if (result.success) {
       redirect("/expenses");
     }

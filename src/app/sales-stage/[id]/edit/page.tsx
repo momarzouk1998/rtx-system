@@ -8,9 +8,10 @@ import { EditInvoiceForm } from "./EditInvoiceForm";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditInvoicePage({ params }: { params: { id: string } }) {
+export default async function EditInvoicePage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const invoice = await prisma.salesInvoice.findUnique({
-    where: { id: params.id },
+    where: { id },
     include: {
       client: true,
       items: true,

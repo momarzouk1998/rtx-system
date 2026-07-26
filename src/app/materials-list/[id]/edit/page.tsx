@@ -7,9 +7,10 @@ import Link from "next/link";
 
 export const dynamic = "force-dynamic";
 
-export default async function EditMaterialPage({ params }: { params: { id: string } }) {
+export default async function EditMaterialPage({ params }: { params: Promise<{ id: string }> }) {
+  const { id } = await params;
   const material = await prisma.material.findUnique({
-    where: { id: params.id },
+    where: { id },
   });
 
   if (!material) {
@@ -18,7 +19,7 @@ export default async function EditMaterialPage({ params }: { params: { id: strin
 
   async function onSubmit(formData: FormData) {
     'use server';
-    const result = await updateMaterial(params.id, formData);
+    const result = await updateMaterial(id, formData);
     if (result.success) {
       redirect("/materials-list");
     }
