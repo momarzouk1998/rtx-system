@@ -60,25 +60,25 @@ export default async function SuppliersListPage() {
                   }
 
                   return (
-                    <tr key={supplier.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => window.location.href = `/suppliers-list/${supplier.id}`}>
+                    <tr key={supplier.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
                         <div className="font-medium text-gray-900 text-sm">{supplier.name}</div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {supplier.phone && (
-                            <a href={`tel:${supplier.phone}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} className="hover:text-[#12829b] text-sm" dir="ltr">
+                            <a href={`tel:${supplier.phone}`} className="hover:text-[#12829b] text-sm" dir="ltr">
                               {supplier.phone}
                             </a>
                           )}
                           <div className="flex items-center gap-1">
                             {supplier.phone && (
-                              <a href={`tel:${supplier.phone}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} className="text-gray-400 hover:text-[#12829b]">
+                              <a href={`tel:${supplier.phone}`} className="text-gray-400 hover:text-[#12829b]">
                                 <PhoneCall className="w-4 h-4" />
                               </a>
                             )}
                             {supplier.whatsapp && (
-                              <a href={`https://wa.me/2${supplier.whatsapp}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} target="_blank" rel="noreferrer" className="text-green-500 hover:text-green-600">
+                              <a href={`https://wa.me/2${supplier.whatsapp}`} target="_blank" rel="noreferrer" className="text-green-500 hover:text-green-600">
                                 <MessageCircle className="w-4 h-4" />
                               </a>
                             )}
@@ -98,14 +98,14 @@ export default async function SuppliersListPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <Link href={`/suppliers-list/${supplier.id}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} className="text-blue-600 hover:text-blue-800">
+                          <Link href={`/suppliers-list/${supplier.id}`} className="text-blue-600 hover:text-blue-800">
                             <Edit className="w-4 h-4" />
                           </Link>
                           <form action={async () => {
                             'use server';
                             await deleteSupplier(supplier.id);
                           }} className="inline">
-                            <button type="submit" onClick={(e: React.MouseEvent) => e.stopPropagation()} className="text-red-600 hover:text-red-800">
+                            <button type="submit" className="text-red-600 hover:text-red-800">
                               <Trash2 className="w-4 h-4" />
                             </button>
                           </form>

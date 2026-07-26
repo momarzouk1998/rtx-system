@@ -70,25 +70,25 @@ export default async function ClientsListPage() {
                   }
 
                   return (
-                    <tr key={client.id} className="hover:bg-gray-50 transition-colors cursor-pointer" onClick={() => window.location.href = `/clients-list/${client.id}`}>
+                    <tr key={client.id} className="hover:bg-gray-50 transition-colors">
                       <td className="px-4 py-3">
                         <div className="font-medium text-gray-900 text-sm">{client.name}</div>
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
                           {client.phone && (
-                            <a href={`tel:${client.phone}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} className="hover:text-[#12829b] text-sm" dir="ltr">
+                            <a href={`tel:${client.phone}`} className="hover:text-[#12829b] text-sm" dir="ltr">
                               {client.phone}
                             </a>
                           )}
                           <div className="flex items-center gap-1">
                             {client.phone && (
-                              <a href={`tel:${client.phone}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} className="text-gray-400 hover:text-[#12829b]">
+                              <a href={`tel:${client.phone}`} className="text-gray-400 hover:text-[#12829b]">
                                 <PhoneCall className="w-4 h-4" />
                               </a>
                             )}
                             {client.whatsapp && (
-                              <a href={`https://wa.me/2${client.whatsapp}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} target="_blank" rel="noreferrer" className="text-green-500 hover:text-green-600">
+                              <a href={`https://wa.me/2${client.whatsapp}`} target="_blank" rel="noreferrer" className="text-green-500 hover:text-green-600">
                                 <MessageCircle className="w-4 h-4" />
                               </a>
                             )}
@@ -108,7 +108,7 @@ export default async function ClientsListPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <Link href={`/clients-list/${client.id}`} onClick={(e: React.MouseEvent) => e.stopPropagation()} className="text-blue-600 hover:text-blue-800">
+                          <Link href={`/clients-list/${client.id}`} className="text-blue-600 hover:text-blue-800">
                             <Edit className="w-4 h-4" />
                           </Link>
                           <DeleteClientButton clientId={client.id} />
