@@ -31,6 +31,35 @@ export async function createMaterial(data: FormData) {
   }
 }
 
+export async function updateMaterial(id: string, data: FormData) {
+  try {
+    const name = data.get("name") as string;
+    const price = parseFloat(data.get("price") as string) || 0;
+    const openingBalance = parseFloat(data.get("openingBalance") as string) || 0;
+    const notes = data.get("notes") as string;
+
+    if (!name) {
+      return { success: false, error: "اسم الخامة مطلوب" };
+    }
+
+    await prisma.material.update({
+      where: { id },
+      data: {
+        name,
+        price,
+        openingBalance,
+        notes: notes || null,
+      },
+    });
+
+    revalidatePath("/materials-list");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating material:", error);
+    return { success: false, error: "حدث خطأ أثناء تعديل الخامة" };
+  }
+}
+
 export async function deleteMaterial(id: string) {
   try {
     // Check if material has products

@@ -41,6 +41,42 @@ export async function createExpense(data: FormData) {
   }
 }
 
+export async function updateExpense(id: string, data: FormData) {
+  try {
+    const category = data.get("category") as string;
+    const item = data.get("item") as string;
+    const amount = parseFloat(data.get("amount") as string);
+    const factoryId = data.get("factoryId") as string;
+    const supplierId = data.get("supplierId") as string;
+
+    if (!item) {
+      return { success: false, error: "وصف المصروف مطلوب" };
+    }
+    if (!amount || amount <= 0) {
+      return { success: false, error: "أدخل مبلغاً صحيحاً" };
+    }
+
+    const validCategory = category === "FACTORY" || category === "SUPPLIER" ? category : "INTERNAL";
+
+    await prisma.expense.update({
+      where: { id },
+      data: {
+        category: validCategory,
+        item,
+        amount,
+        factoryId: validCategory === "FACTORY" && factoryId ? factoryId : null,
+        supplierId: validCategory === "SUPPLIER" && supplierId ? supplierId : null,
+      },
+    });
+
+    revalidatePath("/expenses");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating expense:", error);
+    return { success: false, error: "حدث خطأ أثناء تعديل المصروف" };
+  }
+}
+
 export async function deleteExpense(id: string) {
   try {
     await prisma.expense.delete({
