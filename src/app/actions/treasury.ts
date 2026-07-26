@@ -77,7 +77,9 @@ export async function getTreasuryData() {
   return {
     transactions,
     currentBalance,
+    openingBalance,
     monthIn,
+    monthOut,
   };
 }
 
