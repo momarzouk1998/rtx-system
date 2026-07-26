@@ -1,6 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import { ArrowRight } from "lucide-react";
+import { toDateInputValue } from "@/lib/utils";
 import Link from "next/link";
 import { EditProductionForm } from "./EditProductionForm";
 
@@ -43,7 +44,15 @@ export default async function EditProductionPage({ params }: { params: Promise<{
         <h1 className="text-xl font-bold text-gray-800 mb-6">تعديل أمر التصنيع</h1>
         
         <EditProductionForm 
-          order={order}
+          order={{
+            id: order.id,
+            category: order.category,
+            factoryId: order.factoryId,
+            productId: order.productId,
+            quantityKg: order.quantityKg,
+            notes: order.notes,
+            date: toDateInputValue(order.date),
+          }}
           factories={factories}
           products={products}
         />

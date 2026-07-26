@@ -4,6 +4,7 @@ import { useState } from "react";
 import { Plus, Loader2 } from "lucide-react";
 import { Modal } from "@/components/Modal";
 import { createPayment } from "../actions/payments";
+import { todayDateInputValue } from "@/lib/utils";
 import toast from "react-hot-toast";
 
 type Client = { id: string; name: string };
@@ -37,6 +38,18 @@ export function AddPaymentButton({ clients }: { clients: Client[] }) {
 
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="تسجيل دفعة جديدة">
         <form action={onSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              التاريخ
+            </label>
+            <input
+              type="date"
+              name="date"
+              defaultValue={todayDateInputValue()}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white"
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               العميل *

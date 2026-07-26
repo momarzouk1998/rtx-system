@@ -15,6 +15,7 @@ export async function createSalesInvoice(data: FormData) {
     const discountValue = parseFloat(data.get("discountValue") as string) || 0;
     const notes = data.get("notes") as string;
     const paymentMethod = data.get("paymentMethod") as "CASH" | "WALLET" | "INSTAPAY" | "BANK_TRANSFER";
+    const dateRaw = data.get("date") as string;
 
     if (!clientId || !itemsRaw) {
       return { success: false, error: "العميل والأصناف مطلوبة" };
@@ -54,12 +55,15 @@ export async function createSalesInvoice(data: FormData) {
     });
 
     const netTotal = subTotal - discountValue;
+    // التاريخ اللي دخله المستخدم، أو اليوم لو فاضي
+    const date = dateRaw ? new Date(dateRaw) : new Date();
 
     await prisma.$transaction(async (tx) => {
       // 1. Create Invoice
       const invoice = await tx.salesInvoice.create({
         data: {
           clientId,
+          date,
           subTotal,
           discountValue,
           netTotal,
@@ -123,6 +127,7 @@ export async function updateSalesInvoice(id: string, data: FormData) {
     const discountValue = parseFloat(data.get("discountValue") as string) || 0;
     const notes = data.get("notes") as string;
     const paymentMethod = data.get("paymentMethod") as "CASH" | "WALLET" | "INSTAPAY" | "BANK_TRANSFER";
+    const dateRaw = data.get("date") as string;
 
     if (!clientId || !itemsRaw) {
       return { success: false, error: "العميل والأصناف مطلوبة" };
@@ -162,6 +167,8 @@ export async function updateSalesInvoice(id: string, data: FormData) {
     });
 
     const netTotal = subTotal - discountValue;
+    // التاريخ اللي دخله المستخدم، أو اليوم لو فاضي
+    const date = dateRaw ? new Date(dateRaw) : new Date();
 
     // Delete existing items
     await prisma.orderItem.deleteMany({
@@ -179,6 +186,7 @@ export async function updateSalesInvoice(id: string, data: FormData) {
         where: { id },
         data: {
           clientId,
+          date,
           subTotal,
           discountValue,
           netTotal,

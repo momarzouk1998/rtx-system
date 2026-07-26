@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { Banknote, Edit, Trash2 } from "lucide-react";
+import { Banknote, Edit } from "lucide-react";
 import Link from "next/link";
 import { AddPaymentButton } from "./AddPaymentButton";
+import { DeleteButton } from "@/components/DeleteButton";
 import { deletePayment } from "../actions/payments";
 
 const methodLabels: Record<string, string> = {
@@ -115,14 +116,7 @@ export default async function PaymentsPage() {
                         <Link href={`/payments/${p.id}/edit`} className="text-blue-600 hover:text-blue-800">
                           <Edit className="w-4 h-4" />
                         </Link>
-                        <form action={async () => {
-                          'use server';
-                          await deletePayment(p.id);
-                        }} className="inline">
-                          <button type="submit" className="text-red-600 hover:text-red-800">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </form>
+                        <DeleteButton id={p.id} deleteAction={deletePayment} />
                       </div>
                     </td>
                   </tr>

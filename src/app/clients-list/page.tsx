@@ -1,10 +1,11 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { Users, Phone, MessageCircle, PhoneCall, Edit, Trash2 } from "lucide-react";
+import { Users, Phone, MessageCircle, PhoneCall, Edit } from "lucide-react";
 import Link from "next/link";
 import { AddClientButton } from "./AddClientButton";
-import { DeleteClientButton } from "./DeleteClientButton";
+import { DeleteButton } from "@/components/DeleteButton";
+import { deleteClient } from "../actions/clients";
 
 export default async function ClientsListPage() {
   const clients = await prisma.client.findMany({
@@ -111,7 +112,7 @@ export default async function ClientsListPage() {
                           <Link href={`/clients-list/${client.id}`} className="text-blue-600 hover:text-blue-800">
                             <Edit className="w-4 h-4" />
                           </Link>
-                          <DeleteClientButton clientId={client.id} />
+                          <DeleteButton itemName={client.name} id={client.id} deleteAction={deleteClient} />
                         </div>
                       </td>
                     </tr>

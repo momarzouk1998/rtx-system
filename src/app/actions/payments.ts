@@ -11,6 +11,7 @@ export async function createPayment(data: FormData) {
     const method = data.get("method") as string;
     const paymentType = data.get("paymentType") as string;
     const notes = data.get("notes") as string;
+    const dateRaw = data.get("date") as string;
 
     if (!clientId) {
       return { success: false, error: "اختر العميل أولاً" };
@@ -21,11 +22,14 @@ export async function createPayment(data: FormData) {
 
     const validMethods = ["CASH", "WALLET", "INSTAPAY", "BANK_TRANSFER"];
     const validTypes = ["DEBT_PAYMENT", "REFUND", "DEPOSIT", "ON_ACCOUNT", "OTHER"];
+    // التاريخ اللي دخله المستخدم، أو اليوم لو فاضي
+    const date = dateRaw ? new Date(dateRaw) : new Date();
 
     await prisma.payment.create({
       data: {
         clientId,
         amount,
+        date,
         method: method && validMethods.includes(method)
           ? (method as "CASH" | "WALLET" | "INSTAPAY" | "BANK_TRANSFER")
           : null,
@@ -51,6 +55,7 @@ export async function updatePayment(id: string, data: FormData) {
     const method = data.get("method") as string;
     const paymentType = data.get("paymentType") as string;
     const notes = data.get("notes") as string;
+    const dateRaw = data.get("date") as string;
 
     if (!clientId) {
       return { success: false, error: "اختر العميل أولاً" };
@@ -61,12 +66,14 @@ export async function updatePayment(id: string, data: FormData) {
 
     const validMethods = ["CASH", "WALLET", "INSTAPAY", "BANK_TRANSFER"];
     const validTypes = ["DEBT_PAYMENT", "REFUND", "DEPOSIT", "ON_ACCOUNT", "OTHER"];
+    const date = dateRaw ? new Date(dateRaw) : new Date();
 
     await prisma.payment.update({
       where: { id },
       data: {
         clientId,
         amount,
+        date,
         method: method && validMethods.includes(method)
           ? (method as "CASH" | "WALLET" | "INSTAPAY" | "BANK_TRANSFER")
           : null,

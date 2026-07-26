@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { ShoppingCart, Calendar, Edit, Trash2 } from "lucide-react";
+import { ShoppingCart, Calendar, Edit } from "lucide-react";
 import Link from "next/link";
 import { AddInvoiceButton } from "./AddInvoiceButton";
+import { DeleteButton } from "@/components/DeleteButton";
 import { deleteInvoice } from "../actions/sales";
 
 export default async function SalesStagePage() {
@@ -100,14 +101,7 @@ export default async function SalesStagePage() {
                         <Link href={`/sales-stage/${invoice.id}/edit`} className="text-blue-600 hover:text-blue-800">
                           <Edit className="w-4 h-4" />
                         </Link>
-                        <form action={async () => {
-                          'use server';
-                          await deleteInvoice(invoice.id);
-                        }} className="inline">
-                          <button type="submit" className="text-red-600 hover:text-red-800">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </form>
+                        <DeleteButton itemName={`فاتورة #${invoice.orderNumber}`} warning="سيتم حذف الفاتورة وكل بنودها نهائياً." id={invoice.id} deleteAction={deleteInvoice} />
                       </div>
                     </td>
                   </tr>

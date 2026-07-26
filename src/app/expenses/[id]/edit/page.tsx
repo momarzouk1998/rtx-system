@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { redirect } from "next/navigation";
 import { updateExpense } from "../../../actions/expenses";
 import { ArrowRight } from "lucide-react";
+import { toDateInputValue } from "@/lib/utils";
 import Link from "next/link";
 
 export const dynamic = "force-dynamic";
@@ -53,6 +54,18 @@ export default async function EditExpensePage({ params }: { params: Promise<{ id
         <h1 className="text-xl font-bold text-gray-800 mb-6">تعديل المصروف</h1>
         
         <form action={onSubmit} className="space-y-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              التاريخ
+            </label>
+            <input
+              type="date"
+              name="date"
+              defaultValue={toDateInputValue(expense.date)}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white"
+            />
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
               التصنيف

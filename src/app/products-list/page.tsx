@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { Package, Edit, Trash2 } from "lucide-react";
+import { Package, Edit } from "lucide-react";
 import Link from "next/link";
 import { AddProductButton } from "./AddProductButton";
+import { DeleteButton } from "@/components/DeleteButton";
 import { deleteProduct } from "../actions/products";
 
 export default async function ProductsListPage() {
@@ -72,14 +73,7 @@ export default async function ProductsListPage() {
                         <Link href={`/products-list/${product.id}/edit`} className="text-blue-600 hover:text-blue-800">
                           <Edit className="w-4 h-4" />
                         </Link>
-                        <form action={async () => {
-                          'use server';
-                          await deleteProduct(product.id);
-                        }} className="inline">
-                          <button type="submit" className="text-red-600 hover:text-red-800">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </form>
+                        <DeleteButton itemName={product.name} id={product.id} deleteAction={deleteProduct} />
                       </div>
                     </td>
                   </tr>

@@ -10,6 +10,7 @@ export async function createProductionOrder(data: FormData) {
     const productId = data.get("productId") as string;
     const quantityKg = parseFloat(data.get("quantityKg") as string);
     const notes = data.get("notes") as string;
+    const dateRaw = data.get("date") as string;
 
     if (!productId || isNaN(quantityKg) || quantityKg <= 0) {
       return { success: false, error: "بيانات غير صحيحة" };
@@ -32,12 +33,15 @@ export async function createProductionOrder(data: FormData) {
     // Calculations based on AppSheet logic
     const packagedBags = Math.round(quantityKg * product.bagsPerKg);
     const totalOperatingCost = category === "EXTERNAL" ? quantityKg * product.operatingCost : 0;
+    // التاريخ اللي دخله المستخدم، أو اليوم لو فاضي
+    const date = dateRaw ? new Date(dateRaw) : new Date();
 
     await prisma.$transaction(async (tx) => {
       // 1. Create Production Order
       const order = await tx.productionOrder.create({
         data: {
           category,
+          date,
           factoryId: category === "EXTERNAL" ? factoryId : null,
           productId,
           materialId: product.materialId,
@@ -88,6 +92,7 @@ export async function updateProductionOrder(id: string, data: FormData) {
     const productId = data.get("productId") as string;
     const quantityKg = parseFloat(data.get("quantityKg") as string);
     const notes = data.get("notes") as string;
+    const dateRaw = data.get("date") as string;
 
     if (!productId || isNaN(quantityKg) || quantityKg <= 0) {
       return { success: false, error: "بيانات غير صحيحة" };
@@ -110,6 +115,8 @@ export async function updateProductionOrder(id: string, data: FormData) {
     // Calculations based on AppSheet logic
     const packagedBags = Math.round(quantityKg * product.bagsPerKg);
     const totalOperatingCost = category === "EXTERNAL" ? quantityKg * product.operatingCost : 0;
+    // التاريخ اللي دخله المستخدم، أو اليوم لو فاضي
+    const date = dateRaw ? new Date(dateRaw) : new Date();
 
     // Delete existing inventory transactions for this order
     await prisma.inventoryTransaction.deleteMany({
@@ -122,6 +129,7 @@ export async function updateProductionOrder(id: string, data: FormData) {
         where: { id },
         data: {
           category,
+          date,
           factoryId: category === "EXTERNAL" ? factoryId : null,
           productId,
           materialId: product.materialId,

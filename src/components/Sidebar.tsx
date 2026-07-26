@@ -181,7 +181,6 @@ function SidebarContent({ menuItems, pathname, onNavigate }: { menuItems: any[];
               key={item.href}
               href={item.href}
               onClick={onNavigate}
-              prefetch={true}
               className={`flex items-center gap-3 px-4 py-3 mx-2 my-0.5 rounded-lg text-sm transition-all ${
                 active
                   ? 'bg-[#12829b] text-white shadow-md font-bold'

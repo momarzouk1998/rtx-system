@@ -1,8 +1,9 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { ArrowRight, Edit, Trash2, FileText, Phone, MessageCircle, PhoneCall, MapPin } from "lucide-react";
+import { ArrowRight, Edit, FileText, Phone, MessageCircle, PhoneCall, MapPin } from "lucide-react";
 import { deleteClient } from "../../actions/clients";
+import { DeleteButton } from "@/components/DeleteButton";
 
 export const dynamic = "force-dynamic";
 
@@ -59,15 +60,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             <Edit className="w-4 h-4" />
             تعديل
           </Link>
-          <form action={async () => {
-            'use server';
-            await deleteClient(client.id);
-          }} className="inline">
-            <button className="flex items-center gap-2 px-3 py-2 rounded-lg bg-red-50 text-red-700 hover:bg-red-100 text-sm font-medium">
-              <Trash2 className="w-4 h-4" />
-              حذف
-            </button>
-          </form>
+          <DeleteButton variant="labeled" itemName={client.name} id={client.id} deleteAction={deleteClient} />
         </div>
       </div>
 

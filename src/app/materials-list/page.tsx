@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { Layers, Edit, Trash2 } from "lucide-react";
+import { Layers, Edit } from "lucide-react";
 import Link from "next/link";
 import { AddMaterialButton } from "./AddMaterialButton";
+import { DeleteButton } from "@/components/DeleteButton";
 import { deleteMaterial } from "../actions/materials";
 
 export default async function MaterialsListPage() {
@@ -58,14 +59,7 @@ export default async function MaterialsListPage() {
                         <Link href={`/materials-list/${mat.id}/edit`} className="text-blue-600 hover:text-blue-800">
                           <Edit className="w-4 h-4" />
                         </Link>
-                        <form action={async () => {
-                          'use server';
-                          await deleteMaterial(mat.id);
-                        }} className="inline">
-                          <button type="submit" className="text-red-600 hover:text-red-800">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </form>
+                        <DeleteButton itemName={mat.name} id={mat.id} deleteAction={deleteMaterial} />
                       </div>
                     </td>
                   </tr>

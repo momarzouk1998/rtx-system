@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { Coins, Edit, Trash2 } from "lucide-react";
+import { Coins, Edit } from "lucide-react";
 import Link from "next/link";
 import { AddExpenseButton } from "./AddExpenseButton";
+import { DeleteButton } from "@/components/DeleteButton";
 import { deleteExpense } from "../actions/expenses";
 
 const categoryLabels: Record<string, string> = {
@@ -119,14 +120,7 @@ export default async function ExpensesPage() {
                         <Link href={`/expenses/${e.id}/edit`} className="text-blue-600 hover:text-blue-800">
                           <Edit className="w-4 h-4" />
                         </Link>
-                        <form action={async () => {
-                          'use server';
-                          await deleteExpense(e.id);
-                        }} className="inline">
-                          <button type="submit" className="text-red-600 hover:text-red-800">
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </form>
+                        <DeleteButton itemName={e.item} id={e.id} deleteAction={deleteExpense} />
                       </div>
                     </td>
                   </tr>

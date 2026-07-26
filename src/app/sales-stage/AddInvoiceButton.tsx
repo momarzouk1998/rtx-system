@@ -4,6 +4,7 @@ import { useState, useMemo } from "react";
 import { Plus, Loader2, Trash2 } from "lucide-react";
 import { Modal } from "@/components/Modal";
 import { createSalesInvoice } from "../actions/sales";
+import { todayDateInputValue } from "@/lib/utils";
 import toast from "react-hot-toast";
 
 type Client = { id: string; name: string };
@@ -93,6 +94,18 @@ export function AddInvoiceButton({ clients, products }: { clients: Client[], pro
       <Modal isOpen={isOpen} onClose={() => setIsOpen(false)} title="إصدار فاتورة مبيعات" maxWidth="2xl">
         <form action={onSubmit} className="space-y-6">
           
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              تاريخ الفاتورة
+            </label>
+            <input
+              type="date"
+              name="date"
+              defaultValue={todayDateInputValue()}
+              className="w-full sm:max-w-xs px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white"
+            />
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

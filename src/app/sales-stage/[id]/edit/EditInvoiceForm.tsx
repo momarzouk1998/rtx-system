@@ -20,6 +20,7 @@ type Invoice = {
   discountValue: number;
   paymentMethod: string | null;
   notes: string | null;
+  date: string; // YYYY-MM-DD
 };
 
 export function EditInvoiceForm({ 
@@ -41,6 +42,7 @@ export function EditInvoiceForm({
   const [discountValue, setDiscountValue] = useState<number>(invoice.discountValue);
   const [paymentMethod, setPaymentMethod] = useState(invoice.paymentMethod || "CASH");
   const [notes, setNotes] = useState(invoice.notes || "");
+  const [date, setDate] = useState(invoice.date);
 
   // For adding a new item row
   const [selectedProductId, setSelectedProductId] = useState("");
@@ -87,6 +89,7 @@ export function EditInvoiceForm({
     formData.append("discountValue", discountValue.toString());
     formData.append("paymentMethod", paymentMethod || "CASH");
     formData.append("notes", notes);
+    formData.append("date", date);
     
     setIsPending(true);
     const result = await updateSalesInvoice(invoice.id, formData);
@@ -103,6 +106,19 @@ export function EditInvoiceForm({
   return (
     <form action={onSubmit} className="space-y-6">
       
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          تاريخ الفاتورة
+        </label>
+        <input
+          type="date"
+          name="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="w-full sm:max-w-xs px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white"
+        />
+      </div>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">

@@ -11,6 +11,7 @@ export async function createExpense(data: FormData) {
     const amount = parseFloat(data.get("amount") as string);
     const factoryId = data.get("factoryId") as string;
     const supplierId = data.get("supplierId") as string;
+    const dateRaw = data.get("date") as string;
 
     if (!item) {
       return { success: false, error: "وصف المصروف مطلوب" };
@@ -20,12 +21,15 @@ export async function createExpense(data: FormData) {
     }
 
     const validCategory = category === "FACTORY" || category === "SUPPLIER" ? category : "INTERNAL";
+    // التاريخ اللي دخله المستخدم، أو اليوم لو فاضي
+    const date = dateRaw ? new Date(dateRaw) : new Date();
 
     await prisma.expense.create({
       data: {
         category: validCategory,
         item,
         amount,
+        date,
         // factoryId يظهر فقط لو التصنيف FACTORY
         factoryId: validCategory === "FACTORY" && factoryId ? factoryId : null,
         // supplierId يظهر فقط لو التصنيف SUPPLIER
@@ -48,6 +52,7 @@ export async function updateExpense(id: string, data: FormData) {
     const amount = parseFloat(data.get("amount") as string);
     const factoryId = data.get("factoryId") as string;
     const supplierId = data.get("supplierId") as string;
+    const dateRaw = data.get("date") as string;
 
     if (!item) {
       return { success: false, error: "وصف المصروف مطلوب" };
@@ -57,6 +62,7 @@ export async function updateExpense(id: string, data: FormData) {
     }
 
     const validCategory = category === "FACTORY" || category === "SUPPLIER" ? category : "INTERNAL";
+    const date = dateRaw ? new Date(dateRaw) : new Date();
 
     await prisma.expense.update({
       where: { id },
@@ -64,6 +70,7 @@ export async function updateExpense(id: string, data: FormData) {
         category: validCategory,
         item,
         amount,
+        date,
         factoryId: validCategory === "FACTORY" && factoryId ? factoryId : null,
         supplierId: validCategory === "SUPPLIER" && supplierId ? supplierId : null,
       },

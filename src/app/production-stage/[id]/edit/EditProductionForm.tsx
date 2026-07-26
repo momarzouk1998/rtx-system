@@ -16,6 +16,7 @@ type ProductionOrder = {
   productId: string;
   quantityKg: number;
   notes: string | null;
+  date: string; // YYYY-MM-DD
 };
 
 export function EditProductionForm({ 
@@ -35,6 +36,7 @@ export function EditProductionForm({
   const [quantity, setQuantity] = useState<number | "">(order.quantityKg);
   const [selectedFactoryId, setSelectedFactoryId] = useState(order.factoryId || "");
   const [notes, setNotes] = useState(order.notes || "");
+  const [date, setDate] = useState(order.date);
 
   const selectedProduct = useMemo(() => 
     products.find(p => p.id === selectedProductId), 
@@ -51,6 +53,7 @@ export function EditProductionForm({
     formData.append("quantityKg", String(quantity));
     formData.append("factoryId", selectedFactoryId);
     formData.append("notes", notes);
+    formData.append("date", date);
     
     setIsPending(true);
     const result = await updateProductionOrder(order.id, formData);
@@ -67,6 +70,19 @@ export function EditProductionForm({
   return (
     <form action={onSubmit} className="space-y-5">
       
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          التاريخ
+        </label>
+        <input
+          type="date"
+          name="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white"
+        />
+      </div>
+
       <div className="flex gap-4 p-1 bg-gray-100 dark:bg-zinc-800 rounded-lg">
         <label className={`flex-1 text-center py-2 rounded-md cursor-pointer transition-colors ${category === 'EXTERNAL' ? 'bg-white dark:bg-zinc-700 shadow-sm font-bold text-[#12829b]' : 'text-gray-500 hover:text-gray-700'}`}>
           <input type="radio" name="category" value="EXTERNAL" className="hidden" checked={category === 'EXTERNAL'} onChange={() => setCategory('EXTERNAL')} />

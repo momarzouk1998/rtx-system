@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { redirect } from "next/navigation";
 import { updateSalesInvoice } from "../../../actions/sales";
 import { ArrowRight } from "lucide-react";
+import { toDateInputValue } from "@/lib/utils";
 import Link from "next/link";
 import { EditInvoiceForm } from "./EditInvoiceForm";
 
@@ -48,7 +49,15 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
         <h1 className="text-xl font-bold text-gray-800 mb-6">تعديل الفاتورة #{invoice.orderNumber}</h1>
         
         <EditInvoiceForm 
-          invoice={invoice}
+          invoice={{
+            id: invoice.id,
+            orderNumber: invoice.orderNumber,
+            clientId: invoice.clientId,
+            discountValue: invoice.discountValue,
+            paymentMethod: invoice.paymentMethod,
+            notes: invoice.notes,
+            date: toDateInputValue(invoice.date),
+          }}
           clients={clients}
           products={products}
           initialItems={initialItems}

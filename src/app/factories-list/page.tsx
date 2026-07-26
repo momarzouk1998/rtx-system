@@ -1,9 +1,10 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { Factory, Phone, MessageCircle, PhoneCall, Edit, Trash2 } from "lucide-react";
+import { Factory, Phone, MessageCircle, PhoneCall, Edit } from "lucide-react";
 import Link from "next/link";
 import { AddFactoryButton } from "./AddFactoryButton";
+import { DeleteButton } from "@/components/DeleteButton";
 import { deleteFactory } from "../actions/partners";
 
 export default async function FactoriesListPage() {
@@ -101,14 +102,7 @@ export default async function FactoriesListPage() {
                           <Link href={`/factories-list/${factory.id}/edit`} className="text-blue-600 hover:text-blue-800">
                             <Edit className="w-4 h-4" />
                           </Link>
-                          <form action={async () => {
-                            'use server';
-                            await deleteFactory(factory.id);
-                          }} className="inline">
-                            <button type="submit" className="text-red-600 hover:text-red-800">
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          </form>
+                          <DeleteButton itemName={factory.name} id={factory.id} deleteAction={deleteFactory} />
                         </div>
                       </td>
                     </tr>
