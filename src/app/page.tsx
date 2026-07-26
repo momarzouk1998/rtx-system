@@ -3,6 +3,35 @@ import { TrendingUp, Users, ShoppingCart, Package, DollarSign, Factory, Layers, 
 
 export const dynamic = "force-dynamic";
 
+function KpiCard({ icon: Icon, label, value, subValue, color }: { icon: any; label: string; value: string; subValue: string; color: string }) {
+  const colorClasses: Record<string, string> = {
+    green: 'from-green-500/10 to-green-500/5 border-green-500/30',
+    blue: 'from-blue-500/10 to-blue-500/5 border-blue-500/30',
+    orange: 'from-orange-500/15 to-orange-500/5 border-orange-500/40',
+    red: 'from-red-500/10 to-red-500/5 border-red-500/30',
+    purple: 'from-purple-500/10 to-purple-500/5 border-purple-500/30',
+    yellow: 'from-yellow-500/10 to-yellow-500/5 border-yellow-500/30',
+  };
+  return (
+    <div className={`bg-gradient-to-br ${colorClasses[color]} border rounded-xl p-4 shadow-card`}>
+      <Icon className="w-6 h-6 mb-2 text-gray-600" />
+      <div className="text-xs text-gray-600 mb-1">{label}</div>
+      <div className="text-xl md:text-2xl font-extrabold text-gray-800">{value}</div>
+      <div className="text-[10px] text-gray-500 mt-0.5">{subValue}</div>
+    </div>
+  );
+}
+
+function SmallStat({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
+  return (
+    <div className="card text-center">
+      <Icon className="w-6 h-6 mb-1 mx-auto text-gray-600" />
+      <div className="text-xs text-gray-600">{label}</div>
+      <div className="text-lg font-bold text-gray-800">{value}</div>
+    </div>
+  );
+}
+
 export default async function Dashboard() {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
@@ -135,35 +164,6 @@ export default async function Dashboard() {
     { icon: Factory, label: 'المصانع', value: totalFactories.toString() },
     { icon: Users, label: 'الموردين', value: totalSuppliers.toString() },
   ];
-
-function KpiCard({ icon: Icon, label, value, subValue, color }: { icon: any; label: string; value: string; subValue: string; color: string }) {
-  const colorClasses: Record<string, string> = {
-    green: 'from-green-500/10 to-green-500/5 border-green-500/30',
-    blue: 'from-blue-500/10 to-blue-500/5 border-blue-500/30',
-    orange: 'from-orange-500/15 to-orange-500/5 border-orange-500/40',
-    red: 'from-red-500/10 to-red-500/5 border-red-500/30',
-    purple: 'from-purple-500/10 to-purple-500/5 border-purple-500/30',
-    yellow: 'from-yellow-500/10 to-yellow-500/5 border-yellow-500/30',
-  };
-  return (
-    <div className={`bg-gradient-to-br ${colorClasses[color]} border rounded-xl p-4 shadow-card`}>
-      <Icon className="w-6 h-6 mb-2 text-gray-600" />
-      <div className="text-xs text-gray-600 mb-1">{label}</div>
-      <div className="text-xl md:text-2xl font-extrabold text-gray-800">{value}</div>
-      <div className="text-[10px] text-gray-500 mt-0.5">{subValue}</div>
-    </div>
-  );
-}
-
-function SmallStat({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
-  return (
-    <div className="card text-center">
-      <Icon className="w-6 h-6 mb-1 mx-auto text-gray-600" />
-      <div className="text-xs text-gray-600">{label}</div>
-      <div className="text-lg font-bold text-gray-800">{value}</div>
-    </div>
-  );
-}
 
   return (
     <div className="space-y-6">
