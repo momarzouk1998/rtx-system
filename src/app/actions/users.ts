@@ -40,6 +40,43 @@ export async function createUser(data: FormData) {
   }
 }
 
+// تحديث بيانات مستخدم من صفحة الأدمن (users-list)
+export async function updateUserAdmin(id: string, data: FormData) {
+  try {
+    const name = data.get("name") as string;
+    const phone = data.get("phone") as string;
+    const whatsapp = data.get("whatsapp") as string;
+    const email = data.get("email") as string;
+    const job = data.get("job") as string;
+    const role = (data.get("role") as string) || "USER";
+
+    if (!name) {
+      return { success: false, error: "اسم المستخدم مطلوب" };
+    }
+    if (!phone) {
+      return { success: false, error: "رقم الهاتف مطلوب" };
+    }
+
+    await prisma.user.update({
+      where: { id },
+      data: {
+        name,
+        phone,
+        whatsapp: whatsapp || null,
+        email: email || null,
+        job: job || null,
+        role: role === "MANAGER" ? "MANAGER" : "USER",
+      },
+    });
+
+    revalidatePath("/users-list");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating user (admin):", error);
+    return { success: false, error: "الاسم أو رقم الهاتف مستخدم بالفعل" };
+  }
+}
+
 // تحديث بيانات المستخدم (للصفحة الشخصية)
 export async function updateUser(data: FormData) {
   try {

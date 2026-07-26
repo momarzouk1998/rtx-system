@@ -98,7 +98,7 @@ export default async function FactoriesListPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <Link href={`/factories-list/${factory.id}`} className="text-blue-600 hover:text-blue-800">
+                          <Link href={`/factories-list/${factory.id}/edit`} className="text-blue-600 hover:text-blue-800">
                             <Edit className="w-4 h-4" />
                           </Link>
                           <form action={async () => {

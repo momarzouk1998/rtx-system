@@ -1,7 +1,8 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { UsersRound, Phone, MessageCircle, Mail } from "lucide-react";
+import { UsersRound, Phone, MessageCircle, Mail, Edit } from "lucide-react";
+import Link from "next/link";
 import { AddUserButton } from "./AddUserButton";
 
 export default async function UsersListPage() {
@@ -29,12 +30,13 @@ export default async function UsersListPage() {
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">التواصل</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">الصلاحية</th>
                 <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">تاريخ الإضافة</th>
+                <th className="px-6 py-4 text-sm font-semibold text-gray-600 dark:text-gray-300">الإجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-50 dark:divide-zinc-800/50">
               {users.length === 0 ? (
                 <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
+                  <td colSpan={6} className="px-6 py-12 text-center text-gray-500 dark:text-gray-400">
                     لا يوجد مستخدمين مسجلين. اضغط على &quot;إضافة مستخدم&quot; لإضافة مستخدمين جدد.
                   </td>
                 </tr>
@@ -82,6 +84,11 @@ export default async function UsersListPage() {
                         month: "short",
                         day: "numeric",
                       })}
+                    </td>
+                    <td className="px-6 py-4">
+                      <Link href={`/users-list/${user.id}/edit`} className="text-blue-600 hover:text-blue-800">
+                        <Edit className="w-4 h-4" />
+                      </Link>
                     </td>
                   </tr>
                 ))

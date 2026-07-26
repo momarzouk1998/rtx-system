@@ -63,6 +63,68 @@ export async function createFactory(data: FormData) {
   }
 }
 
+export async function updateSupplier(id: string, data: FormData) {
+  try {
+    const name = data.get("name") as string;
+    const phone = data.get("phone") as string;
+    const whatsapp = data.get("whatsapp") as string;
+    const address = data.get("address") as string;
+    const openingBalance = parseFloat(data.get("openingBalance") as string) || 0;
+
+    if (!name) {
+      return { success: false, error: "اسم المورد مطلوب" };
+    }
+
+    await prisma.supplier.update({
+      where: { id },
+      data: {
+        name,
+        phone: phone || null,
+        whatsapp: whatsapp || null,
+        address: address || null,
+        openingBalance,
+      },
+    });
+
+    revalidatePath("/suppliers-list");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating supplier:", error);
+    return { success: false, error: "حدث خطأ أثناء تعديل المورد" };
+  }
+}
+
+export async function updateFactory(id: string, data: FormData) {
+  try {
+    const name = data.get("name") as string;
+    const phone = data.get("phone") as string;
+    const whatsapp = data.get("whatsapp") as string;
+    const address = data.get("address") as string;
+    const openingBalance = parseFloat(data.get("openingBalance") as string) || 0;
+
+    if (!name) {
+      return { success: false, error: "اسم المصنع مطلوب" };
+    }
+
+    await prisma.factory.update({
+      where: { id },
+      data: {
+        name,
+        phone: phone || null,
+        whatsapp: whatsapp || null,
+        address: address || null,
+        openingBalance,
+      },
+    });
+
+    revalidatePath("/factories-list");
+    return { success: true };
+  } catch (error) {
+    console.error("Error updating factory:", error);
+    return { success: false, error: "حدث خطأ أثناء تعديل المصنع" };
+  }
+}
+
 export async function deleteSupplier(id: string) {
   try {
     // Check if supplier has add materials
