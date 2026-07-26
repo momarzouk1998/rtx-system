@@ -106,7 +106,7 @@ export default async function Dashboard() {
   // Calculate client debts using Prisma instead of raw SQL
   const clients = await prisma.client.findMany({
     include: {
-      salesInvoices: {
+      invoices: {
         where: { status: { not: 'CANCELLED' } },
         select: { netTotal: true }
       },
@@ -117,7 +117,7 @@ export default async function Dashboard() {
   }).catch(() => []);
 
   const clientDebtsTotal = clients.reduce((sum, client) => {
-    const invoiceTotal = client.salesInvoices.reduce((invSum, inv) => invSum + (inv.netTotal || 0), 0);
+    const invoiceTotal = client.invoices.reduce((invSum, inv) => invSum + (inv.netTotal || 0), 0);
     const paymentTotal = client.payments.reduce((paySum, pay) => paySum + (pay.amount || 0), 0);
     const balance = (client.openingBalance || 0) + invoiceTotal - paymentTotal;
     return sum + (balance > 0 ? balance : 0);
