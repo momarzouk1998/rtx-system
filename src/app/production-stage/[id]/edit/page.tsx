@@ -1,7 +1,5 @@
 import { prisma } from "@/lib/prisma";
 import { notFound } from "next/navigation";
-import { redirect } from "next/navigation";
-import { updateProductionOrder } from "../../../actions/production";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { EditProductionForm } from "./EditProductionForm";
