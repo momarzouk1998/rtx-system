@@ -18,7 +18,7 @@ type Invoice = {
   orderNumber: number;
   clientId: string;
   discountValue: number;
-  paymentMethod: string;
+  paymentMethod: string | null;
   notes: string | null;
 };
 
@@ -39,7 +39,7 @@ export function EditInvoiceForm({
   const [clientId, setClientId] = useState(invoice.clientId);
   const [items, setItems] = useState<InvoiceItem[]>(initialItems);
   const [discountValue, setDiscountValue] = useState<number>(invoice.discountValue);
-  const [paymentMethod, setPaymentMethod] = useState(invoice.paymentMethod);
+  const [paymentMethod, setPaymentMethod] = useState(invoice.paymentMethod || "CASH");
   const [notes, setNotes] = useState(invoice.notes || "");
 
   // For adding a new item row
@@ -85,7 +85,7 @@ export function EditInvoiceForm({
     formData.append("clientId", clientId);
     formData.append("items", JSON.stringify(items));
     formData.append("discountValue", discountValue.toString());
-    formData.append("paymentMethod", paymentMethod);
+    formData.append("paymentMethod", paymentMethod || "CASH");
     formData.append("notes", notes);
     
     setIsPending(true);
