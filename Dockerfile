@@ -64,6 +64,7 @@ COPY --from=builder --chown=nextjs:nodejs /app/node_modules ./node_modules
 # السكيمة + الكلاينت المولّد لـ prisma db push على السيرفر
 COPY --from=builder --chown=nextjs:nodejs /app/src/generated/prisma ./src/generated/prisma
 COPY --from=builder --chown=nextjs:nodejs /app/prisma ./prisma
+COPY --from=builder --chown=nextjs:nodejs /app/prisma.config.ts ./prisma.config.ts
 
 USER nextjs
 
