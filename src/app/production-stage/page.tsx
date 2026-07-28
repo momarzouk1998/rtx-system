@@ -60,7 +60,7 @@ export default async function ProductionStagePage() {
                 productionOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {new Date(order.date).toLocaleDateString('ar-EG')}
+                      {new Date(order.date).toISOString().split("T")[0]}
                     </td>
                     <td className="px-4 py-3">
                       {order.category === 'INTERNAL' ? (

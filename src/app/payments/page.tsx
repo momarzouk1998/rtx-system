@@ -89,11 +89,7 @@ export default async function PaymentsPage() {
                 payments.map((p) => (
                   <tr key={p.id} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 text-sm text-gray-600">
-                      {new Date(p.date).toLocaleDateString("ar-EG", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {new Date(p.date).toISOString().split("T")[0]}
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-900 text-sm">
                       {p.client?.name || "—"}

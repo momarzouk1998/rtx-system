@@ -161,7 +161,7 @@ export default async function Dashboard() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl md:text-3xl font-extrabold text-gray-800">لوحة المتابعة</h1>
-          <p className="text-sm text-gray-500 mt-1">أهلاً بك — {new Date().toLocaleDateString('ar-EG', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}</p>
+          <p className="text-sm text-gray-500 mt-1">أهلاً بك — {new Date().toISOString().split("T")[0]}</p>
         </div>
       </div>
 

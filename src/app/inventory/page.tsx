@@ -1,127 +1,210 @@
-'use client';
+import { prisma } from "@/lib/prisma";
+import { Package, Box, ArrowUpRight, ArrowDownRight, RefreshCw, PlusCircle } from "lucide-react";
 
-import { motion } from 'framer-motion';
-import { Package, Box, RefreshCw, PlusCircle, ArrowUpRight, ArrowDownRight } from 'lucide-react';
+export const dynamic = 'force-dynamic';
 
-const inventoryStats = [
-  { name: 'Ø¥Ø¬Ù…Ø§Ù„ÙŠ Ø§Ù„Ù…ÙˆØ§Ø¯ Ø§Ù„Ø®Ø§Ù…', value: '1,450 Kg', icon: Box, change: '+50 Kg' },
-  { name: 'Ø§Ù„Ù…Ù†ØªØ¬ Ø§Ù„Ù†Ù‡Ø§Ø¦ÙŠ (Ø£ÙƒÙŠØ§Ø³)', value: '12,000 ÙƒÙŠØ³', icon: Package, change: '-200 ÙƒÙŠØ³' },
-  { name: 'ØªØ­Øª Ø§Ù„ØªØ´ØºÙŠÙ„ Ø§Ù„Ø®Ø§Ø±Ø¬ÙŠ', value: '400 Kg', icon: RefreshCw, change: 'Ù†Ø´Ø·' },
-];
+export default async function InventoryDashboard() {
+  // Fetch materials and products
+  const [materials, products, recentTransactions] = await Promise.all([
+    prisma.material.findMany({
+      include: {
+        transactions: true,
+      }
+    }),
+    prisma.product.findMany({
+      include: {
+        transactions: true,
+      }
+    }),
+    prisma.inventoryTransaction.findMany({
+      take: 20,
+      orderBy: { date: 'desc' },
+      include: {
+        material: true,
+        product: true,
+      }
+    })
+  ]);
 
-export default function InventoryDashboard() {
+  // Calculate stats
+  let totalMaterialsKg = 0;
+  let totalProductsBags = 0;
+
+  const materialBalances = materials.map((mat) => {
+    let balance = mat.openingBalance;
+    mat.transactions.forEach(t => {
+      if (t.type === "IN") balance += t.quantity;
+      if (t.type === "OUT") balance -= t.quantity;
+    });
+    totalMaterialsKg += balance;
+    return { ...mat, balance };
+  });
+
+  const productBalances = products.map((prod) => {
+    let balance = prod.openingBalanceBags;
+    prod.transactions.forEach(t => {
+      if (t.type === "IN") balance += t.quantity;
+      if (t.type === "OUT") balance -= t.quantity;
+    });
+    totalProductsBags += balance;
+    return { ...prod, balance };
+  });
+
+  const getReasonLabel = (reason: string, type: string) => {
+    switch (reason) {
+      case "PURCHASE": return "شراء (مورد)";
+      case "SALES": return "مبيعات (عميل)";
+      case "PRODUCTION_MATERIAL_OUT": return "منصرف تصنيع";
+      case "PRODUCTION_PRODUCT_IN": return "استلام منتج";
+      case "ADJUSTMENT": return "تسوية";
+      default: return type === "IN" ? "وارد" : "منصرف";
+    }
+  };
+
   return (
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900 dark:text-[#38bdf8]">Ø¥Ø¯Ø§Ø±Ø© Ø§Ù„Ù…Ø®Ø§Ø²Ù†</h2>
-          <p className="mt-2 text-gray-600 dark:text-gray-400">Ø­Ø±ÙƒØ© Ø§Ù„Ù…ÙˆØ§Ø¯ Ø§Ù„Ø®Ø§Ù… ÙˆØ§Ù„Ù…Ù†ØªØ¬Ø§Øª Ø§Ù„Ù†Ù‡Ø§Ø¦ÙŠØ©</p>
+          <h2 className="text-3xl font-bold text-gray-900 dark:text-[#38bdf8]">إدارة المخازن</h2>
+          <p className="mt-2 text-gray-600 dark:text-gray-400">حركة المواد الخام والمنتجات النهائية الفعلية</p>
         </div>
-        <button className="flex items-center gap-2 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-xl transition-colors font-medium">
-          <PlusCircle className="w-5 h-5" />
-          <span>Ø¥Ø¶Ø§ÙØ© Ø­Ø±ÙƒØ© Ù…Ø®Ø²Ù†ÙŠØ©</span>
-        </button>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
-        {inventoryStats.map((stat, index) => (
-          <motion.div
-            key={stat.name}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-            className="glass-dark p-6 rounded-2xl hover-lift relative overflow-hidden group"
-          >
-            <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-              <stat.icon className="w-24 h-24 text-amber-500" />
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {/* Stat 1 */}
+        <div className="bg-white dark:bg-zinc-900 shadow-sm border border-gray-100 dark:border-zinc-800 p-6 rounded-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Box className="w-24 h-24 text-amber-500" />
+          </div>
+          <div className="relative z-10 flex items-center">
+            <div className="p-3 bg-amber-50 dark:bg-amber-500/10 rounded-xl">
+              <Box className="h-6 w-6 text-amber-500 dark:text-amber-400" />
             </div>
-            <div className="relative z-10 flex items-center">
-              <div className="p-3 bg-amber-500/10 rounded-xl">
-                <stat.icon className="h-6 w-6 text-amber-400" aria-hidden="true" />
-              </div>
-              <p className="mr-4 text-sm font-medium text-gray-400 truncate">{stat.name}</p>
+            <p className="mr-4 text-sm font-medium text-gray-600 dark:text-gray-400 truncate">إجمالي المواد الخام المتوفرة</p>
+          </div>
+          <div className="relative z-10 mt-4 flex items-baseline pb-2">
+            <p className="text-3xl font-semibold text-gray-900 dark:text-white">{totalMaterialsKg.toLocaleString()} Kg</p>
+          </div>
+        </div>
+
+        {/* Stat 2 */}
+        <div className="bg-white dark:bg-zinc-900 shadow-sm border border-gray-100 dark:border-zinc-800 p-6 rounded-2xl relative overflow-hidden group">
+          <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+            <Package className="w-24 h-24 text-blue-500" />
+          </div>
+          <div className="relative z-10 flex items-center">
+            <div className="p-3 bg-blue-50 dark:bg-blue-500/10 rounded-xl">
+              <Package className="h-6 w-6 text-blue-500 dark:text-blue-400" />
             </div>
-            <div className="relative z-10 mt-4 flex items-baseline pb-6">
-              <p className="text-3xl font-semibold text-white">{stat.value}</p>
-              <p className="mr-2 text-sm text-gray-400">{stat.change}</p>
-            </div>
-          </motion.div>
-        ))}
+            <p className="mr-4 text-sm font-medium text-gray-600 dark:text-gray-400 truncate">رصيد الأكياس (منتج نهائي)</p>
+          </div>
+          <div className="relative z-10 mt-4 flex items-baseline pb-2">
+            <p className="text-3xl font-semibold text-gray-900 dark:text-white">{totalProductsBags.toLocaleString()} كيس</p>
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8">
-        <motion.div 
-          initial={{ opacity: 0, x: -20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.3 }}
-          className="glass-dark p-6 rounded-2xl flex flex-col"
-        >
+        {/* Raw Materials */}
+        <div className="bg-white dark:bg-zinc-900 shadow-sm border border-gray-100 dark:border-zinc-800 p-6 rounded-2xl flex flex-col">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-semibold text-[#38bdf8]">Ø­Ø±ÙƒØ© Ø§Ù„Ù…ÙˆØ§Ø¯ Ø§Ù„Ø®Ø§Ù… (ÙˆØ§Ø±Ø¯/Ù…Ù†ØµØ±Ù)</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-[#38bdf8]">رصيد المواد الخام (كجم)</h3>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-right text-sm text-gray-400">
-              <thead className="text-xs text-gray-300 uppercase bg-white/5 rounded-t-lg">
+            <table className="w-full text-right text-sm text-gray-600 dark:text-gray-400" dir="rtl">
+              <thead className="text-xs text-gray-500 dark:text-gray-300 uppercase bg-gray-50 dark:bg-white/5 rounded-t-lg">
                 <tr>
-                  <th className="px-4 py-3 rounded-tr-lg">Ø§Ù„ØªØ§Ø±ÙŠØ®</th>
-                  <th className="px-4 py-3">Ø§Ù„Ø®Ø§Ù…Ø©</th>
-                  <th className="px-4 py-3">Ø§Ù„Ù†ÙˆØ¹</th>
-                  <th className="px-4 py-3 rounded-tl-lg">Ø§Ù„ÙƒÙ…ÙŠØ©</th>
+                  <th className="px-4 py-3 rounded-tr-lg">الخامة</th>
+                  <th className="px-4 py-3">الرصيد الحالي</th>
+                  <th className="px-4 py-3 rounded-tl-lg">التكلفة المتوقعة (السعر × الكمية)</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-white/5 hover:bg-white/5">
-                  <td className="px-4 py-3">2026-07-08</td>
-                  <td className="px-4 py-3 text-white font-medium">Ø¨ÙˆÙ„ÙŠ Ø¥ÙŠØ«ÙŠÙ„ÙŠÙ†</td>
-                  <td className="px-4 py-3 text-green-400 flex items-center gap-1"><ArrowDownRight className="w-4 h-4"/> ÙˆØ§Ø±Ø¯ (Ù…ÙˆØ±Ø¯)</td>
-                  <td className="px-4 py-3 text-white font-medium">500 Kg</td>
-                </tr>
-                <tr className="border-b border-white/5 hover:bg-white/5">
-                  <td className="px-4 py-3">2026-07-07</td>
-                  <td className="px-4 py-3 text-white font-medium">Ø®Ø§Ù…Ø© Ø¨Ù„Ø§Ø³ØªÙŠÙƒ Ø£</td>
-                  <td className="px-4 py-3 text-amber-400 flex items-center gap-1"><ArrowUpRight className="w-4 h-4"/> Ù…Ù†ØµØ±Ù (Ù…ØµÙ†Ø¹)</td>
-                  <td className="px-4 py-3 text-white font-medium">100 Kg</td>
-                </tr>
+                {materialBalances.length === 0 ? (
+                  <tr><td colSpan={3} className="text-center py-4">لا يوجد بيانات</td></tr>
+                ) : materialBalances.map(mat => (
+                  <tr key={mat.id} className="border-b border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{mat.name}</td>
+                    <td className="px-4 py-3 text-[#12829b] font-bold">{mat.balance.toLocaleString()} Kg</td>
+                    <td className="px-4 py-3 text-gray-900 dark:text-white">{(mat.balance * mat.price).toLocaleString()} ج.م</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
-        </motion.div>
+        </div>
 
-        <motion.div 
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.4 }}
-          className="glass-dark p-6 rounded-2xl flex flex-col"
-        >
+        {/* Products */}
+        <div className="bg-white dark:bg-zinc-900 shadow-sm border border-gray-100 dark:border-zinc-800 p-6 rounded-2xl flex flex-col">
           <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xl font-semibold text-[#38bdf8]">Ø§Ù„Ù…Ù†ØªØ¬ Ø§Ù„Ù†Ù‡Ø§Ø¦ÙŠ</h3>
+            <h3 className="text-xl font-semibold text-gray-900 dark:text-[#38bdf8]">رصيد المنتجات (أكياس)</h3>
           </div>
           <div className="overflow-x-auto">
-            <table className="w-full text-right text-sm text-gray-400">
-              <thead className="text-xs text-gray-300 uppercase bg-white/5 rounded-t-lg">
+            <table className="w-full text-right text-sm text-gray-600 dark:text-gray-400" dir="rtl">
+              <thead className="text-xs text-gray-500 dark:text-gray-300 uppercase bg-gray-50 dark:bg-white/5 rounded-t-lg">
                 <tr>
-                  <th className="px-4 py-3 rounded-tr-lg">Ø§Ù„Ù…Ù†ØªØ¬</th>
-                  <th className="px-4 py-3">Ø±ØµÙŠØ¯ Ø§Ù„Ø£ÙƒÙŠØ§Ø³</th>
-                  <th className="px-4 py-3">Ø§Ù„Ø£Ø±Ø¨Ø§Ø­ Ø§Ù„ØªÙ‚Ø¯ÙŠØ±ÙŠØ©</th>
+                  <th className="px-4 py-3 rounded-tr-lg">المنتج</th>
+                  <th className="px-4 py-3">رصيد الأكياس</th>
+                  <th className="px-4 py-3 rounded-tl-lg">القيمة البيعية المتوقعة</th>
                 </tr>
               </thead>
               <tbody>
-                <tr className="border-b border-white/5 hover:bg-white/5">
-                  <td className="px-4 py-3 text-white font-medium">Ø£ÙƒÙŠØ§Ø³ Ù…Ù‚Ø§Ø³ 20x30</td>
-                  <td className="px-4 py-3 text-green-400 font-bold">5,400</td>
-                  <td className="px-4 py-3 text-white">10,800</td>
-                </tr>
-                <tr className="border-b border-white/5 hover:bg-white/5">
-                  <td className="px-4 py-3 text-white font-medium">Ø£ÙƒÙŠØ§Ø³ Ù…Ø·Ø¨ÙˆØ¹Ø© RTX</td>
-                  <td className="px-4 py-3 text-green-400 font-bold">2,100</td>
-                  <td className="px-4 py-3 text-white">6,300</td>
-                </tr>
+                {productBalances.length === 0 ? (
+                  <tr><td colSpan={3} className="text-center py-4">لا يوجد بيانات</td></tr>
+                ) : productBalances.map(prod => (
+                  <tr key={prod.id} className="border-b border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                    <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{prod.name}</td>
+                    <td className="px-4 py-3 text-emerald-600 dark:text-emerald-400 font-bold">{prod.balance.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-gray-900 dark:text-white">{(prod.balance * prod.bagPrice).toLocaleString()} ج.م</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
-        </motion.div>
+        </div>
+      </div>
+
+      {/* Recent Transactions */}
+      <div className="bg-white dark:bg-zinc-900 shadow-sm border border-gray-100 dark:border-zinc-800 p-6 rounded-2xl mt-8">
+        <h3 className="text-xl font-semibold text-gray-900 dark:text-[#38bdf8] mb-6">أحدث حركات المخزن</h3>
+        <div className="overflow-x-auto">
+          <table className="w-full text-right text-sm text-gray-600 dark:text-gray-400" dir="rtl">
+            <thead className="text-xs text-gray-500 dark:text-gray-300 uppercase bg-gray-50 dark:bg-white/5">
+              <tr>
+                <th className="px-4 py-3">التاريخ</th>
+                <th className="px-4 py-3">الصنف</th>
+                <th className="px-4 py-3">العملية</th>
+                <th className="px-4 py-3">الكمية</th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentTransactions.length === 0 ? (
+                <tr><td colSpan={4} className="text-center py-8">لا يوجد حركات</td></tr>
+              ) : recentTransactions.map(t => (
+                <tr key={t.id} className="border-b border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
+                  <td className="px-4 py-3">{t.date.toISOString().split("T")[0]}</td>
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                    {t.material ? t.material.name : t.product?.name}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
+                      t.type === "IN" 
+                        ? "bg-emerald-100 text-emerald-700 dark:bg-emerald-500/10 dark:text-emerald-400" 
+                        : "bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400"
+                    }`}>
+                      {t.type === "IN" ? <ArrowDownRight className="w-3 h-3"/> : <ArrowUpRight className="w-3 h-3"/>}
+                      {getReasonLabel(t.reason, t.type)}
+                    </span>
+                  </td>
+                  <td className={`px-4 py-3 font-bold ${t.type === "IN" ? "text-emerald-600 dark:text-emerald-400" : "text-red-600 dark:text-red-400"}`}>
+                    {t.type === "IN" ? "+" : "-"}{t.quantity.toLocaleString()} {t.material ? "Kg" : "كيس"}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );
 }
-

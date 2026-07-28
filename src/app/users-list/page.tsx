@@ -79,11 +79,7 @@ export default async function UsersListPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-sm text-gray-500 dark:text-gray-400">
-                      {new Date(user.createdAt).toLocaleDateString("ar-EG", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {new Date(user.createdAt).toISOString().split("T")[0]}
                     </td>
                     <td className="px-6 py-4">
                       <Link href={`/users-list/${user.id}/edit`} className="text-blue-600 hover:text-blue-800">

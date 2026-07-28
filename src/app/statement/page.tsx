@@ -181,15 +181,16 @@ export default async function StatementPage({
 
       {!selectedEntity ? (
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-12 text-center">
-          <FileText className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-3" />
+          <FileText className="w-16 h-16 text-gray-300 dark:text-zinc-600 mx-auto mb-4" />
+          <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">اختر حساباً لعرض الكشف</h3>
           <p className="text-gray-500 dark:text-gray-400">
-            اختر حساباً من الأعلى لعرض كشف الحساب التفصيلي.
+            قم باختيار {type === "client" ? "عميل" : type === "supplier" ? "مورد" : "مصنع"} من القائمة لعرض حركات الحساب
           </p>
         </div>
       ) : (
         <>
-          {type === "factory" ? (
-            <FactoryStatement factoryId={selectedId!} />
+          {type === "factory" && selectedId ? (
+            <FactoryStatement factoryId={selectedId} />
           ) : (
             <>
           {/* رأس كشف الحساب */}
@@ -256,7 +257,7 @@ export default async function StatementPage({
                       {movements.map((m, idx) => (
                         <tr key={idx} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/50 transition-colors">
                           <td className="px-6 py-3 text-sm text-gray-600 dark:text-gray-300">
-                            {new Date(m.date).toLocaleDateString("ar-EG", { year: "numeric", month: "short", day: "numeric" })}
+                            {new Date(m.date).toISOString().split("T")[0]}
                           </td>
                           {isAll && <td className="px-6 py-3 font-bold text-gray-900 dark:text-white">{m.entityName}</td>}
                           <td className="px-6 py-3">

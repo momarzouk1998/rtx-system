@@ -67,7 +67,7 @@ export default async function SalesStagePage() {
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600 flex items-center gap-2">
                       <Calendar className="w-3 h-3 text-gray-400" />
-                      {new Date(invoice.date).toLocaleDateString('ar-EG')}
+                      {new Date(invoice.date).toISOString().split("T")[0]}
                     </td>
                     <td className="px-4 py-3">
                       <div className="font-medium text-[#12829b] text-sm">{invoice.client.name}</div>

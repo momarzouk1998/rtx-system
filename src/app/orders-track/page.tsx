@@ -76,11 +76,7 @@ export default async function OrdersTrackPage() {
                   <tr key={inv.id} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/50 transition-colors">
                     <td className="px-6 py-4 font-medium text-[#12829b]">#{inv.orderNumber}</td>
                     <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
-                      {new Date(inv.date).toLocaleDateString("ar-EG", {
-                        year: "numeric",
-                        month: "short",
-                        day: "numeric",
-                      })}
+                      {new Date(inv.date).toISOString().split("T")[0]}
                     </td>
                     <td className="px-6 py-4 font-medium text-gray-900 dark:text-gray-100">
                       {inv.client?.name || "—"}

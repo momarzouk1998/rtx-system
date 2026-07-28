@@ -14,6 +14,7 @@ export async function createSalesInvoice(data: FormData) {
     const clientId = data.get("clientId") as string;
     const itemsRaw = data.get("items") as string;
     const discountValue = parseFloat(data.get("discountValue") as string) || 0;
+    const paidAmount = parseFloat(data.get("paidAmount") as string) || 0;
     const notes = data.get("notes") as string;
     const paymentMethod = data.get("paymentMethod") as "CASH" | "WALLET" | "INSTAPAY" | "BANK_TRANSFER";
     const dateRaw = data.get("date") as string;
@@ -127,6 +128,7 @@ export async function updateSalesInvoice(id: string, data: FormData) {
     const clientId = data.get("clientId") as string;
     const itemsRaw = data.get("items") as string;
     const discountValue = parseFloat(data.get("discountValue") as string) || 0;
+    const paidAmount = parseFloat(data.get("paidAmount") as string) || 0;
     const notes = data.get("notes") as string;
     const paymentMethod = data.get("paymentMethod") as "CASH" | "WALLET" | "INSTAPAY" | "BANK_TRANSFER";
     const dateRaw = data.get("date") as string;

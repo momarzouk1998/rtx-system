@@ -149,7 +149,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                 {client.invoices.slice(0, 5).map((invoice) => (
                   <tr key={invoice.id}>
                     <td className="px-4 py-3 text-sm">#{invoice.orderNumber}</td>
-                    <td className="px-4 py-3 text-sm">{new Date(invoice.date).toLocaleDateString('ar-EG')}</td>
+                    <td className="px-4 py-3 text-sm">{new Date(invoice.date).toISOString().split("T")[0]}</td>
                     <td className="px-4 py-3 text-sm font-medium">{invoice.netTotal.toLocaleString()}</td>
                   </tr>
                 ))}
@@ -175,7 +175,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
               <tbody className="divide-y divide-gray-100">
                 {client.payments.slice(0, 5).map((payment) => (
                   <tr key={payment.id}>
-                    <td className="px-4 py-3 text-sm">{new Date(payment.date).toLocaleDateString('ar-EG')}</td>
+                    <td className="px-4 py-3 text-sm">{new Date(payment.date).toISOString().split("T")[0]}</td>
                     <td className="px-4 py-3 text-sm font-medium">{payment.amount.toLocaleString()}</td>
                   </tr>
                 ))}

@@ -52,7 +52,7 @@ export default async function MaterialsListPage() {
                       {mat.openingBalance} كجم
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-sm">
-                      {new Date(mat.createdAt).toLocaleDateString('ar-EG')}
+                      {new Date(mat.createdAt).toISOString().split("T")[0]}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">

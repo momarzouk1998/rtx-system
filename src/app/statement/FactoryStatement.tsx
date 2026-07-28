@@ -62,34 +62,40 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
 
   timeline.sort((a, b) => a.date.getTime() - b.date.getTime());
 
-  // Calculate cumulatives per factory
-  // If it's 'all', we calculate cumulatives per factory, or globally? 
-  // The Excel sheet is per factory. If 'all', it's better to calculate per factory and display it, or just a running total. 
-  // Let's do a running total globally if "all" for simplicity, or per factory.
-  let runningMaterialBalance = isAll ? 0 : (factoryMap.get(factoryId)?.openingBalance || 0); // Note: openingBalance for factory is financial, not material.
+  // Calculate cumulatives per factory and per product
   let runningFinancialBalance = isAll ? factories.reduce((sum, f) => sum + f.openingBalance, 0) : (factoryMap.get(factoryId)?.openingBalance || 0);
+  
+  // Track material balance per product name
+  const productMaterialBalance: Record<string, number> = {};
   
   let totalMaterialSent = 0;
   let totalProductReceived = 0;
   let totalCommission = 0;
   let totalPayments = 0;
 
-  // Let's calculate cumulatives
-  // Wait, if it's "all", we should track material balances per factory separately to be accurate?
-  // Let's just track globally for the view.
   const rows = timeline.map((row, index) => {
-    runningMaterialBalance += row.materialSentKg - row.productReceivedKg;
-    runningFinancialBalance += row.commission - row.payment; // Factory balance: Opening + Commission - Payments (we owe them)
+    // Financial balance
+    runningFinancialBalance += row.commission - row.payment;
     
-    totalMaterialSent += row.materialSentKg;
-    totalProductReceived += row.productReceivedKg;
-    totalCommission += row.commission;
-    totalPayments += row.payment;
+    // Material balance per product
+    let currentMaterialBalance = 0;
+    if (row.type === "PRODUCTION" && row.productName) {
+      if (!productMaterialBalance[row.productName]) {
+        productMaterialBalance[row.productName] = 0;
+      }
+      productMaterialBalance[row.productName] += (row.materialSentKg || 0) - (row.productReceivedKg || 0);
+      currentMaterialBalance = productMaterialBalance[row.productName];
+    }
+    
+    totalMaterialSent += row.materialSentKg || 0;
+    totalProductReceived += row.productReceivedKg || 0;
+    totalCommission += row.commission || 0;
+    totalPayments += row.payment || 0;
 
     return {
       ...row,
       receiptNo: index + 1,
-      materialBalance: runningMaterialBalance,
+      materialBalance: currentMaterialBalance,
       financialBalance: runningFinancialBalance,
     };
   });
@@ -152,7 +158,7 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
                 <tr key={row.type + row.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                   <td className="px-3 py-2 border border-gray-100 dark:border-zinc-800 font-medium">{row.receiptNo}</td>
                   <td className="px-3 py-2 border border-gray-100 dark:border-zinc-800 text-gray-600 dark:text-gray-300">
-                    {new Date(row.date).toLocaleDateString("ar-EG")}
+                    {new Date(row.date).toISOString().split("T")[0]}
                   </td>
                   {isAll && <td className="px-3 py-2 border border-gray-100 dark:border-zinc-800 font-bold">{row.factoryName}</td>}
                   <td className="px-3 py-2 border border-gray-100 dark:border-zinc-800 text-right">{row.description}</td>
