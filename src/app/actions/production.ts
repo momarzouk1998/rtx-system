@@ -9,10 +9,11 @@ export async function createProductionOrder(data: FormData) {
     const factoryId = data.get("factoryId") as string;
     const productId = data.get("productId") as string;
     const quantityKg = parseFloat(data.get("quantityKg") as string);
+    const receivedQuantityKg = parseFloat(data.get("receivedQuantityKg") as string) || quantityKg;
     const notes = data.get("notes") as string;
     const dateRaw = data.get("date") as string;
 
-    if (!productId || isNaN(quantityKg) || quantityKg <= 0) {
+    if (!productId || isNaN(quantityKg) || quantityKg <= 0 || isNaN(receivedQuantityKg) || receivedQuantityKg < 0) {
       return { success: false, error: "بيانات غير صحيحة" };
     }
 
@@ -31,8 +32,8 @@ export async function createProductionOrder(data: FormData) {
     }
 
     // Calculations based on AppSheet logic
-    const packagedBags = Math.round(quantityKg * product.bagsPerKg);
-    const totalOperatingCost = category === "EXTERNAL" ? quantityKg * product.operatingCost : 0;
+    const packagedBags = Math.round(receivedQuantityKg * product.bagsPerKg);
+    const totalOperatingCost = category === "EXTERNAL" ? receivedQuantityKg * product.operatingCost : 0;
     // التاريخ اللي دخله المستخدم، أو اليوم لو فاضي
     const date = dateRaw ? new Date(dateRaw) : new Date();
 
@@ -46,6 +47,7 @@ export async function createProductionOrder(data: FormData) {
           productId,
           materialId: product.materialId,
           quantityKg,
+          receivedQuantityKg,
           operatingCost: category === "EXTERNAL" ? product.operatingCost : 0,
           totalOperatingCost,
           packagedBags,
@@ -91,10 +93,11 @@ export async function updateProductionOrder(id: string, data: FormData) {
     const factoryId = data.get("factoryId") as string;
     const productId = data.get("productId") as string;
     const quantityKg = parseFloat(data.get("quantityKg") as string);
+    const receivedQuantityKg = parseFloat(data.get("receivedQuantityKg") as string) || quantityKg;
     const notes = data.get("notes") as string;
     const dateRaw = data.get("date") as string;
 
-    if (!productId || isNaN(quantityKg) || quantityKg <= 0) {
+    if (!productId || isNaN(quantityKg) || quantityKg <= 0 || isNaN(receivedQuantityKg) || receivedQuantityKg < 0) {
       return { success: false, error: "بيانات غير صحيحة" };
     }
 
@@ -113,8 +116,8 @@ export async function updateProductionOrder(id: string, data: FormData) {
     }
 
     // Calculations based on AppSheet logic
-    const packagedBags = Math.round(quantityKg * product.bagsPerKg);
-    const totalOperatingCost = category === "EXTERNAL" ? quantityKg * product.operatingCost : 0;
+    const packagedBags = Math.round(receivedQuantityKg * product.bagsPerKg);
+    const totalOperatingCost = category === "EXTERNAL" ? receivedQuantityKg * product.operatingCost : 0;
     // التاريخ اللي دخله المستخدم، أو اليوم لو فاضي
     const date = dateRaw ? new Date(dateRaw) : new Date();
 
@@ -134,6 +137,7 @@ export async function updateProductionOrder(id: string, data: FormData) {
           productId,
           materialId: product.materialId,
           quantityKg,
+          receivedQuantityKg,
           operatingCost: category === "EXTERNAL" ? product.operatingCost : 0,
           totalOperatingCost,
           packagedBags,

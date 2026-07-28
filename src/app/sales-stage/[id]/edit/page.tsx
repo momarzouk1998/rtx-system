@@ -36,6 +36,7 @@ export default async function EditInvoicePage({ params }: { params: Promise<{ id
   const initialItems = invoice.items.map(item => ({
     productId: item.productId,
     quantity: item.quantity,
+    bagPrice: item.bagPrice,
   }));
 
   return (

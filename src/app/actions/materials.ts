@@ -100,3 +100,51 @@ export async function deleteMaterial(id: string) {
     return { success: false, error: "حدث خطأ أثناء حذف الخامة" };
   }
 }
+
+export async function createAddMaterial(data: FormData) {
+  try {
+    const dateStr = data.get("date") as string;
+    const supplierId = data.get("supplierId") as string;
+    const materialId = data.get("materialId") as string;
+    const quantityKg = parseFloat(data.get("quantityKg") as string) || 0;
+    const unitPrice = parseFloat(data.get("unitPrice") as string) || 0;
+
+    if (!supplierId || !materialId || quantityKg <= 0 || unitPrice <= 0) {
+      return { success: false, error: "جميع الحقول مطلوبة ويجب أن تكون القيم صحيحة" };
+    }
+
+    const totalCost = quantityKg * unitPrice;
+
+    await prisma.addMaterial.create({
+      data: {
+        date: dateStr ? new Date(dateStr) : new Date(),
+        supplierId,
+        materialId,
+        quantityKg,
+        unitPrice,
+        totalCost,
+      },
+    });
+
+    revalidatePath("/materials-stage");
+    revalidatePath("/statement");
+    return { success: true };
+  } catch (error) {
+    console.error("Error adding material:", error);
+    return { success: false, error: "حدث خطأ أثناء توريد الخامة" };
+  }
+}
+
+export async function deleteMaterialTransaction(id: string) {
+  try {
+    await prisma.addMaterial.delete({
+      where: { id },
+    });
+    revalidatePath("/materials-stage");
+    revalidatePath("/statement");
+    return { success: true };
+  } catch (error) {
+    console.error("Error deleting material transaction:", error);
+    return { success: false, error: "حدث خطأ أثناء حذف عملية التوريد" };
+  }
+}

@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 
 export const dynamic = "force-dynamic";
-import { Users, Phone, MessageCircle, PhoneCall, Edit } from "lucide-react";
+import { Users, Phone, MessageCircle, PhoneCall, Edit, FileText } from "lucide-react";
 import Link from "next/link";
 import { AddClientButton } from "./AddClientButton";
 import { DeleteButton } from "@/components/DeleteButton";
@@ -109,7 +109,10 @@ export default async function ClientsListPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-2">
-                          <Link href={`/clients-list/${client.id}`} className="text-blue-600 hover:text-blue-800">
+                          <Link href={`/statement?type=client&id=${client.id}`} className="text-[#12829b] hover:text-[#0e687c]" title="كشف حساب">
+                            <FileText className="w-4 h-4" />
+                          </Link>
+                          <Link href={`/clients-list/${client.id}`} className="text-blue-600 hover:text-blue-800" title="تعديل">
                             <Edit className="w-4 h-4" />
                           </Link>
                           <DeleteButton itemName={client.name} id={client.id} deleteAction={deleteClient} />

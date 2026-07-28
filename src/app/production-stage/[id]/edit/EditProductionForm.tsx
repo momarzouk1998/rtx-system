@@ -15,6 +15,7 @@ type ProductionOrder = {
   factoryId: string | null;
   productId: string;
   quantityKg: number;
+  receivedQuantityKg: number;
   notes: string | null;
   date: string; // YYYY-MM-DD
 };
@@ -34,6 +35,7 @@ export function EditProductionForm({
   const [category, setCategory] = useState<"INTERNAL" | "EXTERNAL">(order.category);
   const [selectedProductId, setSelectedProductId] = useState(order.productId);
   const [quantity, setQuantity] = useState<number | "">(order.quantityKg);
+  const [receivedQuantity, setReceivedQuantity] = useState<number | "">(order.receivedQuantityKg);
   const [selectedFactoryId, setSelectedFactoryId] = useState(order.factoryId || "");
   const [notes, setNotes] = useState(order.notes || "");
   const [date, setDate] = useState(order.date);
@@ -43,14 +45,15 @@ export function EditProductionForm({
   [selectedProductId, products]);
 
   // Live calculations
-  const expectedBags = selectedProduct && quantity ? Math.round(Number(quantity) * selectedProduct.bagsPerKg) : 0;
-  const expectedCost = selectedProduct && quantity && category === "EXTERNAL" 
-    ? Number(quantity) * selectedProduct.operatingCost : 0;
+  const expectedBags = selectedProduct && receivedQuantity ? Math.round(Number(receivedQuantity) * selectedProduct.bagsPerKg) : 0;
+  const expectedCost = selectedProduct && receivedQuantity && category === "EXTERNAL" 
+    ? Number(receivedQuantity) * selectedProduct.operatingCost : 0;
 
   async function onSubmit(formData: FormData) {
     formData.append("category", category);
     formData.append("productId", selectedProductId);
     formData.append("quantityKg", String(quantity));
+    formData.append("receivedQuantityKg", String(receivedQuantity));
     formData.append("factoryId", selectedFactoryId);
     formData.append("notes", notes);
     formData.append("date", date);
@@ -136,7 +139,7 @@ export function EditProductionForm({
 
       <div>
         <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-          الكمية المنصرفة من الخامة (كجم) *
+          تسليم خامات (كجم منصرف) *
         </label>
         <input 
           type="number" 
@@ -147,6 +150,22 @@ export function EditProductionForm({
           value={quantity}
           onChange={(e) => setQuantity(Number(e.target.value))}
           className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white text-lg font-bold"
+        />
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          استلام منتج (كجم مستلم) *
+        </label>
+        <input 
+          type="number" 
+          name="receivedQuantityKg" 
+          required
+          min="0"
+          step="0.01"
+          value={receivedQuantity}
+          onChange={(e) => setReceivedQuantity(Number(e.target.value))}
+          className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white text-lg font-bold text-emerald-600"
         />
       </div>
 

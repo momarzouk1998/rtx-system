@@ -125,6 +125,7 @@ model ProductionOrder {
   material         Material @relation(fields: [materialId], references: [id])
   
   quantityKg       Float    // الكمية بالكيلو (مادة خام منصرفة)
+  receivedQuantityKg Float  @default(0) // المنتج المستلم بالكيلو
   operatingCost    Float    @default(0) // تكلفة التشغيل/كجم
   totalOperatingCost Float  @default(0) // إجمالي = الكمية × التكلفة
   packagedBags     Float    @default(0) // الأكياس المنتجة = ROUND(الكمية × BagsPerKg)

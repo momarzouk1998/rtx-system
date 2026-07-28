@@ -1,62 +1,86 @@
-'use client';
+import { prisma } from "@/lib/prisma";
+export const dynamic = "force-dynamic";
+import { Briefcase } from "lucide-react";
+import { AddMaterialButton } from "./AddMaterialButton";
+import { DeleteButton } from "@/components/DeleteButton";
+import { deleteMaterialTransaction } from "../actions/materials";
 
-import { motion } from 'framer-motion';
-import { Briefcase, Save } from 'lucide-react';
+export default async function MaterialsStagePage() {
+  const [addMaterials, suppliers, materials] = await Promise.all([
+    prisma.addMaterial.findMany({
+      orderBy: { date: "desc" },
+      include: {
+        supplier: true,
+        material: true,
+      }
+    }),
+    prisma.supplier.findMany({ select: { id: true, name: true } }),
+    prisma.material.findMany({ select: { id: true, name: true, price: true } }),
+  ]);
 
-export default function MaterialsStage() {
   return (
-    <div className="p-6 max-w-4xl mx-auto space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      <div className="flex items-center justify-between flex-wrap gap-4">
         <div>
           <h2 className="text-3xl font-bold text-[#38bdf8] flex items-center gap-2">
-            <Briefcase className="text-[#38bdf8]" /> مرحلة الخامات (شراء وتوريد)
+            <Briefcase className="text-[#38bdf8] w-8 h-8" /> مرحلة الخامات
           </h2>
-          <p className="mt-1 text-gray-400">تسجيل توريد مواد خام جديدة للمخزن وإضافة القيمة على المورد</p>
+          <p className="mt-1 text-gray-400">سجل عمليات توريد الخامات من الموردين للمخزن</p>
         </div>
+        <AddMaterialButton suppliers={suppliers} materials={materials} />
       </div>
 
-      <div className="glass-dark p-6 rounded-xl space-y-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">تاريخ التوريد</label>
-            <input type="date" className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-4 text-white focus:border-[#38bdf8]" defaultValue="2026-07-08" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">المورد</label>
-            <select className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-4 text-white focus:border-[#38bdf8]">
-              <option value="">اختر المورد...</option>
-              <option value="1">شركة البتروكيماويات</option>
-              <option value="2">مورد النور للبلاستيك</option>
-            </select>
-          </div>
+      <div className="card overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-right" dir="rtl">
+            <thead className="table-header border-b border-gray-200 dark:border-zinc-800">
+              <tr>
+                <th className="px-4 py-3 text-xs">التاريخ</th>
+                <th className="px-4 py-3 text-xs">المورد</th>
+                <th className="px-4 py-3 text-xs">الخامة</th>
+                <th className="px-4 py-3 text-xs">الكمية (كجم)</th>
+                <th className="px-4 py-3 text-xs">سعر الكيلو</th>
+                <th className="px-4 py-3 text-xs">الإجمالي</th>
+                <th className="px-4 py-3 text-xs">الإجراءات</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
+              {addMaterials.length === 0 ? (
+                <tr>
+                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                    لا توجد عمليات توريد خامات مسجلة.
+                  </td>
+                </tr>
+              ) : (
+                addMaterials.map((item) => (
+                  <tr key={item.id} className="hover:bg-gray-50 dark:hover:bg-zinc-800/50 transition-colors">
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-300">
+                      {new Date(item.date).toLocaleDateString("ar-EG")}
+                    </td>
+                    <td className="px-4 py-3">
+                      <div className="font-medium text-gray-900 dark:text-white text-sm">{item.supplier.name}</div>
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-900 dark:text-gray-300">
+                      {item.material.name}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-sm text-gray-900 dark:text-white">
+                      {item.quantityKg}
+                    </td>
+                    <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
+                      {item.unitPrice}
+                    </td>
+                    <td className="px-4 py-3 font-medium text-[#38bdf8] text-sm">
+                      {item.totalCost.toLocaleString("ar-EG")}
+                    </td>
+                    <td className="px-4 py-3">
+                      <DeleteButton itemName="عملية التوريد" id={item.id} deleteAction={deleteMaterialTransaction} />
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">الخامة الموردة</label>
-            <select className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-4 text-white focus:border-[#38bdf8]">
-              <option value="">اختر الخامة...</option>
-              <option value="1">بولي إيثيلين</option>
-            </select>
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">الكمية (بالكيلو)</label>
-            <input type="number" placeholder="0" className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-4 text-white focus:border-[#38bdf8]" />
-          </div>
-          <div>
-            <label className="block text-sm font-medium text-gray-400 mb-2">سعر الكيلو</label>
-            <input type="number" placeholder="0.00" className="w-full bg-black/20 border border-white/10 rounded-lg py-2 px-4 text-white focus:border-[#38bdf8]" />
-          </div>
-        </div>
-
-        <div className="pt-4 border-t border-white/10 flex justify-between items-center text-xl font-bold text-white">
-          <span>إجمالي الفاتورة:</span>
-          <span className="text-amber-400">0.00</span>
-        </div>
-
-        <button className="w-full flex items-center justify-center gap-2 px-4 py-3 bg-[#12829b] hover:bg-[#107085] text-white rounded-lg font-bold mt-4">
-          <Save className="w-5 h-5" /> حفظ واعتماد إضافة الخامات
-        </button>
       </div>
     </div>
   );

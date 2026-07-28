@@ -17,15 +17,16 @@ export function AddProductionButton({ factories, products }: { factories: Factor
   const [category, setCategory] = useState<"INTERNAL" | "EXTERNAL">("EXTERNAL");
   const [selectedProductId, setSelectedProductId] = useState("");
   const [quantity, setQuantity] = useState<number | "">("");
+  const [receivedQuantity, setReceivedQuantity] = useState<number | "">("");
 
   const selectedProduct = useMemo(() => 
     products.find(p => p.id === selectedProductId), 
   [selectedProductId, products]);
 
   // Live calculations
-  const expectedBags = selectedProduct && quantity ? Math.round(Number(quantity) * selectedProduct.bagsPerKg) : 0;
-  const expectedCost = selectedProduct && quantity && category === "EXTERNAL" 
-    ? Number(quantity) * selectedProduct.operatingCost : 0;
+  const expectedBags = selectedProduct && receivedQuantity ? Math.round(Number(receivedQuantity) * selectedProduct.bagsPerKg) : 0;
+  const expectedCost = selectedProduct && receivedQuantity && category === "EXTERNAL" 
+    ? Number(receivedQuantity) * selectedProduct.operatingCost : 0;
 
   async function onSubmit(formData: FormData) {
     setIsPending(true);
@@ -39,6 +40,7 @@ export function AddProductionButton({ factories, products }: { factories: Factor
       setCategory("EXTERNAL");
       setSelectedProductId("");
       setQuantity("");
+      setReceivedQuantity("");
     } else {
       toast.error(result.error || "حدث خطأ");
     }
@@ -120,7 +122,7 @@ export function AddProductionButton({ factories, products }: { factories: Factor
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              الكمية المنصرفة من الخامة (كجم) *
+              تسليم خامات (كجم منصرف) *
             </label>
             <input 
               type="number" 
@@ -131,6 +133,22 @@ export function AddProductionButton({ factories, products }: { factories: Factor
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white text-lg font-bold"
+            />
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+              استلام منتج (كجم مستلم) *
+            </label>
+            <input 
+              type="number" 
+              name="receivedQuantityKg" 
+              required
+              min="0"
+              step="0.01"
+              value={receivedQuantity}
+              onChange={(e) => setReceivedQuantity(Number(e.target.value))}
+              className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white text-lg font-bold text-emerald-600"
             />
           </div>
 

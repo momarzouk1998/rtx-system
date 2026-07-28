@@ -13,6 +13,7 @@ type Product = { id: string; name: string; bagPrice: number };
 type InvoiceItem = {
   productId: string;
   quantity: number;
+  bagPrice: number;
 };
 
 export function AddInvoiceButton({ clients, products }: { clients: Client[], products: Product[] }) {
@@ -26,22 +27,23 @@ export function AddInvoiceButton({ clients, products }: { clients: Client[], pro
   // For adding a new item row
   const [selectedProductId, setSelectedProductId] = useState("");
   const [quantity, setQuantity] = useState<number | "">("");
+  const [itemPrice, setItemPrice] = useState<number | "">("");
 
   const handleAddItem = () => {
-    if (!selectedProductId || !quantity) return;
+    if (!selectedProductId || !quantity || !itemPrice) return;
     
-    // Check if product already exists, then update quantity
-    const existingItemIndex = items.findIndex(i => i.productId === selectedProductId);
+    const existingItemIndex = items.findIndex(i => i.productId === selectedProductId && i.bagPrice === Number(itemPrice));
     if (existingItemIndex >= 0) {
       const newItems = [...items];
       newItems[existingItemIndex].quantity += Number(quantity);
       setItems(newItems);
     } else {
-      setItems([...items, { productId: selectedProductId, quantity: Number(quantity) }]);
+      setItems([...items, { productId: selectedProductId, quantity: Number(quantity), bagPrice: Number(itemPrice) }]);
     }
     
     setSelectedProductId("");
     setQuantity("");
+    setItemPrice("");
   };
 
   const handleRemoveItem = (index: number) => {
@@ -49,11 +51,8 @@ export function AddInvoiceButton({ clients, products }: { clients: Client[], pro
   };
 
   const subTotal = useMemo(() => {
-    return items.reduce((sum, item) => {
-      const product = products.find(p => p.id === item.productId);
-      return sum + (product ? product.bagPrice * item.quantity : 0);
-    }, 0);
-  }, [items, products]);
+    return items.reduce((sum, item) => sum + (item.bagPrice * item.quantity), 0);
+  }, [items]);
 
   const netTotal = subTotal - discountValue;
 
@@ -149,13 +148,18 @@ export function AddInvoiceButton({ clients, products }: { clients: Client[], pro
             <div className="flex gap-2 mb-4">
               <select 
                 value={selectedProductId}
-                onChange={(e) => setSelectedProductId(e.target.value)}
+                onChange={(e) => {
+                  setSelectedProductId(e.target.value);
+                  const p = products.find(prod => prod.id === e.target.value);
+                  if (p) setItemPrice(p.bagPrice);
+                  else setItemPrice("");
+                }}
                 className="flex-1 px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white text-sm"
               >
                 <option value="">اختر المنتج...</option>
                 {products.map((product) => (
                   <option key={product.id} value={product.id}>
-                    {product.name} ({product.bagPrice})
+                    {product.name} (أساسي: {product.bagPrice})
                   </option>
                 ))}
               </select>
@@ -167,10 +171,19 @@ export function AddInvoiceButton({ clients, products }: { clients: Client[], pro
                 onChange={(e) => setQuantity(Number(e.target.value))}
                 className="w-32 px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white text-sm"
               />
+              <input 
+                type="number" 
+                placeholder="السعر" 
+                min="0"
+                step="0.01"
+                value={itemPrice}
+                onChange={(e) => setItemPrice(Number(e.target.value))}
+                className="w-24 px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white text-sm"
+              />
               <button 
                 type="button"
                 onClick={handleAddItem}
-                disabled={!selectedProductId || !quantity}
+                disabled={!selectedProductId || !quantity || itemPrice === ""}
                 className="bg-gray-900 dark:bg-white text-white dark:text-gray-900 px-4 py-2 rounded-lg font-medium shadow-sm transition-all disabled:opacity-50 text-sm"
               >
                 إضافة
@@ -196,9 +209,9 @@ export function AddInvoiceButton({ clients, products }: { clients: Client[], pro
                       return (
                         <tr key={index}>
                           <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{product?.name}</td>
-                          <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{product?.bagPrice}</td>
+                          <td className="px-4 py-2 text-gray-600 dark:text-gray-400">{item.bagPrice}</td>
                           <td className="px-4 py-2 text-gray-900 dark:text-gray-100">{item.quantity} كيس</td>
-                          <td className="px-4 py-2 text-[#12829b] font-medium">{(product?.bagPrice || 0) * item.quantity}</td>
+                          <td className="px-4 py-2 text-[#12829b] font-medium">{item.bagPrice * item.quantity}</td>
                           <td className="px-4 py-2">
                             <button 
                               type="button" 

@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 type InvoiceItem = {
   productId: string;
   quantity: number;
+  bagPrice: number;
 };
 
 export async function createSalesInvoice(data: FormData) {
@@ -38,8 +39,9 @@ export async function createSalesInvoice(data: FormData) {
       const product = products.find(p => p.id === item.productId);
       if (!product) throw new Error("Product not found");
 
-      const lineTotal = item.quantity * product.bagPrice;
-      const lineProfitTotal = item.quantity * product.profitPerBag;
+      const lineTotal = item.quantity * item.bagPrice;
+      const profitPerBag = product.profitPerBag + (item.bagPrice - product.bagPrice);
+      const lineProfitTotal = item.quantity * profitPerBag;
 
       subTotal += lineTotal;
       totalProfit += lineProfitTotal;
@@ -47,9 +49,9 @@ export async function createSalesInvoice(data: FormData) {
       return {
         productId: item.productId,
         quantity: item.quantity,
-        bagPrice: product.bagPrice,
+        bagPrice: item.bagPrice,
         lineTotal,
-        profitPerBag: product.profitPerBag,
+        profitPerBag,
         lineProfitTotal,
       };
     });
@@ -150,8 +152,9 @@ export async function updateSalesInvoice(id: string, data: FormData) {
       const product = products.find(p => p.id === item.productId);
       if (!product) throw new Error("Product not found");
 
-      const lineTotal = item.quantity * product.bagPrice;
-      const lineProfitTotal = item.quantity * product.profitPerBag;
+      const lineTotal = item.quantity * item.bagPrice;
+      const profitPerBag = product.profitPerBag + (item.bagPrice - product.bagPrice);
+      const lineProfitTotal = item.quantity * profitPerBag;
 
       subTotal += lineTotal;
       totalProfit += lineProfitTotal;
@@ -159,9 +162,9 @@ export async function updateSalesInvoice(id: string, data: FormData) {
       return {
         productId: item.productId,
         quantity: item.quantity,
-        bagPrice: product.bagPrice,
+        bagPrice: item.bagPrice,
         lineTotal,
-        profitPerBag: product.profitPerBag,
+        profitPerBag,
         lineProfitTotal,
       };
     });
