@@ -73,4 +73,4 @@ EXPOSE 3006
 # الكونتينر يشغّل خادم Next.js فقط.
 # مزامنة السكيمة (db push) بتتعمل مرة واحدة على السيرفر بعد أول deploy
 # عبر: docker exec rtx sh -c "npx prisma db push --skip-generate --accept-data-loss"
-CMD ["sh", "-c", "npx prisma db push --skip-generate --accept-data-loss && HOSTNAME=0.0.0.0 node server.js"]
+CMD ["node", "server.js"]
