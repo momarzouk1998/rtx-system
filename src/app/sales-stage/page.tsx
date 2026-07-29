@@ -4,6 +4,7 @@ export const dynamic = "force-dynamic";
 import { ShoppingCart, Calendar, Edit } from "lucide-react";
 import Link from "next/link";
 import { AddInvoiceButton } from "./AddInvoiceButton";
+import { InvoiceDetailsModal } from "./InvoiceDetailsModal";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteInvoice } from "../actions/sales";
 
@@ -92,9 +93,7 @@ export default async function SalesStagePage() {
                     <td className="px-4 py-3 text-emerald-600 font-bold text-sm">
                       {invoice.netTotal.toLocaleString()}                    </td>
                     <td className="px-4 py-3 text-sm font-medium">
-                      <button className="text-[#12829b] hover:text-[#0ea5e9] hover:underline bg-blue-50 px-2 py-1 rounded transition-colors text-xs">
-                        عرض التفاصيل
-                      </button>
+                      <InvoiceDetailsModal invoice={invoice} />
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
