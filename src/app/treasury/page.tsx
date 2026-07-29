@@ -26,6 +26,7 @@ export default function Treasury() {
   const [showOpeningModal, setShowOpeningModal] = useState(false);
   const [newOpeningBalance, setNewOpeningBalance] = useState('');
   const [saving, setSaving] = useState(false);
+  const [dateFilter, setDateFilter] = useState('');
 
   useEffect(() => {
     async function loadData() {
@@ -116,9 +117,15 @@ export default function Treasury() {
           <div className="flex gap-2 w-full md:w-auto">
             <input 
               type="date" 
+              value={dateFilter}
+              onChange={e => setDateFilter(e.target.value)}
               className="flex-1 md:w-auto bg-black/20 border border-white/10 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#38bdf8]"
             />
-            <button className="bg-[#12829b] text-white px-4 py-2 rounded-lg hover:bg-[#107085] transition-colors shrink-0">
+            <button 
+              onClick={() => setDateFilter('')}
+              className="bg-[#12829b] text-white px-4 py-2 rounded-lg hover:bg-[#107085] transition-colors shrink-0"
+              title={dateFilter ? 'مسح الفلتر' : 'بحث'}
+            >
               <Search className="w-5 h-5" />
             </button>
           </div>
@@ -148,7 +155,9 @@ export default function Treasury() {
                     لا توجد حركات
                   </td>
                 </tr>
-              ) : transactions.map((trx, i) => (
+              ) : transactions
+                  .filter(t => !dateFilter || t.dateString === dateFilter)
+                  .map((trx, i) => (
                 <motion.tr 
                   key={trx.id}
                   initial={{ opacity: 0, y: 10 }}
