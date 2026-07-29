@@ -26,6 +26,7 @@ import {
 
 const menuItems = [
   { name: 'لوحة المتابعة', href: '/', icon: LayoutDashboard, emoji: '📊' },
+  { name: 'إدارة المخازن', href: '/inventory', icon: Briefcase, emoji: '🏬' },
   { name: 'مرحلة البيع', href: '/sales-stage', icon: ShoppingCart, emoji: '🛒' },
   { name: 'مرحلة التصنيع', href: '/production-stage', icon: Settings, emoji: '⚙️' },
   { name: 'مرحلة الخامات', href: '/materials-stage', icon: Briefcase, emoji: '📦' },
