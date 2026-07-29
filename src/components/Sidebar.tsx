@@ -90,7 +90,7 @@ export function Sidebar() {
           {open ? '✕' : '☰'}
         </button>
         <div className="flex items-center gap-2 min-w-0">
-          <div className="w-9 h-9 rounded-lg bg-white p-0.5 shrink-0 flex items-center justify-center overflow-hidden">
+          <div className="w-9 h-9 shrink-0 flex items-center justify-center overflow-hidden">
             <Image src="/RTX LOGO.png" alt="RTX Logo" width={36} height={36} className="object-contain w-full h-full" />
           </div>
           <div className="font-bold text-sm truncate">RTX System</div>
@@ -109,7 +109,7 @@ export function Sidebar() {
           >
             <div className="flex items-center justify-between p-3 border-b border-white/10">
               <div className="flex items-center gap-2 min-w-0">
-                <div className="w-10 h-10 rounded-lg bg-white p-0.5 shrink-0 flex items-center justify-center overflow-hidden">
+                <div className="w-10 h-10 shrink-0 flex items-center justify-center overflow-hidden">
                   <Image src="/RTX LOGO.png" alt="RTX Logo" width={40} height={40} className="object-contain w-full h-full" />
                 </div>
                 <div className="min-w-0">
@@ -166,7 +166,7 @@ function SidebarContent({ menuItems, pathname, onNavigate }: { menuItems: any[];
   return (
     <>
       <div className="p-4 border-b-4 border-[#12829b] flex items-center gap-3 hidden md:flex">
-        <div className="w-12 h-12 rounded-lg bg-white p-1 shrink-0 flex items-center justify-center overflow-hidden">
+        <div className="w-12 h-12 shrink-0 flex items-center justify-center overflow-hidden">
           <Image src="/RTX LOGO.png" alt="RTX Logo" width={48} height={48} className="object-contain w-full h-full" />
         </div>
         <div>
