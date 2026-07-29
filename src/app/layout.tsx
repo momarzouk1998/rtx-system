@@ -12,8 +12,28 @@ const cairo = Cairo({
 });
 
 export const metadata: Metadata = {
-  title: "RTX System - Dashboard",
-  description: "Professional Management System for RTX",
+  title: "RTX System - نظام إدارة RTX",
+  description: "نظام الإدارة المتكامل لشركة RTX للتجارة والتصنيع",
+  icons: {
+    icon: [
+      { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32x32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon-48x48.png", sizes: "48x48", type: "image/png" },
+      { url: "/favicon.ico", type: "image/x-icon" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      { rel: "icon", url: "/icon-192x192.png", sizes: "192x192" },
+      { rel: "icon", url: "/icon-512x512.png", sizes: "512x512" },
+    ],
+  },
+  openGraph: {
+    title: "RTX System",
+    description: "نظام الإدارة المتكامل لشركة RTX للتجارة والتصنيع",
+    images: [{ url: "/og-image.png", width: 1200, height: 630 }],
+  },
 };
 
 export default function RootLayout({
