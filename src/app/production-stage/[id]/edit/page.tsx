@@ -51,6 +51,7 @@ export default async function EditProductionPage({ params }: { params: Promise<{
             productId: order.productId,
             quantityKg: order.quantityKg,
             receivedQuantityKg: order.receivedQuantityKg,
+            operatingCost: order.operatingCost,
             notes: order.notes,
             date: toDateInputValue(order.date),
           }}

@@ -18,15 +18,24 @@ export function AddProductionButton({ factories, products }: { factories: Factor
   const [selectedProductId, setSelectedProductId] = useState("");
   const [quantity, setQuantity] = useState<number | "">("");
   const [receivedQuantity, setReceivedQuantity] = useState<number | "">("");
+  const [operatingCost, setOperatingCost] = useState<number | "">("");
 
   const selectedProduct = useMemo(() => 
     products.find(p => p.id === selectedProductId), 
   [selectedProductId, products]);
 
-  // Live calculations
+  // When product changes, update operatingCost default
+  const handleProductChange = (productId: string) => {
+    setSelectedProductId(productId);
+    const prod = products.find(p => p.id === productId);
+    if (prod) setOperatingCost(prod.operatingCost);
+  };
+
+  // Live calculations — use custom operatingCost if set
   const expectedBags = selectedProduct && receivedQuantity ? Math.round(Number(receivedQuantity) * selectedProduct.bagsPerKg) : 0;
+  const effectiveCost = operatingCost !== "" ? Number(operatingCost) : (selectedProduct?.operatingCost || 0);
   const expectedCost = selectedProduct && receivedQuantity && category === "EXTERNAL" 
-    ? Number(receivedQuantity) * selectedProduct.operatingCost : 0;
+    ? Number(receivedQuantity) * effectiveCost : 0;
 
   async function onSubmit(formData: FormData) {
     setIsPending(true);
@@ -108,7 +117,7 @@ export function AddProductionButton({ factories, products }: { factories: Factor
               name="productId" 
               required
               value={selectedProductId}
-              onChange={(e) => setSelectedProductId(e.target.value)}
+              onChange={(e) => handleProductChange(e.target.value)}
               className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white"
             >
               <option value="">اختر المنتج...</option>
@@ -152,7 +161,25 @@ export function AddProductionButton({ factories, products }: { factories: Factor
             />
           </div>
 
-          {/* Live Calculations Display */}
+          {/* Editable operating cost for EXTERNAL */}
+          {category === 'EXTERNAL' && (
+            <div>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                سعر التصنيع (ج.م / كجم) *
+                {selectedProduct && <span className="text-xs text-gray-400 mr-2">الافتراضي: {selectedProduct.operatingCost}</span>}
+              </label>
+              <input 
+                type="number" 
+                name="operatingCost" 
+                required
+                min="0"
+                step="0.01"
+                value={operatingCost}
+                onChange={(e) => setOperatingCost(e.target.value === "" ? "" : Number(e.target.value))}
+                className="w-full px-4 py-2 rounded-lg border border-orange-300 dark:border-orange-700 bg-orange-50 dark:bg-orange-900/20 focus:ring-2 focus:ring-orange-400 focus:border-transparent outline-none transition-all dark:text-white text-lg font-bold text-orange-700 dark:text-orange-300"
+              />
+            </div>
+          )}
           <div className="bg-blue-50 dark:bg-[#12829b]/10 p-4 rounded-lg space-y-2 border border-blue-100 dark:border-[#12829b]/20">
             <h4 className="font-semibold text-[#12829b] mb-3">حسابات متوقعة (تلقائي)</h4>
             <div className="flex justify-between items-center text-sm">
