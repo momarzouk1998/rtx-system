@@ -2,111 +2,121 @@
 
 import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
+import { hashPassword } from "@/lib/auth";
+import { UserRole } from "@prisma/client";
 
-// إنشاء مستخدم جديد
 export async function createUser(data: FormData) {
   try {
     const name = data.get("name") as string;
     const phone = data.get("phone") as string;
-    const whatsapp = data.get("whatsapp") as string;
-    const email = data.get("email") as string;
+    const password = data.get("password") as string;
+    const role = data.get("role") as UserRole;
     const job = data.get("job") as string;
-    const role = (data.get("role") as string) || "USER";
+    const email = data.get("email") as string;
 
-    if (!name) {
-      return { success: false, error: "اسم المستخدم مطلوب" };
+    if (!name || !phone || !password) {
+      return { success: false, error: "الاسم ورقم الهاتف وكلمة المرور مطلوبون" };
     }
-    if (!phone) {
-      return { success: false, error: "رقم الهاتف مطلوب" };
+
+    const exists = await prisma.user.findFirst({
+      where: {
+        OR: [{ phone }, { name }]
+      }
+    });
+
+    if (exists) {
+      return { success: false, error: "اسم المستخدم أو رقم الهاتف موجود مسبقاً" };
     }
+
+    const hashedPassword = await hashPassword(password);
 
     await prisma.user.create({
       data: {
         name,
         phone,
-        whatsapp: whatsapp || null,
-        email: email || null,
+        password: hashedPassword,
+        role: role || 'USER',
         job: job || null,
-        role: role === "MANAGER" ? "MANAGER" : "USER",
+        email: email || null,
       },
     });
 
     revalidatePath("/users-list");
     return { success: true };
   } catch (error) {
-    console.error("Error creating user:", error);
-    // الاسم/الهاتف unique — غالباً ده سبب التكرار
-    return { success: false, error: "الاسم أو رقم الهاتف مستخدم بالفعل" };
+    return { success: false, error: "حدث خطأ أثناء إضافة المستخدم" };
   }
 }
 
-// تحديث بيانات مستخدم من صفحة الأدمن (users-list)
 export async function updateUserAdmin(id: string, data: FormData) {
   try {
     const name = data.get("name") as string;
     const phone = data.get("phone") as string;
-    const whatsapp = data.get("whatsapp") as string;
-    const email = data.get("email") as string;
+    const password = data.get("password") as string;
+    const role = data.get("role") as UserRole;
     const job = data.get("job") as string;
-    const role = (data.get("role") as string) || "USER";
+    const email = data.get("email") as string;
 
-    if (!name) {
-      return { success: false, error: "اسم المستخدم مطلوب" };
+    if (!name || !phone) {
+      return { success: false, error: "الاسم ورقم الهاتف مطلوبون" };
     }
-    if (!phone) {
-      return { success: false, error: "رقم الهاتف مطلوب" };
+
+    const exists = await prisma.user.findFirst({
+      where: {
+        AND: [
+          { OR: [{ phone }, { name }] },
+          { id: { not: id } }
+        ]
+      }
+    });
+
+    if (exists) {
+      return { success: false, error: "اسم المستخدم أو رقم الهاتف موجود مسبقاً" };
+    }
+
+    const updateData: any = {
+      name,
+      phone,
+      role: role || 'USER',
+      job: job || null,
+      email: email || null,
+    };
+
+    if (password) {
+      updateData.password = await hashPassword(password);
     }
 
     await prisma.user.update({
       where: { id },
-      data: {
-        name,
-        phone,
-        whatsapp: whatsapp || null,
-        email: email || null,
-        job: job || null,
-        role: role === "MANAGER" ? "MANAGER" : "USER",
-      },
+      data: updateData,
     });
 
     revalidatePath("/users-list");
     return { success: true };
   } catch (error) {
-    console.error("Error updating user (admin):", error);
-    return { success: false, error: "الاسم أو رقم الهاتف مستخدم بالفعل" };
+    return { success: false, error: "حدث خطأ أثناء تعديل المستخدم" };
   }
 }
 
-// تحديث بيانات المستخدم (للصفحة الشخصية)
-export async function updateUser(data: FormData) {
-  try {
-    const id = data.get("id") as string;
-    const name = data.get("name") as string;
-    const phone = data.get("phone") as string;
-    const whatsapp = data.get("whatsapp") as string;
-    const email = data.get("email") as string;
-    const job = data.get("job") as string;
+export async function updateProfile(data: FormData) {
+  const id = data.get("id") as string;
+  return updateUserAdmin(id, data);
+}
 
-    if (!id) {
-      return { success: false, error: "معرّف المستخدم مطلوب" };
+export async function deleteUser(id: string) {
+  try {
+    const userCount = await prisma.user.count();
+    if (userCount <= 1) {
+       return { success: false, error: "لا يمكن حذف المستخدم الأخير" };
     }
 
-    await prisma.user.update({
+    await prisma.user.delete({
       where: { id },
-      data: {
-        ...(name && { name }),
-        ...(phone && { phone }),
-        whatsapp: whatsapp || null,
-        email: email || null,
-        job: job || null,
-      },
     });
 
-    revalidatePath("/profile");
     revalidatePath("/users-list");
     return { success: true };
   } catch (error) {
-    console.error("Error updating user:", error);
-    return { success: false, error: "حدث خطأ أثناء تحديث البيانات" };
+    return { success: false, error: "لا يمكن حذف مستخدم له عمليات سابقة" };
   }
 }

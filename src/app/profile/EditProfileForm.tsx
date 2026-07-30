@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { updateUser } from "../actions/users";
+import { updateProfile } from "../actions/users";
 import toast from "react-hot-toast";
 
 type ProfileData = {
@@ -20,7 +20,7 @@ export function EditProfileForm({ user }: { user: ProfileData }) {
 
   async function onSubmit(formData: FormData) {
     setIsPending(true);
-    const result = await updateUser(formData);
+    const result = await updateProfile(formData);
     setIsPending(false);
 
     if (result.success) {

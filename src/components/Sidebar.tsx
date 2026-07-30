@@ -40,11 +40,11 @@ const menuItems = [
   { name: 'المدفوعات', href: '/payments', icon: Banknote, emoji: '💰' },
   { name: 'خزنة RTX', href: '/treasury', icon: Banknote, emoji: '🏦' },
   { name: 'كشف حساب', href: '/statement', icon: FileText, emoji: '📄' },
-  { name: 'قائمة المستخدمين', href: '/users-list', icon: UsersRound, emoji: '👨‍👩‍👧' },
+  // Users list is added dynamically based on role
   { name: 'الصفحة الشخصية', href: '/profile', icon: UserCircle, emoji: '👤' },
 ];
 
-export function Sidebar() {
+export function Sidebar({ user }: { user?: { name?: string, role?: string } | null }) {
   const pathname = usePathname();
   const router = useRouter();
   const [open, setOpen] = useState(false);
@@ -77,6 +77,17 @@ export function Sidebar() {
     await fetch('/api/auth/logout', { method: 'POST' });
     router.push('/login');
     router.refresh();
+  }
+
+  if (pathname === '/login') {
+    return null;
+  }
+
+  // Add users list if user is manager
+  const displayMenuItems = [...menuItems];
+  if (user?.role === 'MANAGER') {
+    // Insert before profile
+    displayMenuItems.splice(displayMenuItems.length - 1, 0, { name: 'المستخدمين', href: '/users-list', icon: UsersRound as any, emoji: '👨‍👩‍👧' });
   }
 
   return (
@@ -115,7 +126,7 @@ export function Sidebar() {
                 </div>
                 <div className="min-w-0">
                   <div className="font-extrabold text-sm leading-tight truncate">RTX System</div>
-                  <div className="text-[10px] text-[#38bdf8] font-medium">للتجارة والتصنيع</div>
+                  <div className="text-[10px] text-[#38bdf8] font-medium">{user?.name || 'للتجارة والتصنيع'}</div>
                 </div>
               </div>
               <button
@@ -125,7 +136,7 @@ export function Sidebar() {
               >✕</button>
             </div>
             <div className="flex-1 overflow-y-auto">
-              <SidebarContent menuItems={menuItems} pathname={pathname} onNavigate={() => setOpen(false)} />
+              <SidebarContent menuItems={displayMenuItems} pathname={pathname} onNavigate={() => setOpen(false)} />
             </div>
             <div className="p-3 border-t border-white/10">
               <Link href="/profile" onClick={() => setOpen(false)} className="block w-full py-2.5 rounded-lg bg-[#12829b]/20 text-[#38bdf8] hover:bg-[#12829b]/30 text-sm font-medium text-center mb-2">
@@ -141,7 +152,7 @@ export function Sidebar() {
 
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-64 bg-header-gradient text-white h-screen sticky top-0 shadow-2xl shrink-0">
-        <SidebarContent menuItems={menuItems} pathname={pathname} onNavigate={() => {}} />
+        <SidebarContent menuItems={displayMenuItems} pathname={pathname} onNavigate={() => {}} userName={user?.name} />
         <div className="p-4 border-t border-white/10">
           <Link href="/profile" className="block w-full py-2 rounded-lg bg-[#12829b]/20 text-[#38bdf8] hover:bg-[#12829b]/30 text-sm text-center mb-2">
             👤 الملف الشخصي
@@ -155,7 +166,7 @@ export function Sidebar() {
   );
 }
 
-function SidebarContent({ menuItems, pathname, onNavigate }: { menuItems: any[]; pathname: string; onNavigate: () => void }) {
+function SidebarContent({ menuItems, pathname, onNavigate, userName }: { menuItems: any[]; pathname: string; onNavigate: () => void; userName?: string }) {
   const activeItem = menuItems.reduce<any | null>((best, item) => {
     if (pathname === item.href) return item;
     if (pathname.startsWith(`${item.href}/`)) {
@@ -172,7 +183,7 @@ function SidebarContent({ menuItems, pathname, onNavigate }: { menuItems: any[];
         </div>
         <div>
           <div className="font-extrabold text-base leading-tight">RTX System</div>
-          <div className="text-[10px] text-[#38bdf8] font-medium">للتجارة والتصنيع</div>
+          <div className="text-[10px] text-[#38bdf8] font-medium">{userName || 'للتجارة والتصنيع'}</div>
         </div>
       </div>
       <nav className="flex-1 overflow-y-auto py-2">

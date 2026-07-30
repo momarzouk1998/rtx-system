@@ -1,0 +1,14 @@
+Uid,Name,Phone Number,WhatsApp Number,Email,Password,Old Password,New Password,Jop,Position,Customer Code,Customer id,Phone,Whatsapp,Address,OrderName,Actions,Show_Invoice,Show_Total,Discount,After Discount,New Order,Customer list,Order Track,Payments,Dashboard,Products List,Statement Process,Matrials,AddMaterials,Production,Packaging,Expneses,Suppliers,Factories
+57d25053,OPEN APPS,01558282760,01111111111,,1,,,,Admin,محمود mj,c6310244,,,,محمود mj (1),,"<table border='1' style='width:100%; direction: rtl; text-align: center; border-collapse: collapse;'><tr>
+      <th>المنتج</th>
+      <th>الكمية</th>
+      <th>السعر</th>
+      <th>الإجمالي</th>
+    </tr><tr><td style='padding: 8px;'>فواصل ١.٥</td><td style='padding: 8px;'>1000</td><td style='padding: 8px;'>45</td><td style='padding: 8px;'>45000</td></tr> , <tr><td style='padding: 8px;'>مشباك</td><td style='padding: 8px;'>500</td><td style='padding: 8px;'>45</td><td style='padding: 8px;'>22500</td></tr></table>",67500,,67500,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار
+a6432e57,أ/على,01067662255,01067662255,,123456,,,,Manager,مملكة المعدات,0ca0b691,011256928,011256928,,مملكة المعدات (1),,"<table border='1' style='width:100%; direction: rtl; text-align: center; border-collapse: collapse;'><tr>
+      <th>المنتج</th>
+      <th>الكمية</th>
+      <th>السعر</th>
+      <th>الإجمالي</th>
+    </tr><tr><td style='padding: 8px;'>فواصل ١.٥</td><td style='padding: 8px;'>100</td><td style='padding: 8px;'>45</td><td style='padding: 8px;'>4500</td></tr> , <tr><td style='padding: 8px;'>فواصل ٢ ملي</td><td style='padding: 8px;'>50</td><td style='padding: 8px;'>45</td><td style='padding: 8px;'>2250</td></tr> , <tr><td style='padding: 8px;'>فواصل ١ ملي</td><td style='padding: 8px;'>50</td><td style='padding: 8px;'>45</td><td style='padding: 8px;'>2250</td></tr> , <tr><td style='padding: 8px;'>مشباك</td><td style='padding: 8px;'>100</td><td style='padding: 8px;'>45</td><td style='padding: 8px;'>4500</td></tr></table>",13500,,13500,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار
+a6432e58,مصطفى أمين,01125692128,01125692128,,123456,,,,User,أحمد جودة,46e20aea,,,,أحمد جودة (1),,,0,,0,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار,إظهار

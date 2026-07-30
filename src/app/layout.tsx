@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Cairo } from "next/font/google";
 import "./globals.css";
 import { Sidebar } from "@/components/Sidebar";
+import { getCurrentUser } from "@/lib/auth-server";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 
 import { ToastProvider } from "@/components/ToastProvider";
 
@@ -14,6 +16,9 @@ const cairo = Cairo({
 export const metadata: Metadata = {
   title: "RTX System - نظام إدارة RTX",
   description: "نظام الإدارة المتكامل لشركة RTX للتجارة والتصنيع",
+  manifest: "/manifest.json",
+  appleWebApp: { capable: true, title: "RTX System", statusBarStyle: "black-translucent" },
+  formatDetection: { telephone: false },
   icons: {
     icon: [
       { url: "/favicon-16x16.png", sizes: "16x16", type: "image/png" },
@@ -36,21 +41,24 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const user = await getCurrentUser();
+
   return (
     <html lang="ar" dir="rtl" className={`${cairo.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-gray-50 font-[var(--font-cairo)]">
         <ToastProvider />
         <div className="flex min-h-screen bg-gray-50">
-          <Sidebar />
+          <Sidebar user={user} />
           <main className="flex-1 min-w-0 max-w-full p-3 pt-16 md:p-6 md:pt-6 overflow-x-hidden">
             {children}
           </main>
         </div>
+        <ServiceWorkerRegister />
       </body>
     </html>
   );

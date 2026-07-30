@@ -1,0 +1,16 @@
+{
+  "name": "RTX System - نظام الإدارة",
+  "short_name": "RTX System",
+  "description": "نظام الإدارة المتكامل لشركة RTX للتجارة والتصنيع",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#f8fafc",
+  "theme_color": "#12829b",
+  "lang": "ar",
+  "dir": "rtl",
+  "icons": [
+    { "src": "/RTX LOGO.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
