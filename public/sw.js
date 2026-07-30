@@ -1,7 +1,7 @@
 const CACHE = "rtx-system-v1";
 const PRECACHE_URLS = [
   "/manifest.json",
-  "/RTX LOGO.png",
+  "/rtx-logo.png",
   "/favicon.ico"
 ];
 

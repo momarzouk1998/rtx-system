@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { COOKIE_NAME, decrypt } from './lib/auth';
 
-const publicRoutes = ['/login', '/favicon.ico', '/manifest.json', '/sw.js', '/RTX LOGO.png'];
+const publicRoutes = ['/login', '/favicon.ico', '/manifest.json', '/sw.js', '/rtx-logo.png'];
 
 export async function middleware(request: NextRequest) {
   const path = request.nextUrl.pathname;

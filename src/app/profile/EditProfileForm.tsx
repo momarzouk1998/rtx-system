@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { updateProfile } from "../actions/users";
 import toast from "react-hot-toast";
 
@@ -17,6 +17,7 @@ type ProfileData = {
 
 export function EditProfileForm({ user }: { user: ProfileData }) {
   const [isPending, setIsPending] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function onSubmit(formData: FormData) {
     setIsPending(true);
@@ -98,6 +99,29 @@ export function EditProfileForm({ user }: { user: ProfileData }) {
             defaultValue={user.job || ""}
             className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white"
           />
+        </div>
+      </div>
+
+      <div>
+        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+          تغيير كلمة المرور (اختياري)
+        </label>
+        <div className="relative">
+          <input
+            type={showPassword ? "text" : "password"}
+            name="password"
+            className="w-full px-4 py-2 rounded-lg border border-gray-300 dark:border-zinc-700 bg-white dark:bg-zinc-800 focus:ring-2 focus:ring-[#12829b] focus:border-transparent outline-none transition-all dark:text-white"
+            placeholder="اتركه فارغاً إذا لم ترد تغييره"
+            dir="ltr"
+          />
+          <button 
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 dark:hover:text-white transition-colors"
+            title={showPassword ? "إخفاء كلمة المرور" : "إظهار كلمة المرور"}
+          >
+            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          </button>
         </div>
       </div>
 

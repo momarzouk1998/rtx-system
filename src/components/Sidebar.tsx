@@ -22,6 +22,7 @@ import {
   UsersRound,
   UserCircle,
   LogOut,
+  Download,
 } from 'lucide-react';
 
 const menuItems = [
@@ -103,7 +104,7 @@ export function Sidebar({ user }: { user?: { name?: string, role?: string } | nu
         </button>
         <div className="flex items-center gap-2 min-w-0">
           <div className="w-9 h-9 shrink-0 flex items-center justify-center overflow-hidden">
-            <Image src="/RTX LOGO.png" alt="RTX Logo" width={36} height={36} className="object-contain w-full h-full" />
+            <Image src="/rtx-logo.png" alt="RTX Logo" width={36} height={36} className="object-contain w-full h-full" />
           </div>
           <div className="font-bold text-sm truncate">RTX System</div>
         </div>
@@ -122,7 +123,7 @@ export function Sidebar({ user }: { user?: { name?: string, role?: string } | nu
             <div className="flex items-center justify-between p-3 border-b border-white/10">
               <div className="flex items-center gap-2 min-w-0">
                 <div className="w-10 h-10 shrink-0 flex items-center justify-center overflow-hidden">
-                  <Image src="/RTX LOGO.png" alt="RTX Logo" width={40} height={40} className="object-contain w-full h-full" />
+                  <Image src="/rtx-logo.png" alt="RTX Logo" width={40} height={40} className="object-contain w-full h-full" />
                 </div>
                 <div className="min-w-0">
                   <div className="font-extrabold text-sm leading-tight truncate">RTX System</div>
@@ -142,8 +143,16 @@ export function Sidebar({ user }: { user?: { name?: string, role?: string } | nu
               <Link href="/profile" onClick={() => setOpen(false)} className="block w-full py-2.5 rounded-lg bg-[#12829b]/20 text-[#38bdf8] hover:bg-[#12829b]/30 text-sm font-medium text-center mb-2">
                 👤 الملف الشخصي
               </Link>
-              <button onClick={logout} className="w-full py-2.5 rounded-lg bg-red-500/20 text-red-100 hover:bg-red-500/30 text-sm font-medium">
+              <button onClick={logout} className="w-full py-2.5 rounded-lg bg-red-500/20 text-red-100 hover:bg-red-500/30 text-sm font-medium mb-2">
                 🚪 تسجيل خروج
+              </button>
+              <button onClick={() => {
+                const event = new Event('prompt-install');
+                window.dispatchEvent(event);
+                setOpen(false);
+              }} className="w-full py-2.5 flex items-center justify-center gap-2 rounded-lg bg-[#38bdf8]/20 text-[#38bdf8] hover:bg-[#38bdf8]/30 text-sm font-medium">
+                <Download className="w-4 h-4" />
+                تثبيت البرنامج
               </button>
             </div>
           </aside>
@@ -157,8 +166,15 @@ export function Sidebar({ user }: { user?: { name?: string, role?: string } | nu
           <Link href="/profile" className="block w-full py-2 rounded-lg bg-[#12829b]/20 text-[#38bdf8] hover:bg-[#12829b]/30 text-sm text-center mb-2">
             👤 الملف الشخصي
           </Link>
-          <button onClick={logout} className="w-full py-2 rounded-lg bg-red-500/20 text-red-100 hover:bg-red-500/30 text-sm">
+          <button onClick={logout} className="w-full py-2 rounded-lg bg-red-500/20 text-red-100 hover:bg-red-500/30 text-sm mb-2">
             🚪 تسجيل خروج
+          </button>
+          <button onClick={() => {
+            const event = new Event('prompt-install');
+            window.dispatchEvent(event);
+          }} className="w-full py-2 flex items-center justify-center gap-2 rounded-lg bg-[#38bdf8]/20 text-[#38bdf8] hover:bg-[#38bdf8]/30 text-sm">
+            <Download className="w-4 h-4" />
+            تثبيت البرنامج
           </button>
         </div>
       </aside>
@@ -179,7 +195,7 @@ function SidebarContent({ menuItems, pathname, onNavigate, userName }: { menuIte
     <>
       <div className="p-4 border-b-4 border-[#12829b] flex items-center gap-3 hidden md:flex">
         <div className="w-12 h-12 shrink-0 flex items-center justify-center overflow-hidden">
-          <Image src="/RTX LOGO.png" alt="RTX Logo" width={48} height={48} className="object-contain w-full h-full" />
+          <Image src="/rtx-logo.png" alt="RTX Logo" width={48} height={48} className="object-contain w-full h-full" />
         </div>
         <div>
           <div className="font-extrabold text-base leading-tight">RTX System</div>

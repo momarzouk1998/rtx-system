@@ -11,6 +11,6 @@
   "lang": "ar",
   "dir": "rtl",
   "icons": [
-    { "src": "/RTX LOGO.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+    { "src": "/rtx-logo.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
   ]
 }
