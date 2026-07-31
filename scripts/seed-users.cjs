@@ -1,49 +1,34 @@
-const { Client } = require('pg');
-const crypto = require('crypto');
-
-// Simple bcrypt-like hash using pbkdf2 won't work since we need bcrypt
-// Let's use the pg client to insert users via psql on host
-const { execSync } = require('child_process');
-
-const DB_URL = 'postgresql://rtx:RtxSystem2026!SecureDb@localhost:5432/rtx';
+const { PrismaPg } = require('@prisma/adapter-pg');
+const { PrismaClient } = require('./src/generated/prisma/client');
+const bcrypt = require('bcryptjs');
 
 async function seed() {
-  const client = new Client({ connectionString: DB_URL });
-  await client.connect();
-  console.log('Connected to DB');
-
-  // Check if bcrypt module available in node_modules
-  let bcrypt;
-  try {
-    bcrypt = require('/app/node_modules/bcryptjs');
-  } catch(e) {
-    console.error('bcryptjs not found:', e.message);
-    process.exit(1);
-  }
+  const adapter = new PrismaPg({
+    connectionString: 'postgresql://rtx:RtxSystem2026!SecureDb@localhost:5432/rtx?schema=public'
+  });
+  const prisma = new PrismaClient({ adapter });
 
   const users = [
-    { name: 'OPEN APPS', phone: '01558282760', password: '1', role: 'MANAGER' },
+    { name: 'OPEN APPS', phone: '01558282760', password: '123456', role: 'MANAGER' },
     { name: 'Ali', phone: '01067662255', password: '123456', role: 'MANAGER' },
     { name: 'Mostafa', phone: '01125692128', password: '123456', role: 'USER' },
   ];
 
   for (const u of users) {
     const hash = await bcrypt.hash(u.password, 10);
-    const id = crypto.randomUUID();
     try {
-      await client.query(
-        `INSERT INTO "User" (id, name, phone, password, role, "createdAt")
-         VALUES ($1, $2, $3, $4, $5, NOW())
-         ON CONFLICT (phone) DO UPDATE SET name=$2, password=$4, role=$5`,
-        [id, u.name, u.phone, hash, u.role]
-      );
+      await prisma.user.upsert({
+        where: { phone: u.phone },
+        update: { name: u.name, password: hash, role: u.role },
+        create: { name: u.name, phone: u.phone, password: hash, role: u.role },
+      });
       console.log('OK:', u.name);
-    } catch(e) {
+    } catch (e) {
       console.error('ERR:', u.name, e.message);
     }
   }
 
-  await client.end();
+  await prisma.$disconnect();
   console.log('Done!');
 }
 
