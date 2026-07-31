@@ -41,16 +41,65 @@ export const metadata: Metadata = {
   },
 };
 
+async function checkSubscription(): Promise<{ active: boolean; status?: string; daysLeft?: number; graceDaysLeft?: number; message?: string }> {
+  try {
+    const adminUrl = process.env.ADMIN_API_URL;
+    const systemName = process.env.SYSTEM_NAME;
+    if (!adminUrl || !systemName) return { active: true }; // Fallback if not configured
+
+    const res = await fetch(`${adminUrl}/api/subscription/verify?system=${systemName}`, {
+      next: { revalidate: 3600 }, // Cache for 1 hour
+    });
+    
+    if (!res.ok) return { active: true };
+    const data = await res.json();
+    return data;
+  } catch (error) {
+    console.error("Subscription check failed:", error);
+    return { active: true }; // Do not block if admin server is unreachable
+  }
+}
+
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const subStatus = await checkSubscription();
+
+  if (!subStatus.active) {
+    return (
+      <html lang="ar" dir="rtl" className={`${cairo.variable} h-full antialiased`}>
+        <head>
+          <title>System Blocked</title>
+        </head>
+        <body className="min-h-full flex flex-col items-center justify-center bg-gray-50 font-[var(--font-cairo)] p-4">
+          <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center border-t-4 border-red-500">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">انتهت صلاحية الاشتراك</h1>
+            <p className="text-gray-600 mb-6">
+              {subStatus.message || "عفواً، لقد انتهت صلاحية اشتراك هذا النظام. يرجى التواصل مع الإدارة لتجديد الاشتراك واستعادة الوصول."}
+            </p>
+          </div>
+        </body>
+      </html>
+    );
+  }
+
   const user = await getCurrentUser();
 
   return (
     <html lang="ar" dir="rtl" className={`${cairo.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-gray-50 font-[var(--font-cairo)]">
+        {subStatus.status === "expiring_soon" && (
+          <div className="bg-yellow-500 text-black px-4 py-2 text-center text-sm font-bold w-full shadow-sm z-[9999]">
+            {subStatus.message}
+          </div>
+        )}
+        {subStatus.status === "grace_period" && (
+          <div className="bg-red-500 text-white px-4 py-2 text-center text-sm font-bold w-full shadow-sm z-[9999]">
+            {subStatus.message}
+          </div>
+        )}
         <ToastProvider />
         <div className="flex min-h-screen bg-gray-50">
           <Sidebar user={user} />
