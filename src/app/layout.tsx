@@ -43,9 +43,8 @@ export const metadata: Metadata = {
 
 async function checkSubscription(): Promise<{ active: boolean; status?: string; daysLeft?: number; graceDaysLeft?: number; message?: string }> {
   try {
-    const adminUrl = process.env.ADMIN_API_URL;
-    const systemName = process.env.SYSTEM_NAME;
-    if (!adminUrl || !systemName) return { active: true }; // Fallback if not configured
+    const adminUrl = process.env.ADMIN_API_URL || "https://admin.openappo.com";
+    const systemName = process.env.SYSTEM_NAME || "Rtx";
 
     const res = await fetch(`${adminUrl}/api/subscription/verify?system=${systemName}`, {
       next: { revalidate: 60 }, // Cache for 1 minute for faster updates
