@@ -289,10 +289,10 @@ html, body {
     display: block !important;
   }
 
-  /* ضبط إعدادات الصفحة للطباعة clean A4 بدون صفحات بيضاء فارغة */
+  /* إلغاء رؤوس وأذييل المتصفح التلقائية (التاريخ، عنوان الصفحة، والروابط) عند الطباعة */
   @page {
     size: A4 portrait;
-    margin: 10mm 12mm;
+    margin: 0;
   }
 
   html,
@@ -304,7 +304,7 @@ html, body {
     background: white !important;
     color: black !important;
     overflow: visible !important;
-    padding: 0 !important;
+    padding: 12mm 15mm !important;
     margin: 0 !important;
     width: 100% !important;
     box-shadow: none !important;
