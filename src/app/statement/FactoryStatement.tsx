@@ -236,21 +236,7 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
         </div>
       </div>
 
-      {/* Printable Signatures & Approval Footer */}
-      <div className="hidden print:grid grid-cols-3 gap-6 pt-12 text-center text-xs font-bold text-slate-800 border-t border-slate-300 mt-8">
-        <div>
-          <p className="mb-8">مسؤول التشغيل بالمصنع</p>
-          <p className="border-t border-dashed border-slate-400 pt-1">................................</p>
-        </div>
-        <div>
-          <p className="mb-8">توقيع واعتماد المحاسب</p>
-          <p className="border-t border-dashed border-slate-400 pt-1">................................</p>
-        </div>
-        <div>
-          <p className="mb-8">ختم إدارة RTX</p>
-          <p className="border-t border-dashed border-slate-400 pt-1">................................</p>
-        </div>
-      </div>
+
 
     </div>
   );
