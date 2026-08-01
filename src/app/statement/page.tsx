@@ -249,7 +249,7 @@ export default async function StatementPage({
                   <div className="text-center p-2">
                     <div className="text-xs font-bold text-slate-500 dark:text-slate-400">رصيد افتتاحي</div>
                     <div className="text-base font-extrabold text-slate-900 dark:text-white mt-1">
-                      {(totals.opening || 0).toLocaleString("ar-EG")} ج.م
+                      {(totals.opening || 0).toLocaleString("ar-EG")}
                     </div>
                   </div>
                   <div className="text-center p-2 border-r border-sky-200 dark:border-zinc-700 print:border-slate-300">
@@ -257,7 +257,7 @@ export default async function StatementPage({
                       {type === "client" ? "إجمالي عليه (مدين)" : "إجمالي المسدد (عليه)"}
                     </div>
                     <div className="text-base font-extrabold text-rose-600 dark:text-rose-400 mt-1">
-                      {(totals.debit || 0).toLocaleString("ar-EG")} ج.م
+                      {(totals.debit || 0).toLocaleString("ar-EG")}
                     </div>
                   </div>
                   <div className="text-center p-2 border-r border-sky-200 dark:border-zinc-700 print:border-slate-300">
@@ -265,13 +265,13 @@ export default async function StatementPage({
                       {type === "client" ? "إجمالي له (دائن)" : "إجمالي المستحق له (دائن)"}
                     </div>
                     <div className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
-                      {(totals.credit || 0).toLocaleString("ar-EG")} ج.م
+                      {(totals.credit || 0).toLocaleString("ar-EG")}
                     </div>
                   </div>
                   <div className="text-center p-2 border-r border-sky-200 dark:border-zinc-700 print:border-slate-300">
                     <div className="text-xs font-bold text-slate-500 dark:text-slate-400">الرصيد الحالي المستحق</div>
                     <div className={`text-base font-black mt-1 ${totals.balance >= 0 ? "text-[#0284c7] dark:text-[#38bdf8]" : "text-emerald-600"}`}>
-                      {(totals.balance || 0).toLocaleString("ar-EG")} ج.م
+                      {(totals.balance || 0).toLocaleString("ar-EG")}
                     </div>
                   </div>
                 </div>
@@ -313,10 +313,10 @@ export default async function StatementPage({
                               </td>
                               <td className="px-5 py-3.5 text-slate-900 dark:text-slate-100 font-medium">{m.description}</td>
                               <td className="px-5 py-3.5 font-bold text-rose-600 dark:text-rose-400">
-                                {m.debit > 0 ? `${m.debit.toLocaleString("ar-EG")} ج.م` : "—"}
+                                {m.debit > 0 ? `${m.debit.toLocaleString("ar-EG")}` : "—"}
                               </td>
                               <td className="px-5 py-3.5 font-bold text-emerald-600 dark:text-emerald-400">
-                                {m.credit > 0 ? `${m.credit.toLocaleString("ar-EG")} ج.م` : "—"}
+                                {m.credit > 0 ? `${m.credit.toLocaleString("ar-EG")}` : "—"}
                               </td>
                             </tr>
                           ))}
@@ -324,7 +324,7 @@ export default async function StatementPage({
                           <tr className="bg-sky-50/60 dark:bg-zinc-800/80 font-black text-sm print:bg-slate-200">
                             <td colSpan={isAll ? 4 : 3} className="px-5 py-4 text-slate-900 dark:text-white">الرصيد المستحق النهائي</td>
                             <td colSpan={2} className="px-5 py-4 text-[#0284c7] dark:text-[#38bdf8] print:text-black text-base font-black">
-                              {(totals.balance || 0).toLocaleString("ar-EG")} ج.م
+                              {(totals.balance || 0).toLocaleString("ar-EG")}
                             </td>
                           </tr>
                         </>

@@ -160,7 +160,7 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
           <div className="text-center p-2 border-r border-sky-200 dark:border-zinc-700 print:border-slate-300">
             <div className="text-xs font-bold text-slate-500 dark:text-slate-400">الرصيد المالي المستحق (للمصنع)</div>
             <div className={`text-base font-black mt-1 ${runningFinancialBalance >= 0 ? "text-[#0284c7] dark:text-[#38bdf8]" : "text-rose-600"}`}>
-              {(runningFinancialBalance || 0).toLocaleString("ar-EG")} ج.م
+              {(runningFinancialBalance || 0).toLocaleString("ar-EG")}
             </div>
           </div>
         </div>
@@ -217,16 +217,16 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
                       {row.pricePerKg > 0 ? row.pricePerKg.toLocaleString("ar-EG") : ""}
                     </td>
                     <td className="px-2.5 py-2.5 font-bold text-amber-600 dark:text-amber-400">
-                      {row.commission > 0 ? `${row.commission.toLocaleString("ar-EG")} ج.م` : ""}
+                      {row.commission > 0 ? `${row.commission.toLocaleString("ar-EG")}` : ""}
                     </td>
                     <td className="px-2.5 py-2.5 font-bold text-rose-600 dark:text-rose-400">
-                      {row.payment > 0 ? `${row.payment.toLocaleString("ar-EG")} ج.م` : ""}
+                      {row.payment > 0 ? `${row.payment.toLocaleString("ar-EG")}` : ""}
                     </td>
                     <td className="px-2.5 py-2.5 font-extrabold bg-slate-50 dark:bg-zinc-800/80 text-slate-900 dark:text-white">
                       {row.materialBalance.toLocaleString("ar-EG")} كجم
                     </td>
                     <td className="px-2.5 py-2.5 font-black bg-slate-50 dark:bg-zinc-800/80 text-[#0284c7] dark:text-[#38bdf8] print:text-black">
-                      {row.financialBalance.toLocaleString("ar-EG")} ج.م
+                      {row.financialBalance.toLocaleString("ar-EG")}
                     </td>
                   </tr>
                 ))

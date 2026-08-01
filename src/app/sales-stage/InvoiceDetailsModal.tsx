@@ -191,10 +191,10 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
                             {qty.toLocaleString("ar-EG")}
                           </td>
                           <td className="px-4 py-3 text-center text-slate-700 dark:text-slate-300 font-medium">
-                            {price.toLocaleString("ar-EG")} ج.م
+                            {price.toLocaleString("ar-EG")}
                           </td>
                           <td className="px-4 py-3 text-left font-extrabold text-[#0284c7] dark:text-[#38bdf8] print:text-black">
-                            {total.toLocaleString("ar-EG")} ج.م
+                            {total.toLocaleString("ar-EG")}
                           </td>
                         </tr>
                       );
@@ -216,17 +216,17 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
             <div className="w-full sm:w-80 bg-sky-50/60 dark:bg-zinc-800/60 p-4 rounded-xl space-y-2 text-sm border-2 border-sky-200 dark:border-zinc-700 print:w-72 print:bg-slate-50 print:border-slate-400">
               <div className="flex justify-between text-slate-600 dark:text-slate-400 font-semibold">
                 <span>الإجمالي قبل الخصم:</span>
-                <span className="font-bold text-slate-900 dark:text-white">{(invoice.subTotal || 0).toLocaleString("ar-EG")} ج.م</span>
+                <span className="font-bold text-slate-900 dark:text-white">{(invoice.subTotal || 0).toLocaleString("ar-EG")}</span>
               </div>
               {discountAmount > 0 && (
                 <div className="flex justify-between text-rose-600 font-semibold">
                   <span>الخصم المطبق:</span>
-                  <span className="font-bold">- {discountAmount.toLocaleString("ar-EG")} ج.م</span>
+                  <span className="font-bold">- {discountAmount.toLocaleString("ar-EG")}</span>
                 </div>
               )}
               <div className="flex justify-between text-base font-black text-slate-900 dark:text-white pt-2.5 border-t border-sky-300 dark:border-zinc-700">
                 <span>الصافي النهائي:</span>
-                <span className="text-[#0284c7] dark:text-[#38bdf8] print:text-black text-xl font-black">{(invoice.netTotal || 0).toLocaleString("ar-EG")} ج.م</span>
+                <span className="text-[#0284c7] dark:text-[#38bdf8] print:text-black text-xl font-black">{(invoice.netTotal || 0).toLocaleString("ar-EG")}</span>
               </div>
             </div>
           </div>

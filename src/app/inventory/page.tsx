@@ -126,7 +126,7 @@ export default async function InventoryDashboard() {
                   <tr key={mat.id} className="border-b border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{mat.name}</td>
                     <td className="px-4 py-3 text-[#12829b] font-bold">{mat.balance.toLocaleString()} Kg</td>
-                    <td className="px-4 py-3 text-gray-900 dark:text-white">{(mat.balance * mat.price).toLocaleString()} ج.م</td>
+                    <td className="px-4 py-3 text-gray-900 dark:text-white">{(mat.balance * mat.price).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>
@@ -155,7 +155,7 @@ export default async function InventoryDashboard() {
                   <tr key={prod.id} className="border-b border-gray-100 dark:border-zinc-800 hover:bg-gray-50 dark:hover:bg-zinc-800/50">
                     <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">{prod.name}</td>
                     <td className="px-4 py-3 text-emerald-600 dark:text-emerald-400 font-bold">{prod.balance.toLocaleString()}</td>
-                    <td className="px-4 py-3 text-gray-900 dark:text-white">{(prod.balance * prod.bagPrice).toLocaleString()} ج.م</td>
+                    <td className="px-4 py-3 text-gray-900 dark:text-white">{(prod.balance * prod.bagPrice).toLocaleString()}</td>
                   </tr>
                 ))}
               </tbody>

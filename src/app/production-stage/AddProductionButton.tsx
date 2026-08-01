@@ -165,7 +165,7 @@ export function AddProductionButton({ factories, products }: { factories: Factor
           {category === 'EXTERNAL' && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-                سعر التصنيع (ج.م / كجم) *
+                سعر التصنيع (لكل كجم) *
                 {selectedProduct && <span className="text-xs text-gray-400 mr-2">الافتراضي: {selectedProduct.operatingCost}</span>}
               </label>
               <input 
