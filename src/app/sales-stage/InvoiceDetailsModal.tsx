@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Eye, X, Printer, Package, User, Calendar, DollarSign, Tag } from "lucide-react";
+import { Eye, X, Printer, Package, User, Calendar, Tag, Phone } from "lucide-react";
 
 interface InvoiceItem {
   id: string;
@@ -38,125 +38,174 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PROCESSING":
-        return <span className="bg-yellow-100 text-yellow-800 px-2.5 py-1 rounded-full text-xs font-semibold">قيد التشغيل</span>;
+        return <span className="bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1 rounded-full text-xs font-bold">قيد التشغيل</span>;
       case "ORDERED":
-        return <span className="bg-blue-100 text-blue-800 px-2.5 py-1 rounded-full text-xs font-semibold">تم الطلب</span>;
+        return <span className="bg-sky-100 text-sky-800 border border-sky-300 px-3 py-1 rounded-full text-xs font-bold">تم الطلب</span>;
       case "SHIPPED":
-        return <span className="bg-purple-100 text-purple-800 px-2.5 py-1 rounded-full text-xs font-semibold">تم الشحن</span>;
+        return <span className="bg-purple-100 text-purple-800 border border-purple-300 px-3 py-1 rounded-full text-xs font-bold">تم الشحن</span>;
       case "DELIVERED":
-        return <span className="bg-green-100 text-green-800 px-2.5 py-1 rounded-full text-xs font-semibold">تم التسليم</span>;
+        return <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 px-3 py-1 rounded-full text-xs font-bold">تم التسليم</span>;
       default:
-        return <span className="bg-red-100 text-red-800 px-2.5 py-1 rounded-full text-xs font-semibold">ملغي</span>;
+        return <span className="bg-rose-100 text-rose-800 border border-rose-300 px-3 py-1 rounded-full text-xs font-bold">ملغي</span>;
     }
   };
+
+  const getStatusText = (status: string) => {
+    switch (status) {
+      case "PROCESSING": return "قيد التشغيل";
+      case "ORDERED": return "تم الطلب";
+      case "SHIPPED": return "تم الشحن";
+      case "DELIVERED": return "تم التسليم";
+      default: return "ملغي";
+    }
+  };
+
+  const discountAmount = invoice.discountValue || invoice.discount || 0;
 
   return (
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="inline-flex items-center gap-1 text-[#12829b] hover:text-[#0ea5e9] hover:bg-blue-100 bg-blue-50 px-2.5 py-1 rounded-md transition-colors text-xs font-medium"
+        className="inline-flex items-center gap-1.5 text-[#0ea5e9] hover:text-[#0284c7] hover:bg-sky-100/80 bg-sky-50 dark:bg-sky-950/40 border border-sky-200 dark:border-sky-800/50 px-3 py-1.5 rounded-lg transition-all text-xs font-bold shadow-xs cursor-pointer"
       >
         <Eye className="w-3.5 h-3.5" />
-        عرض التفاصيل
+        عرض الفاتورة
       </button>
 
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in">
-          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col border border-gray-100 dark:border-zinc-800">
-            {/* Header */}
-            <div className="px-6 py-4 bg-gray-50 dark:bg-zinc-800/80 border-b border-gray-100 dark:border-zinc-800 flex items-center justify-between">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 modal-print-container animate-fade-in">
+          <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[92vh] overflow-hidden flex flex-col border border-slate-200 dark:border-zinc-800 print:shadow-none print:border-none print:max-h-none">
+            
+            {/* Header (Screen mode) - RTX Deep Slate & Cyan Theme */}
+            <div className="px-6 py-4 bg-slate-900 border-b border-sky-500/30 text-white flex items-center justify-between no-print">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-[#12829b]/10 text-[#12829b] flex items-center justify-center font-bold text-lg">
-                  #{invoice.orderNumber}
+                <div className="p-1 bg-slate-950 rounded-xl border border-sky-400/40 shadow-xs flex items-center justify-center">
+                  <img src="/rtx-logo.png" alt="RTX Logo" className="h-9 w-auto object-contain" />
                 </div>
                 <div>
-                  <h3 className="font-bold text-gray-900 dark:text-white text-lg">
-                    تفاصيل الفاتورة #{invoice.orderNumber}
+                  <h3 className="font-extrabold text-white text-lg flex items-center gap-2">
+                    فاتورة مبيعات <span className="text-[#38bdf8]">#{invoice.orderNumber}</span>
                   </h3>
-                  <p className="text-xs text-gray-500 flex items-center gap-1 mt-0.5">
-                    <Calendar className="w-3 h-3" /> {formattedDate}
+                  <p className="text-xs text-slate-300 flex items-center gap-1 mt-0.5">
+                    <Calendar className="w-3 h-3 text-[#38bdf8]" /> {formattedDate}
                   </p>
                 </div>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="w-8 h-8 rounded-full hover:bg-gray-200 dark:hover:bg-zinc-700 flex items-center justify-center text-gray-500 transition-colors"
+                className="w-8 h-8 rounded-full bg-slate-800 hover:bg-slate-700 flex items-center justify-center text-slate-300 hover:text-white transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Content */}
-            <div className="p-6 overflow-y-auto space-y-6 flex-1">
-              {/* Meta Info */}
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 p-4 bg-gray-50 dark:bg-zinc-800/40 rounded-xl border border-gray-100 dark:border-zinc-800/60 text-sm">
-                <div>
-                  <span className="text-gray-400 text-xs flex items-center gap-1">
-                    <User className="w-3 h-3" /> العميل
+            {/* Printable Corporate Invoice Header with Official RTX Logo */}
+            <div className="p-6 overflow-y-auto space-y-6 flex-1 print:p-0 print:overflow-visible">
+              
+              {/* Cyan Accent Top Line */}
+              <div className="h-1.5 w-full bg-gradient-to-r from-[#0ea5e9] via-[#38bdf8] to-slate-900 rounded-full mb-2 print:rounded-none"></div>
+
+              {/* Official Corporate Header */}
+              <div className="border-b-2 border-slate-900 pb-5">
+                <div className="flex justify-between items-start">
+                  
+                  {/* RTX Brand & Logo Container */}
+                  <div className="flex items-center gap-4">
+                    <div className="bg-slate-950 p-2.5 rounded-2xl border-2 border-sky-400/40 shadow-md flex items-center justify-center print:border-slate-800">
+                      <img src="/rtx-logo.png" alt="RTX Logo" className="h-14 w-auto object-contain" />
+                    </div>
+                    <div>
+                      <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                        RTX للتجارة والتصنيع
+                      </h1>
+                    </div>
+                  </div>
+
+                  {/* Document Badge */}
+                  <div className="text-left">
+                    <div className="inline-block bg-gradient-to-r from-slate-900 to-[#0284c7] text-white px-5 py-2 rounded-xl text-sm font-black shadow-xs print:bg-slate-900 print:text-white print:border print:border-black">
+                      فاتورة مبيعات
+                    </div>
+                    <div className="mt-2 text-xs font-bold text-slate-700 dark:text-slate-300 space-y-1 text-left">
+                      <p>رقم الفاتورة: <span className="text-[#0284c7] dark:text-[#38bdf8] font-black text-sm">#{invoice.orderNumber}</span></p>
+                      <p>التاريخ: <span className="text-slate-900 dark:text-white">{formattedDate}</span></p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Client & Status Information Grid */}
+              <div className="grid grid-cols-2 gap-4 p-4 bg-sky-50/50 dark:bg-zinc-800/50 rounded-xl border border-sky-200/80 dark:border-zinc-700 text-sm print:bg-slate-50 print:border-slate-300">
+                <div className="space-y-1">
+                  <span className="text-slate-500 text-xs font-bold flex items-center gap-1.5">
+                    <User className="w-4 h-4 text-[#0ea5e9]" /> بيانات العميل:
                   </span>
-                  <p className="font-bold text-gray-800 dark:text-gray-200 mt-1">
-                    {invoice.client?.name || "غير محدد"}
+                  <p className="font-black text-slate-900 dark:text-white text-base">
+                    {invoice.client?.name || "عميل غير محدد"}
                   </p>
+                  {invoice.client?.phone && (
+                    <p className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1 font-semibold">
+                      <Phone className="w-3.5 h-3.5 text-[#0ea5e9]" /> {invoice.client.phone}
+                    </p>
+                  )}
                 </div>
 
-                <div>
-                  <span className="text-gray-400 text-xs flex items-center gap-1">
-                    <Tag className="w-3 h-3" /> حالة الفاتورة
+                <div className="space-y-1 text-left flex flex-col justify-center items-end">
+                  <span className="text-slate-500 text-xs font-bold flex items-center gap-1.5">
+                    <Tag className="w-4 h-4 text-[#0ea5e9]" /> حالة الفاتورة:
                   </span>
-                  <div className="mt-1">{getStatusBadge(invoice.status)}</div>
-                </div>
-
-                <div>
-                  <span className="text-gray-400 text-xs flex items-center gap-1">
-                    <DollarSign className="w-3 h-3" /> إجمالي الصافي
-                  </span>
-                  <p className="font-extrabold text-emerald-600 dark:text-emerald-400 mt-1 text-base">
-                    {(invoice.netTotal || 0).toLocaleString()} ج.م
-                  </p>
+                  <div className="mt-1 no-print">
+                    {getStatusBadge(invoice.status)}
+                  </div>
+                  <div className="hidden print:block font-bold text-slate-900 text-sm">
+                    {getStatusText(invoice.status)}
+                  </div>
                 </div>
               </div>
 
               {/* Items Table */}
               <div>
-                <h4 className="font-bold text-gray-800 dark:text-gray-200 text-sm mb-3 flex items-center gap-1.5">
-                  <Package className="w-4 h-4 text-[#12829b]" /> الأصناف المسجلة ({invoice.items?.length || 0})
+                <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-3 flex items-center gap-2 no-print">
+                  <Package className="w-4 h-4 text-[#0ea5e9]" /> الأصناف المسجلة ({invoice.items?.length || 0})
                 </h4>
-                <div className="border border-gray-100 dark:border-zinc-800 rounded-xl overflow-hidden shadow-sm">
+                <div className="border border-slate-200 dark:border-zinc-700 rounded-xl overflow-hidden shadow-xs print:rounded-none print:border-slate-400">
                   <table className="w-full text-right text-sm" dir="rtl">
-                    <thead className="bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300 text-xs">
+                    <thead className="bg-slate-900 text-white text-xs print:bg-slate-200 print:text-black">
                       <tr>
-                        <th className="px-4 py-2.5">اسم المنتج</th>
-                        <th className="px-4 py-2.5 text-center">الكمية (أكياس)</th>
-                        <th className="px-4 py-2.5 text-center">سعر الوحدة</th>
-                        <th className="px-4 py-2.5 text-left">الإجمالي</th>
+                        <th className="px-4 py-3 border-b border-slate-800 print:border-slate-400 font-bold">#</th>
+                        <th className="px-4 py-3 border-b border-slate-800 print:border-slate-400 font-bold">اسم المنتج</th>
+                        <th className="px-4 py-3 border-b border-slate-800 print:border-slate-400 text-center font-bold">الكمية (أكياس)</th>
+                        <th className="px-4 py-3 border-b border-slate-800 print:border-slate-400 text-center font-bold">سعر الكيس</th>
+                        <th className="px-4 py-3 border-b border-slate-800 print:border-slate-400 text-left font-bold text-[#38bdf8] print:text-black">الإجمالي</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-100 dark:divide-zinc-800">
+                    <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 print:divide-slate-300">
                       {invoice.items && invoice.items.length > 0 ? (
-                        invoice.items.map((item: any) => {
+                        invoice.items.map((item: any, idx: number) => {
                           const qty = item.quantity || item.quantityBags || 0;
                           const price = item.bagPrice || item.pricePerUnit || 0;
                           const total = item.totalPrice || qty * price;
                           return (
-                            <tr key={item.id} className="hover:bg-gray-50/50 dark:hover:bg-zinc-800/40">
-                              <td className="px-4 py-3 font-medium text-gray-900 dark:text-white">
+                            <tr key={item.id || idx} className="hover:bg-sky-50/40 dark:hover:bg-zinc-800/40 transition-colors">
+                              <td className="px-4 py-3 text-slate-500 font-medium text-xs">{idx + 1}</td>
+                              <td className="px-4 py-3 font-bold text-slate-900 dark:text-white">
                                 {item.product?.name || "صنف غير معروف"}
                               </td>
-                              <td className="px-4 py-3 text-center text-gray-600 dark:text-gray-300 font-semibold">
-                                {qty.toLocaleString()}
+                              <td className="px-4 py-3 text-center text-slate-700 dark:text-slate-300 font-bold">
+                                {qty.toLocaleString("ar-EG")}
                               </td>
-                              <td className="px-4 py-3 text-center text-gray-600 dark:text-gray-300">
-                                {price.toLocaleString()} ج.م
+                              <td className="px-4 py-3 text-center text-slate-700 dark:text-slate-300 font-medium">
+                                {price.toLocaleString("ar-EG")} ج.م
                               </td>
-                              <td className="px-4 py-3 text-left font-bold text-gray-900 dark:text-white">
-                                {total.toLocaleString()} ج.م
+                              <td className="px-4 py-3 text-left font-extrabold text-[#0284c7] dark:text-[#38bdf8] print:text-black">
+                                {total.toLocaleString("ar-EG")} ج.م
                               </td>
                             </tr>
                           );
                         })
                       ) : (
                         <tr>
-                          <td colSpan={4} className="px-4 py-6 text-center text-gray-400">
+                          <td colSpan={5} className="px-4 py-6 text-center text-slate-400 font-medium">
                             لا توجد أصناف في هذه الفاتورة
                           </td>
                         </tr>
@@ -166,48 +215,68 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
                 </div>
               </div>
 
-              {/* Total Calculation breakdown */}
-              <div className="bg-gray-50 dark:bg-zinc-800/50 p-4 rounded-xl space-y-2 text-sm border border-gray-100 dark:border-zinc-800">
-                <div className="flex justify-between text-gray-600 dark:text-gray-400">
-                  <span>الإجمالي الإجمالي (قبل الخصم):</span>
-                  <span className="font-semibold">{(invoice.subTotal || 0).toLocaleString()} ج.م</span>
-                </div>
-                {((invoice.discountValue || invoice.discount || 0) > 0) && (
-                  <div className="flex justify-between text-red-500">
-                    <span>الخصم المطبق:</span>
-                    <span className="font-semibold">- {(invoice.discountValue || invoice.discount || 0).toLocaleString()} ج.م</span>
+              {/* Total Calculation Breakdown */}
+              <div className="flex justify-end">
+                <div className="w-full sm:w-80 bg-sky-50/60 dark:bg-zinc-800/60 p-4 rounded-xl space-y-2 text-sm border-2 border-sky-200 dark:border-zinc-700 print:w-72 print:bg-slate-50 print:border-slate-400">
+                  <div className="flex justify-between text-slate-600 dark:text-slate-400 font-semibold">
+                    <span>الإجمالي قبل الخصم:</span>
+                    <span className="font-bold text-slate-900 dark:text-white">{(invoice.subTotal || 0).toLocaleString("ar-EG")} ج.م</span>
                   </div>
-                )}
-                <div className="flex justify-between text-base font-bold text-gray-900 dark:text-white pt-2 border-t border-gray-200 dark:border-zinc-700">
-                  <span>الصافي النهائي:</span>
-                  <span className="text-emerald-600 dark:text-emerald-400">{(invoice.netTotal || 0).toLocaleString()} ج.م</span>
+                  {discountAmount > 0 && (
+                    <div className="flex justify-between text-rose-600 font-semibold">
+                      <span>الخصم المطبق:</span>
+                      <span className="font-bold">- {discountAmount.toLocaleString("ar-EG")} ج.م</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between text-base font-black text-slate-900 dark:text-white pt-2.5 border-t border-sky-300 dark:border-zinc-700">
+                    <span>الصافي النهائي:</span>
+                    <span className="text-[#0284c7] dark:text-[#38bdf8] print:text-black text-xl font-black">{(invoice.netTotal || 0).toLocaleString("ar-EG")} ج.م</span>
+                  </div>
                 </div>
               </div>
 
-              {/* Notes if any */}
+              {/* Notes */}
               {invoice.notes && (
-                <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 p-3 rounded-xl text-xs text-amber-800 dark:text-amber-300">
-                  <span className="font-bold block mb-1">ملاحظات:</span>
+                <div className="bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 p-3.5 rounded-xl text-xs text-amber-900 dark:text-amber-300 print:bg-slate-50 print:border-slate-300 print:text-black">
+                  <span className="font-bold block mb-1">ملاحظات الفاتورة:</span>
                   {invoice.notes}
                 </div>
               )}
+
+              {/* Printable Signatures & Approval Footer */}
+              <div className="hidden print:grid grid-cols-3 gap-6 pt-12 text-center text-xs font-bold text-slate-800 border-t border-slate-300 mt-8">
+                <div>
+                  <p className="mb-8">توقيع المبيعات / المحاسب</p>
+                  <p className="border-t border-dashed border-slate-400 pt-1">................................</p>
+                </div>
+                <div>
+                  <p className="mb-8">توقيع وموافقة العميل</p>
+                  <p className="border-t border-dashed border-slate-400 pt-1">................................</p>
+                </div>
+                <div>
+                  <p className="mb-8">ختم إدارة RTX والاعتماد</p>
+                  <p className="border-t border-dashed border-slate-400 pt-1">................................</p>
+                </div>
+              </div>
+
             </div>
 
-            {/* Footer */}
-            <div className="px-6 py-3 bg-gray-50 dark:bg-zinc-800/80 border-t border-gray-100 dark:border-zinc-800 flex justify-between items-center">
+            {/* Footer Actions (Screen mode) */}
+            <div className="px-6 py-3.5 bg-slate-100 dark:bg-zinc-800/80 border-t border-slate-200 dark:border-zinc-800 flex justify-between items-center no-print">
               <button
                 onClick={() => window.print()}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-gray-200 dark:bg-zinc-700 hover:bg-gray-300 dark:hover:bg-zinc-600 text-gray-700 dark:text-gray-200 text-xs font-semibold transition-colors"
+                className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-slate-900 to-[#0284c7] hover:from-slate-800 hover:to-[#0369a1] text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
               >
-                <Printer className="w-3.5 h-3.5" /> طباعة
+                <Printer className="w-4 h-4 text-[#38bdf8]" /> طباعة الفاتورة
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="px-4 py-1.5 rounded-lg bg-[#12829b] hover:bg-[#0ea5e9] text-white text-xs font-bold transition-colors"
+                className="px-5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
               >
                 إغلاق
               </button>
             </div>
+
           </div>
         </div>
       )}

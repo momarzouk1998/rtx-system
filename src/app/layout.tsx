@@ -90,12 +90,12 @@ export default async function RootLayout({
     <html lang="ar" dir="rtl" className={`${cairo.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col bg-gray-50 font-[var(--font-cairo)]">
         {subStatus.status === "expiring_soon" && (
-          <div className="bg-yellow-500 text-black px-4 py-2 text-center text-sm font-bold w-full shadow-sm z-[9999]">
+          <div className="bg-yellow-500 text-black px-4 py-2 text-center text-sm font-bold w-full shadow-sm z-[9999] no-print print:hidden">
             {subStatus.message}
           </div>
         )}
         {subStatus.status === "grace_period" && (
-          <div className="bg-red-500 text-white px-4 py-2 text-center text-sm font-bold w-full shadow-sm z-[9999]">
+          <div className="bg-red-500 text-white px-4 py-2 text-center text-sm font-bold w-full shadow-sm z-[9999] no-print print:hidden">
             {subStatus.message}
           </div>
         )}

@@ -260,35 +260,107 @@ html, body {
   border-radius: 3px;
 }
 
+/* العناصر الخاصة بالطباعة فقط تُخفى على الشاشة */
+.print-only {
+  display: none !important;
+}
+
 /* ========================================
-   الطباعة (لصفحة كشف الحساب)
+   الطباعة (للفواتير وكشوف الحسابات)
    ======================================== */
 @media print {
-  /* إخفاء كل ما لا يُطبع */
-  .no-print {
-    display: none !important;
-  }
-  /* إخفاء السايدبار وزر الهمبرغر */
+  /* إخفاء العناصر غير المطلوبة للطباعة */
+  .no-print,
   aside,
-  button[aria-label] {
+  button,
+  nav,
+  header,
+  [role="navigation"] {
     display: none !important;
   }
-  /* المحتوى يملأ الصفحة بالكامل */
-  body,
-  main {
-    overflow: visible !important;
+
+  /* إظهار العناصر المخصصة للطباعة فقط */
+  .print-only {
+    display: block !important;
   }
-  main > div {
+
+  /* إلغاء الـ backdrop الخلفي المظلم للمودالات عند الطباعة */
+  .fixed.inset-0 {
+    position: static !important;
+    background: transparent !important;
+    backdrop-filter: none !important;
     padding: 0 !important;
     margin: 0 !important;
   }
-  /* تجنب قطع الصفوف بين الصفحات */
+
+  /* ضبط إعدادات الصفحة للطباعة clean A4 بدون صفحات بيضاء فارغة */
+  @page {
+    size: A4 portrait;
+    margin: 10mm 12mm;
+  }
+
+  html,
+  body,
+  main,
+  .min-h-screen {
+    min-height: 0 !important;
+    height: auto !important;
+    background: white !important;
+    color: black !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    width: 100% !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  main > div {
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+  }
+
+  /* إلغاء ظلال الكروت والحواف الدائرية للمودالات عند الطباعة */
+  .shadow-2xl, .shadow-xl, .shadow-lg, .shadow-md, .shadow-sm, .shadow-xs {
+    box-shadow: none !important;
+  }
+
+  /* الجداول في الطباعة */
   table {
+    width: 100% !important;
+    border-collapse: collapse !important;
     page-break-inside: auto;
   }
+
+  th, td {
+    border: 1px solid #cbd5e1 !important; /* border-slate-300 */
+    padding: 6px 8px !important;
+    color: black !important;
+  }
+
+  thead {
+    background-color: #f1f5f9 !important; /* bg-slate-100 */
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
   tr {
     page-break-inside: avoid;
     page-break-after: auto;
+  }
+
+  /* ضبط المودال للطباعة فقط بدون تكرار */
+  .modal-print-container {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    box-shadow: none !important;
+    border: none !important;
+    width: 100% !important;
+    max-width: 100% !important;
   }
 }
 

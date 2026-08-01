@@ -94,7 +94,7 @@ export function Sidebar({ user }: { user?: { name?: string, role?: string } | nu
   return (
     <>
       {/* Mobile top bar */}
-      <header className="md:hidden fixed top-0 left-0 right-0 z-40 bg-header-gradient text-white px-3 py-2.5 flex items-center justify-between shadow-lg">
+      <header className="md:hidden fixed top-0 left-0 right-0 z-40 bg-header-gradient text-white px-3 py-2.5 flex items-center justify-between shadow-lg no-print print:hidden">
         <button
           onClick={() => setOpen(!open)}
           className="w-10 h-10 flex items-center justify-center rounded-lg hover:bg-white/10 text-2xl shrink-0"
@@ -113,12 +113,12 @@ export function Sidebar({ user }: { user?: { name?: string, role?: string } | nu
       {/* Mobile drawer */}
       {open && (
         <div
-          className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm"
+          className="md:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm no-print print:hidden"
           onClick={() => setOpen(false)}
         >
           <aside
             onClick={(e) => e.stopPropagation()}
-            className="absolute right-0 top-0 h-full w-[280px] max-w-[85vw] bg-header-gradient text-white shadow-2xl flex flex-col animate-slide-in"
+            className="absolute right-0 top-0 h-full w-[280px] max-w-[85vw] bg-header-gradient text-white shadow-2xl flex flex-col animate-slide-in no-print print:hidden"
           >
             <div className="flex items-center justify-between p-3 border-b border-white/10">
               <div className="flex items-center gap-2 min-w-0">
@@ -160,7 +160,7 @@ export function Sidebar({ user }: { user?: { name?: string, role?: string } | nu
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-header-gradient text-white h-screen sticky top-0 shadow-2xl shrink-0">
+      <aside className="hidden md:flex flex-col w-64 bg-header-gradient text-white h-screen sticky top-0 shadow-2xl shrink-0 no-print print:hidden">
         <SidebarContent menuItems={displayMenuItems} pathname={pathname} onNavigate={() => {}} userName={user?.name} />
         <div className="p-4 border-t border-white/10">
           <Link href="/profile" className="block w-full py-2 rounded-lg bg-[#12829b]/20 text-[#38bdf8] hover:bg-[#12829b]/30 text-sm text-center mb-2">
