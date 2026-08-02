@@ -90,8 +90,11 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
   const formattedDate = invoice?.date ? new Date(invoice.date).toISOString().split("T")[0] : "";
 
   const handleDownloadPdf = async () => {
+    if (isGeneratingPdf) return;
     try {
       setIsGeneratingPdf(true);
+      await new Promise((r) => setTimeout(r, 50));
+
       const element = document.getElementById(`invoice-container-${invoice.id}`) || document.querySelector(".printable-invoice-content");
       if (!element) {
         window.print();
@@ -103,32 +106,29 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
       const invoiceNumber = invoice.orderNumber || "0";
       
       const opt = {
-        margin: 8,
+        margin: 5,
         filename: `فاتورة_RTX_${customerName}_${invoiceNumber}.pdf`,
         image: { type: 'jpeg' as const, quality: 0.95 },
         html2canvas: { 
-          scale: 2.5, 
+          scale: 2, 
           useCORS: true, 
           logging: false,
-          backgroundColor: '#ffffff',
-          windowWidth: element.scrollWidth,
-          windowHeight: element.scrollHeight
+          backgroundColor: '#ffffff'
         },
         jsPDF: { 
           unit: 'mm', 
           format: 'a4', 
           orientation: 'portrait' as const,
           compress: true
-        },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        }
       };
 
       await html2pdfModule().set(opt).from(element).save();
     } catch (err) {
       console.error("PDF export failed:", err);
-      window.print();
     } finally {
       setIsGeneratingPdf(false);
+      document.body.style.overflow = '';
     }
   };
 

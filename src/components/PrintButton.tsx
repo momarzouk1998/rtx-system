@@ -15,8 +15,13 @@ export function PrintButton({
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   const handleDownloadPdf = async () => {
+    if (isGeneratingPdf) return;
     try {
       setIsGeneratingPdf(true);
+      
+      // Let UI update loader state
+      await new Promise((r) => setTimeout(r, 50));
+
       const element = document.getElementById(targetId) || document.querySelector(".printable-content") || document.body;
       if (!element) {
         window.print();
@@ -27,27 +32,24 @@ export function PrintButton({
       const opt = {
         margin: 5,
         filename: `${fileName}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.98 },
+        image: { type: 'jpeg' as const, quality: 0.95 },
         html2canvas: { 
-          scale: 2.5, 
+          scale: 2, 
           useCORS: true, 
           logging: false,
-          backgroundColor: '#ffffff',
-          windowWidth: orientation === "landscape" ? 1200 : 900
+          backgroundColor: '#ffffff'
         },
         jsPDF: { 
           unit: 'mm', 
           format: 'a4', 
           orientation: orientation,
           compress: true
-        },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+        }
       };
 
       await html2pdfModule().set(opt).from(element).save();
     } catch (err) {
-      console.error("PDF generation failed, falling back to window.print():", err);
-      window.print();
+      console.error("PDF generation failed:", err);
     } finally {
       setIsGeneratingPdf(false);
     }
