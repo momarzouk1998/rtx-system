@@ -57,7 +57,7 @@ jobs:
           echo ""
           echo "=== Starting deployment ==="
           ssh -i /tmp/deploy_key -o ConnectTimeout=30 \
-              "$SSH_USER@$SSH_HOST" << DEPLOY_SCRIPT
+              "$SSH_USER@$SSH_HOST" "GHCR_USER='$GHCR_USER' GHCR_TOKEN='$GHCR_TOKEN' bash -s" << 'DEPLOY_SCRIPT'
           set -e
 
           GHCR_IMAGE="ghcr.io/momarzouk1998/rtx-system:latest"
