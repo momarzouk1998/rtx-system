@@ -5,10 +5,12 @@ import { Printer, Download, Loader2 } from "lucide-react";
 
 export function PrintButton({ 
   targetId = "printable-area", 
-  fileName = "RTX-Document" 
+  fileName = "RTX-Document",
+  orientation = "portrait"
 }: { 
   targetId?: string; 
   fileName?: string; 
+  orientation?: "portrait" | "landscape";
 }) {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
@@ -23,21 +25,20 @@ export function PrintButton({
       
       const html2pdfModule = (await import("html2pdf.js")).default;
       const opt = {
-        margin: 8,
+        margin: 5,
         filename: `${fileName}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.95 },
+        image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { 
           scale: 2.5, 
           useCORS: true, 
           logging: false,
           backgroundColor: '#ffffff',
-          windowWidth: element.scrollWidth,
-          windowHeight: element.scrollHeight
+          windowWidth: orientation === "landscape" ? 1200 : 900
         },
         jsPDF: { 
           unit: 'mm', 
           format: 'a4', 
-          orientation: 'portrait' as const,
+          orientation: orientation,
           compress: true
         },
         pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }

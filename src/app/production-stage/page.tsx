@@ -43,8 +43,9 @@ export default async function ProductionStagePage() {
                 <th className="px-4 py-3 text-xs">التاريخ</th>
                 <th className="px-4 py-3 text-xs">التصنيف</th>
                 <th className="px-4 py-3 text-xs">المنتج / الخامة</th>
-                <th className="px-4 py-3 text-xs">الكمية (كجم)</th>
-                <th className="px-4 py-3 text-xs">الأكياس المنتجة</th>
+                <th className="px-4 py-3 text-xs bg-blue-50 text-blue-700">📤 تسليم خامات (كجم)</th>
+                <th className="px-4 py-3 text-xs bg-emerald-50 text-emerald-700">📥 استلام منتج (كجم)</th>
+                <th className="px-4 py-3 text-xs bg-emerald-50 text-emerald-700">الأكياس المنتجة</th>
                 <th className="px-4 py-3 text-xs">تكلفة التشغيل</th>
                 <th className="px-4 py-3 text-xs">الإجراءات</th>
               </tr>
@@ -52,7 +53,7 @@ export default async function ProductionStagePage() {
             <tbody className="divide-y divide-gray-100">
               {productionOrders.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-6 py-12 text-center text-gray-500">
+                  <td colSpan={8} className="px-6 py-12 text-center text-gray-500">
                     لا يوجد أوامر تصنيع. اضغط على "إضافة أمر تصنيع" للبدء.
                   </td>
                 </tr>
@@ -83,14 +84,39 @@ export default async function ProductionStagePage() {
                       <div className="font-medium text-gray-900 text-sm">{order.product.name}</div>
                       <div className="text-xs text-gray-500 mt-1">خامة: {order.material.name}</div>
                     </td>
-                    <td className="px-4 py-3 text-orange-600 font-medium text-sm">
-                      {order.quantityKg} كجم
+                    {/* تسليم خامات - خلفية زرقاء */}
+                    <td className="px-4 py-3 bg-blue-50/30 border-l-2 border-blue-200">
+                      {order.quantityKg > 0 ? (
+                        <span className="text-blue-700 font-bold text-sm">
+                          {order.quantityKg} كجم
+                        </span>
+                      ) : (
+                        <span className="text-gray-300">—</span>
+                      )}
                     </td>
-                    <td className="px-4 py-3 text-emerald-600 font-medium text-sm">
-                      {order.packagedBags} كيس
+                    {/* استلام منتج - خلفية خضراء */}
+                    <td className="px-4 py-3 bg-emerald-50/30">
+                      {order.receivedQuantityKg && order.receivedQuantityKg > 0 ? (
+                        <span className="text-emerald-700 font-bold text-sm">
+                          {order.receivedQuantityKg} كجم
+                        </span>
+                      ) : (
+                        <span className="text-gray-300">—</span>
+                      )}
+                    </td>
+                    {/* الأكياس - خلفية خضراء */}
+                    <td className="px-4 py-3 bg-emerald-50/30 border-r-2 border-emerald-200">
+                      {order.packagedBags > 0 ? (
+                        <span className="text-emerald-600 font-bold text-sm">
+                          {order.packagedBags} كيس
+                        </span>
+                      ) : (
+                        <span className="text-gray-300">—</span>
+                      )}
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-900 text-sm">
-                      {order.totalOperatingCost.toLocaleString()}                    </td>
+                      {order.totalOperatingCost.toLocaleString()}
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <Link href={`/production-stage/${order.id}/edit`} className="text-blue-600 hover:text-blue-800">

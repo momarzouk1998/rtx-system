@@ -136,7 +136,13 @@ export default async function StatementPage({
             </p>
           </div>
         </div>
-        {selectedEntity && <PrintButton />}
+        {selectedEntity && (
+          <PrintButton 
+            targetId="printable-client-statement" 
+            fileName={`كشف_حساب_${getTypeLabel()}_${selectedEntity.name}`} 
+            orientation="portrait"
+          />
+        )}
       </div>
 
       {/* Tabs (Screen mode) - Compact */}
@@ -203,7 +209,7 @@ export default async function StatementPage({
           {type === "factory" && selectedId ? (
             <FactoryStatement factoryId={selectedId} />
           ) : (
-            <div className="space-y-4">
+            <div id="printable-client-statement" className="space-y-4 printable-statement-content bg-white w-full">
               
               {/* Official Corporate Statement Header - Compact Version */}
               <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xs border border-slate-200 dark:border-zinc-800 print:border-none print:shadow-none print:rounded-none">

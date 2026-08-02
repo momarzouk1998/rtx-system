@@ -289,10 +289,10 @@ html, body {
     display: block !important;
   }
 
-  /* إلغاء رؤوس وأذييل المتصفح التلقائية (التاريخ، عنوان الصفحة، والروابط) عند الطباعة */
+  /* إلغاء رؤوس وأذييل المتصفح التلقائية عند الطباعة */
   @page {
     size: A4 portrait;
-    margin: 0;
+    margin: 8mm;
   }
 
   html,
@@ -304,18 +304,26 @@ html, body {
     background: white !important;
     color: black !important;
     overflow: visible !important;
-    padding: 12mm 15mm !important;
+    padding: 0 !important;
     margin: 0 !important;
     width: 100% !important;
     box-shadow: none !important;
     border: none !important;
   }
 
-  main > div {
+  main > div,
+  .printable-statement-content,
+  .printable-invoice-content {
     padding: 0 !important;
     margin: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
     box-shadow: none !important;
     border: none !important;
+  }
+
+  .overflow-x-auto {
+    overflow: visible !important;
   }
 
   /* إلغاء ظلال الكروت والحواف الدائرية للمودالات عند الطباعة */

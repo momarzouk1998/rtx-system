@@ -160,7 +160,7 @@ export function Sidebar({ user }: { user?: { name?: string, role?: string } | nu
       )}
 
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex flex-col w-64 bg-header-gradient text-white fixed left-0 top-0 bottom-0 shadow-2xl shrink-0 no-print print:hidden overflow-hidden">
+      <aside className="hidden md:flex flex-col w-64 bg-header-gradient text-white fixed right-0 top-0 bottom-0 shadow-2xl shrink-0 no-print print:hidden overflow-hidden">
         <SidebarContent menuItems={displayMenuItems} pathname={pathname} onNavigate={() => {}} userName={user?.name} />
         <div className="p-4 border-t border-white/10">
           <Link href="/profile" className="block w-full py-2 rounded-lg bg-[#12829b]/20 text-[#38bdf8] hover:bg-[#12829b]/30 text-sm text-center mb-2">
