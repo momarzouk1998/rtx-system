@@ -105,14 +105,6 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
   return (
     <div className="space-y-4 w-full">
 
-      {/* Action Toolbar (Screen Only) */}
-      <div className="flex justify-between items-center bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 no-print">
-        <h3 className="font-extrabold text-slate-900 dark:text-white text-base">
-          كشف حساب مصنع: <span className="text-[#0284c7]">{selectedFactoryName}</span>
-        </h3>
-        <PrintButton targetId="printable-factory-statement" fileName={`كشف_حساب_مصنع_${selectedFactoryName}`} orientation="landscape" />
-      </div>
-      
       {/* Printable Corporate Container */}
       <div id="printable-factory-statement" className="bg-white dark:bg-zinc-900 rounded-2xl border border-slate-200 dark:border-zinc-800 p-6 printable-statement-content w-full print:p-0 print:border-none">
         

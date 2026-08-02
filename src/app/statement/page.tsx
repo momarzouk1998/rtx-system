@@ -138,9 +138,9 @@ export default async function StatementPage({
         </div>
         {selectedEntity && (
           <PrintButton 
-            targetId="printable-client-statement" 
+            targetId={type === "factory" ? "printable-factory-statement" : "printable-client-statement"}
             fileName={`كشف_حساب_${getTypeLabel()}_${selectedEntity.name}`} 
-            orientation="portrait"
+            orientation={type === "factory" ? "landscape" : "portrait"}
           />
         )}
       </div>

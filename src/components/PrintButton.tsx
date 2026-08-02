@@ -16,19 +16,21 @@ export function PrintButton({
 
   const cleanupDomAfterPdf = () => {
     try {
-      document.querySelectorAll('.html2pdf__container, iframe').forEach((el) => {
-        if (el.tagName === 'IFRAME') {
-          const iframe = el as HTMLIFrameElement;
-          if (!iframe.src || iframe.src === 'about:blank' || iframe.id.includes('html2canvas')) {
-            iframe.remove();
-          }
-        } else {
-          el.remove();
-        }
+      // إزالة كل العناصر المؤقتة اللي html2pdf بيضيفها
+      document.querySelectorAll('.html2pdf__container, .html2pdf__overlay, iframe[src="about:blank"]').forEach((el) => {
+        el.remove();
       });
-      document.body.style.pointerEvents = '';
-      document.body.style.userSelect = '';
-    } catch (_) {}
+      
+      // إلغاء أي تأثيرات على الـ body
+      document.body.style.pointerEvents = 'auto';
+      document.body.style.userSelect = 'auto';
+      document.body.style.overflow = '';
+      
+      // إزالة أي classes مؤقتة
+      document.body.classList.remove('html2pdf__generating');
+    } catch (err) {
+      console.warn('Cleanup error:', err);
+    }
   };
 
   const handleDownloadPdf = async () => {
@@ -37,8 +39,11 @@ export function PrintButton({
     try {
       setIsGeneratingPdf(true);
       
+      // تأكد إن الـ DOM نضيف قبل ما نبدأ
+      cleanupDomAfterPdf();
+      
       // Let UI update loader state
-      await new Promise((r) => setTimeout(r, 60));
+      await new Promise((r) => setTimeout(r, 100));
 
       const element = document.getElementById(targetId) || document.querySelector(".printable-statement-content") || document.querySelector(".printable-content") || document.body;
       
@@ -75,15 +80,22 @@ export function PrintButton({
           format: 'a4', 
           orientation: orientation,
           compress: true
-        }
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
       await html2pdfModule().set(opt).from(element).save();
+      
+      // انتظر شوية قبل التنضيف عشان التحميل يخلص
+      await new Promise((r) => setTimeout(r, 500));
+      
     } catch (err) {
       console.warn("PDF generation error, falling back to window.print():", err);
       window.print();
     } finally {
       setIsGeneratingPdf(false);
+      
+      // تنضيف شامل بعد ما نخلص
       cleanupDomAfterPdf();
     }
   };
