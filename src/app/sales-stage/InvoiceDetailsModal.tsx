@@ -75,19 +75,21 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
 
   const cleanupDomAfterPdf = () => {
     try {
-      document.querySelectorAll('.html2pdf__container, iframe').forEach((el) => {
-        if (el.tagName === 'IFRAME') {
-          const iframe = el as HTMLIFrameElement;
-          if (!iframe.src || iframe.src === 'about:blank' || iframe.id.includes('html2canvas')) {
-            iframe.remove();
-          }
-        } else {
-          el.remove();
-        }
+      // إزالة كل العناصر المؤقتة اللي html2pdf بيضيفها
+      document.querySelectorAll('.html2pdf__container, .html2pdf__overlay, iframe[src="about:blank"]').forEach((el) => {
+        el.remove();
       });
-      document.body.style.pointerEvents = '';
-      document.body.style.userSelect = '';
-    } catch (_) {}
+      
+      // إلغاء أي تأثيرات على الـ body
+      document.body.style.pointerEvents = 'auto';
+      document.body.style.userSelect = 'auto';
+      document.body.style.overflow = '';
+      
+      // إزالة أي classes مؤقتة
+      document.body.classList.remove('html2pdf__generating');
+    } catch (err) {
+      console.warn('Cleanup error:', err);
+    }
   };
 
   // منع scroll لما المودال مفتوح وإلغاء المنع لما يقفل مع تنظيف الـ DOM
@@ -112,7 +114,11 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
     if (isGeneratingPdf) return;
     try {
       setIsGeneratingPdf(true);
-      await new Promise((r) => setTimeout(r, 50));
+      
+      // تأكد إن الـ DOM نضيف قبل ما نبدأ
+      cleanupDomAfterPdf();
+      
+      await new Promise((r) => setTimeout(r, 100));
 
       const element = document.getElementById(`invoice-container-${invoice.id}`) || document.querySelector(".printable-invoice-content") || document.body;
       if (!element) {
@@ -149,19 +155,30 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
           format: 'a4', 
           orientation: 'portrait' as const,
           compress: true
-        }
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
       await html2pdfModule().set(opt).from(element).save();
+      
+      // انتظر شوية قبل التنضيف عشان التحميل يخلص
+      await new Promise((r) => setTimeout(r, 500));
+      
     } catch (err) {
       console.warn("PDF export error, falling back to window.print():", err);
       window.print();
     } finally {
       setIsGeneratingPdf(false);
-      if (!isOpen) {
+      
+      // تنضيف شامل بعد ما نخلص
+      cleanupDomAfterPdf();
+      
+      // تأكد إن الـ overflow راجع طبيعي لو المودال لسه مفتوح
+      if (isOpen) {
+        document.body.style.overflow = 'hidden';
+      } else {
         document.body.style.overflow = '';
       }
-      cleanupDomAfterPdf();
     }
   };
 
