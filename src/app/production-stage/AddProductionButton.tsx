@@ -132,73 +132,75 @@ export function AddProductionButton({ factories, products }: { factories: Factor
             </select>
           </div>
 
-          {/* Scenario selector */}
-          <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20 p-4 rounded-lg border-2 border-purple-200 dark:border-purple-800 shadow-sm">
-            <h4 className="font-bold text-gray-700 dark:text-gray-200 mb-3 text-sm flex items-center gap-2">
-              🎯 نوع العملية
-            </h4>
-            <div className="grid grid-cols-3 gap-2">
-              <label className={`text-center py-3 px-2 rounded-lg cursor-pointer transition-all border-2 ${
-                scenario === 'DELIVER' 
-                  ? 'bg-blue-500 text-white border-blue-600 shadow-md scale-105 font-bold' 
-                  : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 border-blue-200 dark:border-blue-800 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30'
-              }`}>
-                <input 
-                  type="radio" 
-                  name="scenario" 
-                  value="DELIVER" 
-                  className="hidden" 
-                  checked={scenario === 'DELIVER'} 
-                  onChange={() => {
-                    setScenario('DELIVER');
-                    setReceivedQuantity(0);
-                  }} 
-                />
-                <div className="text-2xl mb-1">📤</div>
-                <div className="text-xs font-semibold">تسليم خامات فقط</div>
-              </label>
-              
-              <label className={`text-center py-3 px-2 rounded-lg cursor-pointer transition-all border-2 ${
-                scenario === 'RECEIVE' 
-                  ? 'bg-emerald-500 text-white border-emerald-600 shadow-md scale-105 font-bold' 
-                  : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 border-emerald-200 dark:border-emerald-800 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
-              }`}>
-                <input 
-                  type="radio" 
-                  name="scenario" 
-                  value="RECEIVE" 
-                  className="hidden" 
-                  checked={scenario === 'RECEIVE'} 
-                  onChange={() => {
-                    setScenario('RECEIVE');
-                    setQuantity(0);
-                  }} 
-                />
-                <div className="text-2xl mb-1">📥</div>
-                <div className="text-xs font-semibold">استلام منتج فقط</div>
-              </label>
-              
-              <label className={`text-center py-3 px-2 rounded-lg cursor-pointer transition-all border-2 ${
-                scenario === 'BOTH' 
-                  ? 'bg-gradient-to-br from-blue-500 to-emerald-500 text-white border-purple-600 shadow-md scale-105 font-bold' 
-                  : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 border-purple-200 dark:border-purple-800 hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/30'
-              }`}>
-                <input 
-                  type="radio" 
-                  name="scenario" 
-                  value="BOTH" 
-                  className="hidden" 
-                  checked={scenario === 'BOTH'} 
-                  onChange={() => setScenario('BOTH')} 
-                />
-                <div className="text-2xl mb-1">📤📥</div>
-                <div className="text-xs font-semibold">أمر تصنيع كامل</div>
-              </label>
+          {/* Scenario selector - للتصنيع الخارجي فقط */}
+          {category === 'EXTERNAL' && (
+            <div className="bg-gradient-to-r from-blue-50 via-purple-50 to-emerald-50 dark:from-blue-950/20 dark:via-purple-950/20 dark:to-emerald-950/20 p-4 rounded-lg border-2 border-purple-200 dark:border-purple-800 shadow-sm">
+              <h4 className="font-bold text-gray-700 dark:text-gray-200 mb-3 text-sm flex items-center gap-2">
+                🎯 نوع العملية
+              </h4>
+              <div className="grid grid-cols-3 gap-2">
+                <label className={`text-center py-3 px-2 rounded-lg cursor-pointer transition-all border-2 ${
+                  scenario === 'DELIVER' 
+                    ? 'bg-blue-500 text-white border-blue-600 shadow-md scale-105 font-bold' 
+                    : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 border-blue-200 dark:border-blue-800 hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-950/30'
+                }`}>
+                  <input 
+                    type="radio" 
+                    name="scenario" 
+                    value="DELIVER" 
+                    className="hidden" 
+                    checked={scenario === 'DELIVER'} 
+                    onChange={() => {
+                      setScenario('DELIVER');
+                      setReceivedQuantity(0);
+                    }} 
+                  />
+                  <div className="text-2xl mb-1">📤</div>
+                  <div className="text-xs font-semibold">تسليم خامات فقط</div>
+                </label>
+                
+                <label className={`text-center py-3 px-2 rounded-lg cursor-pointer transition-all border-2 ${
+                  scenario === 'RECEIVE' 
+                    ? 'bg-emerald-500 text-white border-emerald-600 shadow-md scale-105 font-bold' 
+                    : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 border-emerald-200 dark:border-emerald-800 hover:border-emerald-400 hover:bg-emerald-50 dark:hover:bg-emerald-950/30'
+                }`}>
+                  <input 
+                    type="radio" 
+                    name="scenario" 
+                    value="RECEIVE" 
+                    className="hidden" 
+                    checked={scenario === 'RECEIVE'} 
+                    onChange={() => {
+                      setScenario('RECEIVE');
+                      setQuantity(0);
+                    }} 
+                  />
+                  <div className="text-2xl mb-1">📥</div>
+                  <div className="text-xs font-semibold">استلام منتج فقط</div>
+                </label>
+                
+                <label className={`text-center py-3 px-2 rounded-lg cursor-pointer transition-all border-2 ${
+                  scenario === 'BOTH' 
+                    ? 'bg-gradient-to-br from-blue-500 to-emerald-500 text-white border-purple-600 shadow-md scale-105 font-bold' 
+                    : 'bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-300 border-purple-200 dark:border-purple-800 hover:border-purple-400 hover:bg-purple-50 dark:hover:bg-purple-950/30'
+                }`}>
+                  <input 
+                    type="radio" 
+                    name="scenario" 
+                    value="BOTH" 
+                    className="hidden" 
+                    checked={scenario === 'BOTH'} 
+                    onChange={() => setScenario('BOTH')} 
+                  />
+                  <div className="text-2xl mb-1">📤📥</div>
+                  <div className="text-xs font-semibold">أمر تصنيع كامل</div>
+                </label>
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* تسليم خامات - يظهر في DELIVER و BOTH فقط */}
-          {(scenario === 'DELIVER' || scenario === 'BOTH') && (
+          {/* تسليم خامات - يظهر في DELIVER و BOTH فقط (للتصنيع الخارجي) أو دايمًا للداخلي */}
+          {(category === 'INTERNAL' || scenario === 'DELIVER' || scenario === 'BOTH') && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 📤 تسليم خامات (كجم منصرف) *
@@ -216,11 +218,11 @@ export function AddProductionButton({ factories, products }: { factories: Factor
               />
             </div>
           )}
-          {/* Hidden input for RECEIVE scenario to send 0 */}
-          {scenario === 'RECEIVE' && <input type="hidden" name="quantityKg" value="0" />}
+          {/* Hidden input for RECEIVE scenario (EXTERNAL only) */}
+          {category === 'EXTERNAL' && scenario === 'RECEIVE' && <input type="hidden" name="quantityKg" value="0" />}
 
-          {/* استلام منتج - يظهر في RECEIVE و BOTH فقط */}
-          {(scenario === 'RECEIVE' || scenario === 'BOTH') && (
+          {/* استلام منتج - يظهر في RECEIVE و BOTH فقط (للتصنيع الخارجي) أو دايمًا للداخلي */}
+          {(category === 'INTERNAL' || scenario === 'RECEIVE' || scenario === 'BOTH') && (
             <div>
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
                 📥 استلام منتج (كجم مستلم) *
@@ -238,8 +240,8 @@ export function AddProductionButton({ factories, products }: { factories: Factor
               />
             </div>
           )}
-          {/* Hidden input for DELIVER scenario to send 0 */}
-          {scenario === 'DELIVER' && <input type="hidden" name="receivedQuantityKg" value="0" />}
+          {/* Hidden input for DELIVER scenario (EXTERNAL only) */}
+          {category === 'EXTERNAL' && scenario === 'DELIVER' && <input type="hidden" name="receivedQuantityKg" value="0" />}
 
           {/* Editable operating cost for EXTERNAL */}
           {category === 'EXTERNAL' && (
@@ -304,9 +306,10 @@ export function AddProductionButton({ factories, products }: { factories: Factor
             <button
               type="submit"
               disabled={isPending || !selectedProductId || 
-                (scenario === 'DELIVER' && !quantity) || 
-                (scenario === 'RECEIVE' && !receivedQuantity) ||
-                (scenario === 'BOTH' && (!quantity || !receivedQuantity))
+                (category === 'EXTERNAL' && scenario === 'DELIVER' && !quantity) || 
+                (category === 'EXTERNAL' && scenario === 'RECEIVE' && !receivedQuantity) ||
+                (category === 'EXTERNAL' && scenario === 'BOTH' && (!quantity || !receivedQuantity)) ||
+                (category === 'INTERNAL' && (!quantity || !receivedQuantity))
               }
               className="bg-[#12829b] hover:bg-[#0e687c] text-white px-6 py-2 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >

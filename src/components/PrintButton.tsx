@@ -23,7 +23,7 @@ export function PrintButton({
       // Let UI update loader state
       await new Promise((r) => setTimeout(r, 60));
 
-      const element = document.getElementById(targetId) || document.querySelector(".printable-statement-content") || document.querySelector(".printable-content");
+      const element = document.getElementById(targetId) || document.querySelector(".printable-statement-content") || document.querySelector(".printable-content") || document.body;
       
       if (!element) {
         window.print();
@@ -35,13 +35,23 @@ export function PrintButton({
       const opt = {
         margin: 5,
         filename: `${fileName}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.92 },
+        image: { type: 'jpeg' as const, quality: 0.95 },
         html2canvas: { 
-          scale: 1.5, 
+          scale: 2, 
           useCORS: true, 
           logging: false,
           backgroundColor: '#ffffff',
-          removeContainer: true
+          onclone: (clonedDoc: Document) => {
+            // Fix html2canvas unsupported 'lab()' and 'oklch()' colors from Tailwind v4
+            const styleElements = clonedDoc.querySelectorAll('style');
+            styleElements.forEach((s) => {
+              if (s.textContent && (s.textContent.includes('lab(') || s.textContent.includes('oklch('))) {
+                s.textContent = s.textContent
+                  .replace(/lab\([^)]+\)/g, '#0284c7')
+                  .replace(/oklch\([^)]+\)/g, '#0284c7');
+              }
+            });
+          }
         },
         jsPDF: { 
           unit: 'mm', 
@@ -51,14 +61,10 @@ export function PrintButton({
         }
       };
 
-      const pdfPromise = html2pdfModule().set(opt).from(element).save();
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("PDF generation timeout")), 8000)
-      );
-
-      await Promise.race([pdfPromise, timeoutPromise]);
+      await html2pdfModule().set(opt).from(element).save();
     } catch (err) {
-      console.warn("PDF generation warning, offering fallback:", err);
+      console.warn("PDF generation error, falling back to window.print():", err);
+      window.print();
     } finally {
       setIsGeneratingPdf(false);
     }

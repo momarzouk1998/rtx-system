@@ -93,9 +93,9 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
     if (isGeneratingPdf) return;
     try {
       setIsGeneratingPdf(true);
-      await new Promise((r) => setTimeout(r, 60));
+      await new Promise((r) => setTimeout(r, 50));
 
-      const element = document.getElementById(`invoice-container-${invoice.id}`) || document.querySelector(".printable-invoice-content");
+      const element = document.getElementById(`invoice-container-${invoice.id}`) || document.querySelector(".printable-invoice-content") || document.body;
       if (!element) {
         window.print();
         return;
@@ -108,13 +108,22 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
       const opt = {
         margin: 5,
         filename: `فاتورة_RTX_${customerName}_${invoiceNumber}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.92 },
+        image: { type: 'jpeg' as const, quality: 0.95 },
         html2canvas: { 
-          scale: 1.5, 
+          scale: 2, 
           useCORS: true, 
           logging: false,
           backgroundColor: '#ffffff',
-          removeContainer: true
+          onclone: (clonedDoc: Document) => {
+            const styleElements = clonedDoc.querySelectorAll('style');
+            styleElements.forEach((s) => {
+              if (s.textContent && (s.textContent.includes('lab(') || s.textContent.includes('oklch('))) {
+                s.textContent = s.textContent
+                  .replace(/lab\([^)]+\)/g, '#0284c7')
+                  .replace(/oklch\([^)]+\)/g, '#0284c7');
+              }
+            });
+          }
         },
         jsPDF: { 
           unit: 'mm', 
@@ -124,14 +133,10 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
         }
       };
 
-      const pdfPromise = html2pdfModule().set(opt).from(element).save();
-      const timeoutPromise = new Promise((_, reject) => 
-        setTimeout(() => reject(new Error("PDF generation timeout")), 8000)
-      );
-
-      await Promise.race([pdfPromise, timeoutPromise]);
+      await html2pdfModule().set(opt).from(element).save();
     } catch (err) {
-      console.warn("PDF export warning:", err);
+      console.warn("PDF export error, falling back to window.print():", err);
+      window.print();
     } finally {
       setIsGeneratingPdf(false);
       document.body.style.overflow = '';
