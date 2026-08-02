@@ -23,11 +23,24 @@ export function PrintButton({
       
       const html2pdfModule = (await import("html2pdf.js")).default;
       const opt = {
-        margin: 5,
+        margin: 8,
         filename: `${fileName}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
+        image: { type: 'jpeg' as const, quality: 0.95 },
+        html2canvas: { 
+          scale: 2.5, 
+          useCORS: true, 
+          logging: false,
+          backgroundColor: '#ffffff',
+          windowWidth: element.scrollWidth,
+          windowHeight: element.scrollHeight
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait' as const,
+          compress: true
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
       await html2pdfModule().set(opt).from(element).save();

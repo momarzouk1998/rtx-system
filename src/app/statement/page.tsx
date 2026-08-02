@@ -245,32 +245,39 @@ export default async function StatementPage({
                 </div>
 
                 {/* Financial KPI Summary Cards */}
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 p-4 bg-sky-50/50 dark:bg-zinc-800/50 rounded-xl border border-sky-200/80 dark:border-zinc-700 text-sm print:bg-slate-50 print:border-slate-300">
-                  <div className="text-center p-2">
-                    <div className="text-xs font-bold text-slate-500 dark:text-slate-400">رصيد افتتاحي</div>
-                    <div className="text-base font-extrabold text-slate-900 dark:text-white mt-1">
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+                  {/* رصيد افتتاحي */}
+                  <div className="bg-slate-100 dark:bg-zinc-800 p-4 rounded-xl border-2 border-slate-300 dark:border-zinc-700 text-center print:bg-slate-100 print:border-slate-400">
+                    <div className="text-xs font-bold text-slate-500 dark:text-slate-400 mb-2">رصيد افتتاحي</div>
+                    <div className="text-xl font-black text-slate-900 dark:text-white print:text-slate-900">
                       {(totals.opening || 0).toLocaleString("ar-EG")}
                     </div>
                   </div>
-                  <div className="text-center p-2 border-r border-sky-200 dark:border-zinc-700 print:border-slate-300">
-                    <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
+
+                  {/* إجمالي عليه (مدين) - لون أحمر */}
+                  <div className="bg-rose-50 dark:bg-rose-950/30 p-4 rounded-xl border-2 border-rose-300 dark:border-rose-800 text-center print:bg-rose-50 print:border-rose-400">
+                    <div className="text-xs font-bold text-rose-700 dark:text-rose-400 mb-2">
                       {type === "client" ? "إجمالي عليه (مدين)" : "إجمالي المسدد (عليه)"}
                     </div>
-                    <div className="text-base font-extrabold text-rose-600 dark:text-rose-400 mt-1">
+                    <div className="text-xl font-black text-rose-700 dark:text-rose-400 print:text-rose-700">
                       {(totals.debit || 0).toLocaleString("ar-EG")}
                     </div>
                   </div>
-                  <div className="text-center p-2 border-r border-sky-200 dark:border-zinc-700 print:border-slate-300">
-                    <div className="text-xs font-bold text-slate-500 dark:text-slate-400">
+
+                  {/* إجمالي له (دائن) - لون أخضر */}
+                  <div className="bg-emerald-50 dark:bg-emerald-950/30 p-4 rounded-xl border-2 border-emerald-300 dark:border-emerald-800 text-center print:bg-emerald-50 print:border-emerald-400">
+                    <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 mb-2">
                       {type === "client" ? "إجمالي له (دائن)" : "إجمالي المستحق له (دائن)"}
                     </div>
-                    <div className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
+                    <div className="text-xl font-black text-emerald-700 dark:text-emerald-400 print:text-emerald-700">
                       {(totals.credit || 0).toLocaleString("ar-EG")}
                     </div>
                   </div>
-                  <div className="text-center p-2 border-r border-sky-200 dark:border-zinc-700 print:border-slate-300">
-                    <div className="text-xs font-bold text-slate-500 dark:text-slate-400">الرصيد الحالي المستحق</div>
-                    <div className={`text-base font-black mt-1 ${totals.balance >= 0 ? "text-[#0284c7] dark:text-[#38bdf8]" : "text-emerald-600"}`}>
+
+                  {/* الرصيد الحالي - لون أزرق بارز */}
+                  <div className="bg-gradient-to-br from-[#0284c7] to-[#0369a1] dark:from-[#0369a1] dark:to-[#0284c7] p-4 rounded-xl border-2 border-[#0369a1] text-center shadow-lg print:bg-[#0284c7] print:border-[#0369a1]">
+                    <div className="text-xs font-bold text-white mb-2">الرصيد المستحق</div>
+                    <div className="text-xl font-black text-white">
                       {(totals.balance || 0).toLocaleString("ar-EG")}
                     </div>
                   </div>
@@ -281,14 +288,14 @@ export default async function StatementPage({
               <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xs border border-slate-200 dark:border-zinc-800 overflow-hidden print:border-slate-400 print:rounded-none">
                 <div className="overflow-x-auto">
                   <table className="w-full text-right text-sm" dir="rtl">
-                    <thead className="bg-slate-900 text-white text-xs print:bg-slate-200 print:text-black">
+                    <thead className="bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white text-xs print:bg-[#0284c7]">
                       <tr>
-                        <th className="px-5 py-3.5 border-b border-slate-800 print:border-slate-400 font-bold">التاريخ</th>
-                        {isAll && <th className="px-5 py-3.5 border-b border-slate-800 print:border-slate-400 font-bold">الاسم</th>}
-                        <th className="px-5 py-3.5 border-b border-slate-800 print:border-slate-400 font-bold">نوع الحركة</th>
-                        <th className="px-5 py-3.5 border-b border-slate-800 print:border-slate-400 font-bold">البيان والتفاصيل</th>
-                        <th className="px-5 py-3.5 border-b border-slate-800 print:border-slate-400 font-bold text-rose-300 print:text-rose-700">عليه (مدين)</th>
-                        <th className="px-5 py-3.5 border-b border-slate-800 print:border-slate-400 font-bold text-[#38bdf8] print:text-emerald-700">له (دائن)</th>
+                        <th className="px-5 py-3.5 border-b border-[#0369a1] print:border-slate-400 font-bold">التاريخ</th>
+                        {isAll && <th className="px-5 py-3.5 border-b border-[#0369a1] print:border-slate-400 font-bold">الاسم</th>}
+                        <th className="px-5 py-3.5 border-b border-[#0369a1] print:border-slate-400 font-bold">نوع الحركة</th>
+                        <th className="px-5 py-3.5 border-b border-[#0369a1] print:border-slate-400 font-bold">البيان والتفاصيل</th>
+                        <th className="px-5 py-3.5 border-b border-[#0369a1] print:border-slate-400 font-bold bg-white/10">عليه (مدين)</th>
+                        <th className="px-5 py-3.5 border-b border-[#0369a1] print:border-slate-400 font-bold bg-white/10">له (دائن)</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 print:divide-slate-300">
@@ -312,18 +319,20 @@ export default async function StatementPage({
                                 </span>
                               </td>
                               <td className="px-5 py-3.5 text-slate-900 dark:text-slate-100 font-medium">{m.description}</td>
-                              <td className="px-5 py-3.5 font-bold text-rose-600 dark:text-rose-400">
+                              {/* تمييز عمود المدين */}
+                              <td className="px-5 py-3.5 font-black text-rose-700 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-950/20 print:bg-rose-50/50 print:text-rose-700">
                                 {m.debit > 0 ? `${m.debit.toLocaleString("ar-EG")}` : "—"}
                               </td>
-                              <td className="px-5 py-3.5 font-bold text-emerald-600 dark:text-emerald-400">
+                              {/* تمييز عمود الدائن */}
+                              <td className="px-5 py-3.5 font-black text-emerald-700 dark:text-emerald-400 bg-emerald-50/30 dark:bg-emerald-950/20 print:bg-emerald-50/50 print:text-emerald-700">
                                 {m.credit > 0 ? `${m.credit.toLocaleString("ar-EG")}` : "—"}
                               </td>
                             </tr>
                           ))}
                           {/* Total Balance Summary Row */}
-                          <tr className="bg-sky-50/60 dark:bg-zinc-800/80 font-black text-sm print:bg-slate-200">
-                            <td colSpan={isAll ? 4 : 3} className="px-5 py-4 text-slate-900 dark:text-white">الرصيد المستحق النهائي</td>
-                            <td colSpan={2} className="px-5 py-4 text-[#0284c7] dark:text-[#38bdf8] print:text-black text-base font-black">
+                          <tr className="bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white font-black text-base print:bg-[#0284c7]">
+                            <td colSpan={isAll ? 4 : 3} className="px-5 py-4">الرصيد المستحق النهائي</td>
+                            <td colSpan={2} className="px-5 py-4 text-white text-lg font-black">
                               {(totals.balance || 0).toLocaleString("ar-EG")}
                             </td>
                           </tr>

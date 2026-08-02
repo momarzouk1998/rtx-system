@@ -363,5 +363,62 @@ html, body {
     z-index: 999999 !important;
     display: block !important;
   }
+
+  /* التأكد من طباعة الألوان والخلفيات بشكل صحيح */
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* تحسين عرض الألوان في الطباعة */
+  .print\:bg-blue-50 {
+    background-color: #eff6ff !important;
+  }
+  .print\:bg-amber-50 {
+    background-color: #fffbeb !important;
+  }
+  .print\:bg-emerald-50 {
+    background-color: #ecfdf5 !important;
+  }
+  .print\:bg-rose-50\/50 {
+    background-color: rgba(255, 241, 242, 0.5) !important;
+  }
+  .print\:bg-emerald-50\/50 {
+    background-color: rgba(236, 253, 245, 0.5) !important;
+  }
+  .print\:text-blue-700 {
+    color: #1d4ed8 !important;
+  }
+  .print\:text-amber-700 {
+    color: #b45309 !important;
+  }
+  .print\:text-emerald-700 {
+    color: #047857 !important;
+  }
+  .print\:text-rose-700 {
+    color: #be123c !important;
+  }
+
+  /* تحسين الحاويات المتدرجة */
+  .print\:bg-\[\#0284c7\] {
+    background-color: #0284c7 !important;
+  }
+  .print\:border-\[\#0369a1\] {
+    border-color: #0369a1 !important;
+  }
+
+  /* تحسين حجم الخط للطباعة */
+  .printable-invoice-content,
+  .printable-statement-content {
+    font-size: 11pt !important;
+  }
+
+  /* منع تقطيع العناصر المهمة */
+  .financial-card,
+  .info-box,
+  .balance-summary-card {
+    page-break-inside: avoid !important;
+  }
 }
 

@@ -144,22 +144,27 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
         </div>
 
         {/* Summary Indicators */}
-        <div className="grid grid-cols-3 gap-4 p-4 bg-sky-50/50 dark:bg-zinc-800/50 rounded-xl border border-sky-200/80 dark:border-zinc-700 text-sm print:bg-slate-50 print:border-slate-300">
-          <div className="text-center p-2">
-            <div className="text-xs font-bold text-slate-500 dark:text-slate-400">إجمالي خامات مرسلة</div>
-            <div className="text-base font-extrabold text-[#0284c7] dark:text-[#38bdf8] mt-1">
+        <div className="grid grid-cols-3 gap-3 mb-6">
+          {/* إجمالي خامات مرسلة - أزرق */}
+          <div className="bg-blue-50 dark:bg-blue-950/30 p-4 rounded-xl border-2 border-blue-300 dark:border-blue-800 text-center print:bg-blue-50 print:border-blue-400">
+            <div className="text-xs font-bold text-blue-700 dark:text-blue-400 mb-2">إجمالي خامات مرسلة</div>
+            <div className="text-xl font-black text-blue-700 dark:text-blue-400 print:text-blue-700">
               {(totalMaterialSent || 0).toLocaleString("ar-EG")} كجم
             </div>
           </div>
-          <div className="text-center p-2 border-r border-sky-200 dark:border-zinc-700 print:border-slate-300">
-            <div className="text-xs font-bold text-slate-500 dark:text-slate-400">إجمالي منتج مستلم</div>
-            <div className="text-base font-extrabold text-emerald-600 dark:text-emerald-400 mt-1">
+
+          {/* إجمالي منتج مستلم - أخضر */}
+          <div className="bg-emerald-50 dark:bg-emerald-950/30 p-4 rounded-xl border-2 border-emerald-300 dark:border-emerald-800 text-center print:bg-emerald-50 print:border-emerald-400">
+            <div className="text-xs font-bold text-emerald-700 dark:text-emerald-400 mb-2">إجمالي منتج مستلم</div>
+            <div className="text-xl font-black text-emerald-700 dark:text-emerald-400 print:text-emerald-700">
               {(totalProductReceived || 0).toLocaleString("ar-EG")} كجم
             </div>
           </div>
-          <div className="text-center p-2 border-r border-sky-200 dark:border-zinc-700 print:border-slate-300">
-            <div className="text-xs font-bold text-slate-500 dark:text-slate-400">الرصيد المالي المستحق (للمصنع)</div>
-            <div className={`text-base font-black mt-1 ${runningFinancialBalance >= 0 ? "text-[#0284c7] dark:text-[#38bdf8]" : "text-rose-600"}`}>
+
+          {/* الرصيد المالي - أزرق غامق بارز */}
+          <div className="bg-gradient-to-br from-[#0284c7] to-[#0369a1] dark:from-[#0369a1] dark:to-[#0284c7] p-4 rounded-xl border-2 border-[#0369a1] text-center shadow-lg print:bg-[#0284c7] print:border-[#0369a1]">
+            <div className="text-xs font-bold text-white mb-2">الرصيد المالي المستحق</div>
+            <div className="text-xl font-black text-white">
               {(runningFinancialBalance || 0).toLocaleString("ar-EG")}
             </div>
           </div>
@@ -170,21 +175,21 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
       <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-xs border border-slate-200 dark:border-zinc-800 overflow-hidden print:border-slate-400 print:rounded-none">
         <div className="overflow-x-auto">
           <table className="w-full text-center text-xs" dir="rtl">
-            <thead className="bg-slate-900 text-white print:bg-slate-200 print:text-black">
+            <thead className="bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white print:bg-[#0284c7]">
               <tr>
-                <th className="px-2.5 py-3 border-b border-slate-800 print:border-slate-400 font-bold">#</th>
-                <th className="px-2.5 py-3 border-b border-slate-800 print:border-slate-400 font-bold">التاريخ</th>
-                {isAll && <th className="px-2.5 py-3 border-b border-slate-800 print:border-slate-400 font-bold">المصنع</th>}
-                <th className="px-2.5 py-3 border-b border-slate-800 print:border-slate-400 font-bold">البيان</th>
-                <th className="px-2.5 py-3 border-b border-slate-800 print:border-slate-400 font-bold bg-slate-950 text-[#38bdf8] print:bg-slate-300 print:text-black">تسليم خامات (كجم)</th>
-                <th className="px-2.5 py-3 border-b border-slate-800 print:border-slate-400 font-bold">نوع الصنف</th>
-                <th className="px-2.5 py-3 border-b border-slate-800 print:border-slate-400 font-bold bg-slate-950 text-emerald-300 print:bg-slate-300 print:text-black">استلام منتج (كجم)</th>
-                <th className="px-2.5 py-3 border-b border-slate-800 print:border-slate-400 font-bold">عدد الأكياس</th>
-                <th className="px-2.5 py-3 border-b border-slate-800 print:border-slate-400 font-bold">سعر التصنيع</th>
-                <th className="px-2.5 py-3 border-b border-slate-800 print:border-slate-400 font-bold text-amber-300 print:text-amber-700">عمولة مستحقة</th>
-                <th className="px-2.5 py-3 border-b border-slate-800 print:border-slate-400 font-bold text-rose-300 print:text-rose-700">دفعات مسددة</th>
-                <th className="px-2.5 py-3 border-b border-slate-800 print:border-slate-400 font-bold bg-slate-800 text-slate-200 print:bg-slate-300 print:text-black">رصيد الخامات</th>
-                <th className="px-2.5 py-3 border-b border-slate-800 print:border-slate-400 font-bold bg-slate-800 text-slate-200 print:bg-slate-300 print:text-black">الرصيد المالي</th>
+                <th className="px-2.5 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold">#</th>
+                <th className="px-2.5 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold">التاريخ</th>
+                {isAll && <th className="px-2.5 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold">المصنع</th>}
+                <th className="px-2.5 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold">البيان</th>
+                <th className="px-2.5 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold bg-white/10">تسليم خامات (كجم)</th>
+                <th className="px-2.5 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold">نوع الصنف</th>
+                <th className="px-2.5 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold bg-white/10">استلام منتج (كجم)</th>
+                <th className="px-2.5 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold">عدد الأكياس</th>
+                <th className="px-2.5 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold">سعر التصنيع</th>
+                <th className="px-2.5 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold bg-white/10">عمولة مستحقة</th>
+                <th className="px-2.5 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold bg-white/10">دفعات مسددة</th>
+                <th className="px-2.5 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold bg-white/10">رصيد الخامات</th>
+                <th className="px-2.5 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold bg-white/10">الرصيد المالي</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 print:divide-slate-300">
@@ -203,11 +208,13 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
                     </td>
                     {isAll && <td className="px-2.5 py-2.5 font-bold text-slate-900 dark:text-white">{row.factoryName}</td>}
                     <td className="px-2.5 py-2.5 text-right font-medium text-slate-900 dark:text-white">{row.description}</td>
-                    <td className="px-2.5 py-2.5 font-extrabold text-[#0284c7] dark:text-[#38bdf8]">
+                    {/* تمييز تسليم خامات */}
+                    <td className="px-2.5 py-2.5 font-black text-blue-700 dark:text-blue-400 bg-blue-50/30 dark:bg-blue-950/20 print:bg-blue-50/50 print:text-blue-700">
                       {row.materialSentKg > 0 ? row.materialSentKg.toLocaleString("ar-EG") : ""}
                     </td>
                     <td className="px-2.5 py-2.5 font-medium text-slate-700 dark:text-slate-300">{row.productName}</td>
-                    <td className="px-2.5 py-2.5 font-extrabold text-emerald-600 dark:text-emerald-400">
+                    {/* تمييز استلام منتج */}
+                    <td className="px-2.5 py-2.5 font-black text-emerald-700 dark:text-emerald-400 bg-emerald-50/30 dark:bg-emerald-950/20 print:bg-emerald-50/50 print:text-emerald-700">
                       {row.productReceivedKg > 0 ? row.productReceivedKg.toLocaleString("ar-EG") : ""}
                     </td>
                     <td className="px-2.5 py-2.5 text-slate-700 dark:text-slate-300">
@@ -216,16 +223,18 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
                     <td className="px-2.5 py-2.5 text-slate-700 dark:text-slate-300">
                       {row.pricePerKg > 0 ? row.pricePerKg.toLocaleString("ar-EG") : ""}
                     </td>
-                    <td className="px-2.5 py-2.5 font-bold text-amber-600 dark:text-amber-400">
+                    {/* تمييز العمولة */}
+                    <td className="px-2.5 py-2.5 font-black text-amber-700 dark:text-amber-400 bg-amber-50/30 dark:bg-amber-950/20 print:bg-amber-50/50 print:text-amber-700">
                       {row.commission > 0 ? `${row.commission.toLocaleString("ar-EG")}` : ""}
                     </td>
-                    <td className="px-2.5 py-2.5 font-bold text-rose-600 dark:text-rose-400">
+                    {/* تمييز الدفعات */}
+                    <td className="px-2.5 py-2.5 font-black text-rose-700 dark:text-rose-400 bg-rose-50/30 dark:bg-rose-950/20 print:bg-rose-50/50 print:text-rose-700">
                       {row.payment > 0 ? `${row.payment.toLocaleString("ar-EG")}` : ""}
                     </td>
-                    <td className="px-2.5 py-2.5 font-extrabold bg-slate-50 dark:bg-zinc-800/80 text-slate-900 dark:text-white">
+                    <td className="px-2.5 py-2.5 font-extrabold bg-slate-50 dark:bg-zinc-800/80 text-slate-900 dark:text-white print:bg-slate-100">
                       {row.materialBalance.toLocaleString("ar-EG")} كجم
                     </td>
-                    <td className="px-2.5 py-2.5 font-black bg-slate-50 dark:bg-zinc-800/80 text-[#0284c7] dark:text-[#38bdf8] print:text-black">
+                    <td className="px-2.5 py-2.5 font-black bg-slate-50 dark:bg-zinc-800/80 text-[#0284c7] dark:text-[#38bdf8] print:bg-slate-100 print:text-[#0284c7]">
                       {row.financialBalance.toLocaleString("ar-EG")}
                     </td>
                   </tr>

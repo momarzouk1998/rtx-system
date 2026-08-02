@@ -4,6 +4,39 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Eye, X, Printer, Package, User, Calendar, Tag, Phone, Download, Loader2 } from "lucide-react";
 
+// إضافة CSS للطباعة
+if (typeof document !== 'undefined') {
+  const style = document.createElement('style');
+  style.innerHTML = `
+    @media print {
+      body * {
+        visibility: hidden;
+      }
+      .printable-invoice-content,
+      .printable-invoice-content * {
+        visibility: visible !important;
+      }
+      .printable-invoice-content {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+      }
+      .no-print {
+        display: none !important;
+      }
+      @page {
+        size: A4;
+        margin: 15mm;
+      }
+    }
+  `;
+  if (!document.getElementById('invoice-print-styles')) {
+    style.id = 'invoice-print-styles';
+    document.head.appendChild(style);
+  }
+}
+
 interface InvoiceItem {
   id: string;
   productId?: string;
@@ -52,12 +85,28 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
       }
       
       const html2pdfModule = (await import("html2pdf.js")).default;
+      const customerName = invoice.client?.name || "عميل";
+      const invoiceNumber = invoice.orderNumber || "0";
+      
       const opt = {
-        margin: 5,
-        filename: `فاتورة_RTX_${invoice.orderNumber}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true, logging: false },
-        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
+        margin: 8,
+        filename: `فاتورة_RTX_${customerName}_${invoiceNumber}.pdf`,
+        image: { type: 'jpeg' as const, quality: 0.95 },
+        html2canvas: { 
+          scale: 2.5, 
+          useCORS: true, 
+          logging: false,
+          backgroundColor: '#ffffff',
+          windowWidth: element.scrollWidth,
+          windowHeight: element.scrollHeight
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: 'portrait' as const,
+          compress: true
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
       };
 
       await html2pdfModule().set(opt).from(element).save();
@@ -194,13 +243,13 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
             </h4>
             <div className="border border-slate-200 dark:border-zinc-700 rounded-xl overflow-hidden shadow-xs print:rounded-none print:border-slate-400">
               <table className="w-full text-right text-sm" dir="rtl">
-                <thead className="bg-slate-900 text-white text-xs print:bg-slate-200 print:text-black">
+                <thead className="bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white text-xs print:bg-[#0284c7]">
                   <tr>
-                    <th className="px-4 py-3 border-b border-slate-800 print:border-slate-400 font-bold w-12 text-center">#</th>
-                    <th className="px-4 py-3 border-b border-slate-800 print:border-slate-400 font-bold">اسم المنتج</th>
-                    <th className="px-4 py-3 border-b border-slate-800 print:border-slate-400 text-center font-bold text-sky-300 print:text-black">الكمية (أكياس)</th>
-                    <th className="px-4 py-3 border-b border-slate-800 print:border-slate-400 text-center font-bold text-amber-300 print:text-black">سعر الكيس</th>
-                    <th className="px-4 py-3 border-b border-slate-800 print:border-slate-400 text-left font-bold text-[#38bdf8] print:text-black">الإجمالي</th>
+                    <th className="px-4 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold w-12 text-center">#</th>
+                    <th className="px-4 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold">اسم المنتج</th>
+                    <th className="px-4 py-3 border-b border-[#0369a1] print:border-slate-400 text-center font-bold bg-white/10">الكمية (أكياس)</th>
+                    <th className="px-4 py-3 border-b border-[#0369a1] print:border-slate-400 text-center font-bold bg-white/10">سعر الكيس</th>
+                    <th className="px-4 py-3 border-b border-[#0369a1] print:border-slate-400 text-left font-bold">الإجمالي</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 print:divide-slate-300">
@@ -215,15 +264,15 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
                           <td className="px-4 py-3 font-extrabold text-slate-900 dark:text-white">
                             {item.product?.name || "صنف غير معروف"}
                           </td>
-                          {/* Distinct Soft Color Highlight for Quantity Column */}
-                          <td className="px-4 py-3 text-center">
-                            <span className="bg-sky-50 dark:bg-sky-950/50 text-[#0284c7] dark:text-sky-300 font-extrabold px-3 py-1 rounded-lg border border-sky-200/80 dark:border-sky-800/40 print:bg-transparent print:border-none print:p-0 print:text-black">
+                          {/* تمييز الكمية بلون مميز */}
+                          <td className="px-4 py-3 text-center bg-blue-50/50 dark:bg-blue-950/20 print:bg-blue-50">
+                            <span className="text-[#0284c7] dark:text-blue-400 font-black text-base px-2 py-1 print:text-[#0284c7]">
                               {qty.toLocaleString("ar-EG")}
                             </span>
                           </td>
-                          {/* Distinct Soft Color Highlight for Bag Price Column */}
-                          <td className="px-4 py-3 text-center">
-                            <span className="bg-amber-50 dark:bg-amber-950/50 text-amber-900 dark:text-amber-300 font-extrabold px-3 py-1 rounded-lg border border-amber-200/80 dark:border-amber-800/40 print:bg-transparent print:border-none print:p-0 print:text-black">
+                          {/* تمييز سعر الكيس بلون مميز */}
+                          <td className="px-4 py-3 text-center bg-amber-50/50 dark:bg-amber-950/20 print:bg-amber-50">
+                            <span className="text-amber-700 dark:text-amber-400 font-black text-base px-2 py-1 print:text-amber-700">
                               {price.toLocaleString("ar-EG")}
                             </span>
                           </td>
@@ -247,25 +296,49 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
 
           {/* Total Calculation Breakdown with Distinct Net Total Color Box */}
           <div className="flex justify-end">
-            <div className="w-full sm:w-80 space-y-2 text-sm print:w-72">
-              <div className="bg-slate-50 dark:bg-zinc-800/60 p-3.5 rounded-xl border border-slate-200 dark:border-zinc-700 space-y-2 print:border-slate-300">
-                <div className="flex justify-between text-slate-600 dark:text-slate-400 font-bold">
-                  <span>الإجمالي قبل الخصم:</span>
-                  <span className="font-extrabold text-slate-900 dark:text-white">{(invoice.subTotal || 0).toLocaleString("ar-EG")}</span>
-                </div>
-                {discountAmount > 0 && (
-                  <div className="flex justify-between text-rose-600 font-bold">
-                    <span>الخصم المطبق:</span>
-                    <span className="font-extrabold">- {discountAmount.toLocaleString("ar-EG")}</span>
+            <div className="w-full sm:w-80 space-y-3 text-sm print:w-72">
+              {discountAmount > 0 ? (
+                <>
+                  {/* إذا فيه خصم - نعرض 3 صناديق */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* قبل الخصم */}
+                    <div className="bg-slate-100 dark:bg-zinc-800 p-3 rounded-xl border-2 border-slate-300 dark:border-zinc-700 text-center print:bg-slate-100 print:border-slate-400">
+                      <div className="text-xs text-slate-600 dark:text-slate-400 font-bold mb-1">قبل الخصم</div>
+                      <div className="text-lg font-black text-slate-900 dark:text-white print:text-slate-900">
+                        {(invoice.subTotal || 0).toLocaleString("ar-EG")}
+                      </div>
+                    </div>
+                    
+                    {/* قيمة الخصم */}
+                    <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-xl border-2 border-amber-300 dark:border-amber-800 text-center print:bg-amber-50 print:border-amber-400">
+                      <div className="text-xs text-amber-700 dark:text-amber-400 font-bold mb-1">الخصم</div>
+                      <div className="text-lg font-black text-amber-700 dark:text-amber-300 print:text-amber-700">
+                        {discountAmount.toLocaleString("ar-EG")}
+                      </div>
+                    </div>
+                    
+                    {/* صافي الفاتورة */}
+                    <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 p-3 rounded-xl border-2 border-emerald-600 dark:border-emerald-500 text-center shadow-lg print:bg-emerald-600 print:border-emerald-700">
+                      <div className="text-xs text-white font-bold mb-1">صافي الفاتورة</div>
+                      <div className="text-lg font-black text-white">
+                        {(invoice.netTotal || 0).toLocaleString("ar-EG")}
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
-
-              {/* Distinct Highlighted Net Total Color Box */}
-              <div className="bg-gradient-to-r from-slate-900 via-[#0284c7] to-[#0369a1] text-white p-4 rounded-xl shadow-md flex justify-between items-center print:bg-slate-900 print:text-white print:border print:border-black">
-                <span className="font-black text-base">الصافي النهائي:</span>
-                <span className="text-2xl font-black text-white">{ (invoice.netTotal || 0).toLocaleString("ar-EG") }</span>
-              </div>
+                </>
+              ) : (
+                <>
+                  {/* إذا مفيش خصم - نعرض صندوق واحد كبير للصافي */}
+                  <div className="bg-gradient-to-br from-[#0284c7] to-[#0369a1] dark:from-[#0369a1] dark:to-[#0284c7] text-white p-5 rounded-xl shadow-lg border-2 border-[#0369a1] print:bg-[#0284c7] print:border-[#0369a1]">
+                    <div className="flex justify-between items-center">
+                      <span className="font-black text-lg">صافي الفاتورة:</span>
+                      <span className="text-3xl font-black">
+                        {(invoice.netTotal || 0).toLocaleString("ar-EG")}
+                      </span>
+                    </div>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
