@@ -73,6 +73,20 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
     setMounted(true);
   }, []);
 
+  // منع scroll لما المودال مفتوح وإلغاء المنع لما يقفل
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+    
+    // Cleanup عند unmount
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [isOpen]);
+
   const formattedDate = invoice?.date ? new Date(invoice.date).toISOString().split("T")[0] : "";
 
   const handleDownloadPdf = async () => {
@@ -146,8 +160,19 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
   const discountAmount = invoice.discountValue || invoice.discount || 0;
 
   const modalContent = (
-    <div className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 modal-print-container animate-fade-in">
-      <div className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[92vh] overflow-hidden flex flex-col border border-slate-200 dark:border-zinc-800 print:shadow-none print:border-none print:max-h-none print:w-full print:rounded-none">
+    <div 
+      className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 modal-print-container animate-fade-in"
+      onClick={(e) => {
+        // لو الضغط على الـ overlay نفسه (مش على المودال)، قفل المودال
+        if (e.target === e.currentTarget) {
+          setIsOpen(false);
+        }
+      }}
+    >
+      <div 
+        className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[92vh] overflow-hidden flex flex-col border border-slate-200 dark:border-zinc-800 print:shadow-none print:border-none print:max-h-none print:w-full print:rounded-none"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Header (Screen mode) */}
         <div className="px-6 py-4 bg-slate-900 border-b border-sky-500/30 text-white flex items-center justify-between no-print">
