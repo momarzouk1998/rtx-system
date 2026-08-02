@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import { Eye, X, Printer, Package, User, Calendar, Tag, Phone } from "lucide-react";
+import { Eye, X, Printer, Package, User, Calendar, Tag, Phone, Download, Loader2 } from "lucide-react";
 
 interface InvoiceItem {
   id: string;
@@ -34,12 +34,40 @@ interface Invoice {
 export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
   const [isOpen, setIsOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
   useEffect(() => {
     setMounted(true);
   }, []);
 
   const formattedDate = invoice?.date ? new Date(invoice.date).toISOString().split("T")[0] : "";
+
+  const handleDownloadPdf = async () => {
+    try {
+      setIsGeneratingPdf(true);
+      const element = document.getElementById(`invoice-container-${invoice.id}`) || document.querySelector(".printable-invoice-content");
+      if (!element) {
+        window.print();
+        return;
+      }
+      
+      const html2pdfModule = (await import("html2pdf.js")).default;
+      const opt = {
+        margin: 5,
+        filename: `فاتورة_RTX_${invoice.orderNumber}.pdf`,
+        image: { type: 'jpeg' as const, quality: 0.98 },
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' as const }
+      };
+
+      await html2pdfModule().set(opt).from(element).save();
+    } catch (err) {
+      console.error("PDF export failed:", err);
+      window.print();
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -96,7 +124,7 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
         </div>
 
         {/* Printable Corporate Invoice Container */}
-        <div className="p-6 overflow-y-auto space-y-6 flex-1 print:p-0 print:overflow-visible">
+        <div id={`invoice-container-${invoice.id}`} className="p-6 overflow-y-auto space-y-6 flex-1 print:p-0 print:overflow-visible printable-invoice-content bg-white">
           
           {/* Cyan Top Line */}
           <div className="h-1.5 w-full bg-gradient-to-r from-[#0284c7] via-[#38bdf8] to-slate-900 rounded-full mb-2 print:rounded-none"></div>
@@ -253,12 +281,26 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
 
         {/* Footer Actions (Screen mode) */}
         <div className="px-6 py-3.5 bg-slate-100 dark:bg-zinc-800/80 border-t border-slate-200 dark:border-zinc-800 flex justify-between items-center no-print">
-          <button
-            onClick={() => window.print()}
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-xl bg-gradient-to-r from-slate-900 to-[#0284c7] hover:from-slate-800 hover:to-[#0369a1] text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
-          >
-            <Printer className="w-4 h-4 text-[#38bdf8]" /> طباعة الفاتورة
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => window.print()}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer"
+            >
+              <Printer className="w-4 h-4 text-[#38bdf8]" /> طباعة
+            </button>
+            <button
+              onClick={handleDownloadPdf}
+              disabled={isGeneratingPdf}
+              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-[#0284c7] hover:bg-[#0369a1] text-white text-xs font-bold transition-all shadow-xs active:scale-95 cursor-pointer disabled:opacity-70"
+            >
+              {isGeneratingPdf ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4 text-white" />
+              )}
+              تحميل PDF
+            </button>
+          </div>
           <button
             onClick={() => setIsOpen(false)}
             className="px-5 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 dark:bg-zinc-700 dark:hover:bg-zinc-600 text-slate-800 dark:text-slate-200 text-xs font-bold transition-colors cursor-pointer"
