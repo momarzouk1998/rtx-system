@@ -93,7 +93,7 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
     if (isGeneratingPdf) return;
     try {
       setIsGeneratingPdf(true);
-      await new Promise((r) => setTimeout(r, 50));
+      await new Promise((r) => setTimeout(r, 60));
 
       const element = document.getElementById(`invoice-container-${invoice.id}`) || document.querySelector(".printable-invoice-content");
       if (!element) {
@@ -108,12 +108,13 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
       const opt = {
         margin: 5,
         filename: `فاتورة_RTX_${customerName}_${invoiceNumber}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.95 },
+        image: { type: 'jpeg' as const, quality: 0.92 },
         html2canvas: { 
-          scale: 2, 
+          scale: 1.5, 
           useCORS: true, 
           logging: false,
-          backgroundColor: '#ffffff'
+          backgroundColor: '#ffffff',
+          removeContainer: true
         },
         jsPDF: { 
           unit: 'mm', 
@@ -123,9 +124,14 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
         }
       };
 
-      await html2pdfModule().set(opt).from(element).save();
+      const pdfPromise = html2pdfModule().set(opt).from(element).save();
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("PDF generation timeout")), 8000)
+      );
+
+      await Promise.race([pdfPromise, timeoutPromise]);
     } catch (err) {
-      console.error("PDF export failed:", err);
+      console.warn("PDF export warning:", err);
     } finally {
       setIsGeneratingPdf(false);
       document.body.style.overflow = '';
