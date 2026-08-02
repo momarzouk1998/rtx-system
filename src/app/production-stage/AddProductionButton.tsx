@@ -131,13 +131,13 @@ export function AddProductionButton({ factories, products }: { factories: Factor
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              تسليم خامات (كجم منصرف) *
+              تسليم خامات (كجم منصرف)
+              <span className="text-xs text-gray-400 mr-2">(اتركه 0 إذا كان استلام فقط)</span>
             </label>
             <input 
               type="number" 
               name="quantityKg" 
-              required
-              min="0.1"
+              min="0"
               step="0.01"
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
@@ -147,12 +147,12 @@ export function AddProductionButton({ factories, products }: { factories: Factor
 
           <div>
             <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
-              استلام منتج (كجم مستلم) *
+              استلام منتج (كجم مستلم)
+              <span className="text-xs text-gray-400 mr-2">(اتركه 0 إذا كان تسليم خامات فقط)</span>
             </label>
             <input 
               type="number" 
               name="receivedQuantityKg" 
-              required
               min="0"
               step="0.01"
               value={receivedQuantity}
@@ -215,7 +215,7 @@ export function AddProductionButton({ factories, products }: { factories: Factor
             </button>
             <button
               type="submit"
-              disabled={isPending || !quantity || !selectedProductId}
+              disabled={isPending || (!quantity && !receivedQuantity) || !selectedProductId}
               className="bg-[#12829b] hover:bg-[#0e687c] text-white px-6 py-2 rounded-lg font-medium shadow-sm transition-all flex items-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
               {isPending ? (

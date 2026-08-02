@@ -8,15 +8,17 @@ export async function createProductionOrder(data: FormData) {
     const category = data.get("category") as "INTERNAL" | "EXTERNAL";
     const factoryId = data.get("factoryId") as string;
     const productId = data.get("productId") as string;
-    const quantityKg = parseFloat(data.get("quantityKg") as string);
-    const receivedQuantityKg = parseFloat(data.get("receivedQuantityKg") as string) || quantityKg;
+    const quantityKgRaw = parseFloat(data.get("quantityKg") as string);
+    const quantityKg = isNaN(quantityKgRaw) || quantityKgRaw < 0 ? 0 : quantityKgRaw;
+    const receivedQuantityKgRaw = parseFloat(data.get("receivedQuantityKg") as string);
+    const receivedQuantityKg = isNaN(receivedQuantityKgRaw) || receivedQuantityKgRaw < 0 ? 0 : receivedQuantityKgRaw;
     const notes = data.get("notes") as string;
     const dateRaw = data.get("date") as string;
     // سعر التصنيع — يأتي من النموذج (قابل للتعديل) وإن لم يوجد يستخدم الافتراضي من المنتج
     const customOperatingCostRaw = data.get("operatingCost") as string;
 
-    if (!productId || isNaN(quantityKg) || quantityKg <= 0 || isNaN(receivedQuantityKg) || receivedQuantityKg < 0) {
-      return { success: false, error: "بيانات غير صحيحة" };
+    if (!productId || (quantityKg <= 0 && receivedQuantityKg <= 0)) {
+      return { success: false, error: "يجب إدخال كمية مواد مسلّمة أو كمية منتج مستلَم على الأقل" };
     }
 
     if (category === "EXTERNAL" && !factoryId) {
@@ -61,27 +63,31 @@ export async function createProductionOrder(data: FormData) {
         },
       });
 
-      // 2. Material Out Transaction
-      await tx.inventoryTransaction.create({
-        data: {
-          type: "OUT",
-          reason: "PRODUCTION_MATERIAL_OUT",
-          quantity: quantityKg,
-          materialId: product.materialId,
-          referenceId: order.id,
-        }
-      });
+      // 2. Material Out Transaction (if materials delivered)
+      if (quantityKg > 0) {
+        await tx.inventoryTransaction.create({
+          data: {
+            type: "OUT",
+            reason: "PRODUCTION_MATERIAL_OUT",
+            quantity: quantityKg,
+            materialId: product.materialId,
+            referenceId: order.id,
+          }
+        });
+      }
 
-      // 3. Product In Transaction (Ready Bags)
-      await tx.inventoryTransaction.create({
-        data: {
-          type: "IN",
-          reason: "PRODUCTION_PRODUCT_IN",
-          quantity: packagedBags,
-          productId: product.id,
-          referenceId: order.id,
-        }
-      });
+      // 3. Product In Transaction (Ready Bags if finished product received)
+      if (packagedBags > 0) {
+        await tx.inventoryTransaction.create({
+          data: {
+            type: "IN",
+            reason: "PRODUCTION_PRODUCT_IN",
+            quantity: packagedBags,
+            productId: product.id,
+            referenceId: order.id,
+          }
+        });
+      }
     });
 
     revalidatePath("/production-stage");
@@ -97,14 +103,16 @@ export async function updateProductionOrder(id: string, data: FormData) {
     const category = data.get("category") as "INTERNAL" | "EXTERNAL";
     const factoryId = data.get("factoryId") as string;
     const productId = data.get("productId") as string;
-    const quantityKg = parseFloat(data.get("quantityKg") as string);
-    const receivedQuantityKg = parseFloat(data.get("receivedQuantityKg") as string) || quantityKg;
+    const quantityKgRaw = parseFloat(data.get("quantityKg") as string);
+    const quantityKg = isNaN(quantityKgRaw) || quantityKgRaw < 0 ? 0 : quantityKgRaw;
+    const receivedQuantityKgRaw = parseFloat(data.get("receivedQuantityKg") as string);
+    const receivedQuantityKg = isNaN(receivedQuantityKgRaw) || receivedQuantityKgRaw < 0 ? 0 : receivedQuantityKgRaw;
     const notes = data.get("notes") as string;
     const dateRaw = data.get("date") as string;
     const customOperatingCostRaw = data.get("operatingCost") as string;
 
-    if (!productId || isNaN(quantityKg) || quantityKg <= 0 || isNaN(receivedQuantityKg) || receivedQuantityKg < 0) {
-      return { success: false, error: "بيانات غير صحيحة" };
+    if (!productId || (quantityKg <= 0 && receivedQuantityKg <= 0)) {
+      return { success: false, error: "يجب إدخال كمية مواد مسلّمة أو كمية منتج مستلَم على الأقل" };
     }
 
     if (category === "EXTERNAL" && !factoryId) {
@@ -155,27 +163,31 @@ export async function updateProductionOrder(id: string, data: FormData) {
         },
       });
 
-      // 2. Material Out Transaction
-      await tx.inventoryTransaction.create({
-        data: {
-          type: "OUT",
-          reason: "PRODUCTION_MATERIAL_OUT",
-          quantity: quantityKg,
-          materialId: product.materialId,
-          referenceId: order.id,
-        }
-      });
+      // 2. Material Out Transaction (if materials delivered)
+      if (quantityKg > 0) {
+        await tx.inventoryTransaction.create({
+          data: {
+            type: "OUT",
+            reason: "PRODUCTION_MATERIAL_OUT",
+            quantity: quantityKg,
+            materialId: product.materialId,
+            referenceId: order.id,
+          }
+        });
+      }
 
-      // 3. Product In Transaction (Ready Bags)
-      await tx.inventoryTransaction.create({
-        data: {
-          type: "IN",
-          reason: "PRODUCTION_PRODUCT_IN",
-          quantity: packagedBags,
-          productId: product.id,
-          referenceId: order.id,
-        }
-      });
+      // 3. Product In Transaction (Ready Bags if finished product received)
+      if (packagedBags > 0) {
+        await tx.inventoryTransaction.create({
+          data: {
+            type: "IN",
+            reason: "PRODUCTION_PRODUCT_IN",
+            quantity: packagedBags,
+            productId: product.id,
+            referenceId: order.id,
+          }
+        });
+      }
     });
 
     revalidatePath("/production-stage");
