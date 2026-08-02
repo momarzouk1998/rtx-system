@@ -16,6 +16,9 @@ jobs:
     name: Deploy via SSH
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions:
+      contents: read
+      packages: read
     if: ${{ github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch' }}
     steps:
       - name: Deploy via SSH
@@ -23,6 +26,8 @@ jobs:
           SSH_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SSH_HOST: ${{ secrets.SSH_HOST }}
           SSH_USER: ${{ secrets.SSH_USER }}
+          GHCR_USER: ${{ github.actor }}
+          GHCR_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           # 1. Write key — strip Windows \r, ensure trailing newline
           printf '%s\n' "$SSH_KEY" | tr -d '\r' > /tmp/deploy_key
@@ -52,13 +57,14 @@ jobs:
           echo ""
           echo "=== Starting deployment ==="
           ssh -i /tmp/deploy_key -o ConnectTimeout=30 \
-              "$SSH_USER@$SSH_HOST" << 'DEPLOY_SCRIPT'
+              "$SSH_USER@$SSH_HOST" << DEPLOY_SCRIPT
           set -e
 
           GHCR_IMAGE="ghcr.io/momarzouk1998/rtx-system:latest"
           LOCAL_TAG="rtx:latest"
 
-          echo "=== [1/6] Pulling image from GHCR ==="
+          echo "=== [1/6] Logging in to GHCR on server & pulling image ==="
+          echo "$GHCR_TOKEN" | docker login ghcr.io -u "$GHCR_USER" --password-stdin || echo "ghcr login warning"
           docker pull $GHCR_IMAGE
 
           echo "=== [2/6] Tagging local image ==="
