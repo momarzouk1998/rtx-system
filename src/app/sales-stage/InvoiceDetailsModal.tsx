@@ -73,17 +73,36 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
     setMounted(true);
   }, []);
 
-  // منع scroll لما المودال مفتوح وإلغاء المنع لما يقفل
+  const cleanupDomAfterPdf = () => {
+    try {
+      document.querySelectorAll('.html2pdf__container, iframe').forEach((el) => {
+        if (el.tagName === 'IFRAME') {
+          const iframe = el as HTMLIFrameElement;
+          if (!iframe.src || iframe.src === 'about:blank' || iframe.id.includes('html2canvas')) {
+            iframe.remove();
+          }
+        } else {
+          el.remove();
+        }
+      });
+      document.body.style.pointerEvents = '';
+      document.body.style.userSelect = '';
+    } catch (_) {}
+  };
+
+  // منع scroll لما المودال مفتوح وإلغاء المنع لما يقفل مع تنظيف الـ DOM
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
     } else {
       document.body.style.overflow = '';
+      cleanupDomAfterPdf();
     }
     
     // Cleanup عند unmount
     return () => {
       document.body.style.overflow = '';
+      cleanupDomAfterPdf();
     };
   }, [isOpen]);
 
@@ -139,7 +158,10 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
       window.print();
     } finally {
       setIsGeneratingPdf(false);
-      document.body.style.overflow = '';
+      if (!isOpen) {
+        document.body.style.overflow = '';
+      }
+      cleanupDomAfterPdf();
     }
   };
 

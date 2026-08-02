@@ -14,6 +14,23 @@ export function PrintButton({
 }) {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
+  const cleanupDomAfterPdf = () => {
+    try {
+      document.querySelectorAll('.html2pdf__container, iframe').forEach((el) => {
+        if (el.tagName === 'IFRAME') {
+          const iframe = el as HTMLIFrameElement;
+          if (!iframe.src || iframe.src === 'about:blank' || iframe.id.includes('html2canvas')) {
+            iframe.remove();
+          }
+        } else {
+          el.remove();
+        }
+      });
+      document.body.style.pointerEvents = '';
+      document.body.style.userSelect = '';
+    } catch (_) {}
+  };
+
   const handleDownloadPdf = async () => {
     if (isGeneratingPdf) return;
 
@@ -67,6 +84,7 @@ export function PrintButton({
       window.print();
     } finally {
       setIsGeneratingPdf(false);
+      cleanupDomAfterPdf();
     }
   };
 
