@@ -102,7 +102,7 @@ export default async function RootLayout({
         <ToastProvider />
         <div className="flex min-h-screen bg-gray-50">
           <Sidebar user={user} />
-          <main className="flex-1 min-w-0 max-w-full p-3 pt-16 md:p-6 md:pt-6 overflow-x-hidden">
+          <main className="flex-1 min-w-0 max-w-full p-3 pt-16 md:p-6 md:pt-6 md:mr-64 overflow-x-hidden">
             {children}
           </main>
         </div>
