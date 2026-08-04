@@ -90,6 +90,32 @@ export default async function StatementPage({
         totals.debit = summaryRows.reduce((s, r) => s + r.totalPayments, 0);
         totals.credit = summaryRows.reduce((s, r) => s + r.totalInvoices, 0);
         totals.balance = summaryRows.reduce((s, r) => s + r.netBalance, 0);
+      } else if (type === "factory") {
+        const factoriesWithData = await prisma.factory.findMany({
+          orderBy: { name: "asc" },
+          include: {
+            productionOrders: { select: { totalOperatingCost: true } },
+            expenses: { where: { category: "FACTORY" }, select: { amount: true } }
+          }
+        });
+
+        summaryRows = factoriesWithData.map((f) => {
+          const totalOperating = f.productionOrders.reduce((sum, p) => sum + p.totalOperatingCost, 0);
+          const totalPayments = f.expenses.reduce((sum, e) => sum + e.amount, 0);
+          const netBalance = f.openingBalance + totalOperating - totalPayments;
+
+          let statusLabel = "متزن (خالص)";
+          let statusColor = "bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-slate-300";
+          if (netBalance > 0) { statusLabel = "له مستحقات (دائن)"; statusColor = "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200"; } 
+          else if (netBalance < 0) { statusLabel = "مدين"; statusColor = "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200"; }
+
+          return { id: f.id, name: f.name, createdAt: f.createdAt as any, openingBalance: f.openingBalance, statusLabel, statusColor, totalInvoices: totalOperating, totalPayments, netBalance };
+        });
+
+        totals.opening = summaryRows.reduce((s, r) => s + r.openingBalance, 0);
+        totals.debit = summaryRows.reduce((s, r) => s + r.totalInvoices, 0);
+        totals.credit = summaryRows.reduce((s, r) => s + r.totalPayments, 0);
+        totals.balance = summaryRows.reduce((s, r) => s + r.netBalance, 0);
       }
     } else {
       if (type === "client") {
