@@ -1,5 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { PrintButton } from "@/components/PrintButton";
+import { DeleteButton } from "@/components/DeleteButton";
+import { deleteProductionOrder } from "@/app/actions/production";
+import { deleteExpense } from "@/app/actions/expenses";
 
 export async function FactoryStatement({ factoryId }: { factoryId: string }) {
   const isAll = factoryId === "all";
@@ -178,12 +181,13 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
                 <th className="py-2.5 px-2 font-black text-[11px] text-rose-300 print:text-black w-20">مسدد</th>
                 <th className="py-2.5 px-2 font-black text-[11px] bg-slate-800 text-slate-200 print:bg-slate-300 print:text-black w-24">رصيد خامات</th>
                 <th className="py-2.5 px-2 font-black text-[11px] bg-slate-800 text-slate-200 print:bg-slate-300 print:text-black w-24">رصيد مالي</th>
+                <th className="py-2.5 px-2 font-black text-[11px] print:hidden w-12 text-center">حذف</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 print:divide-slate-300 text-[11px]">
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={isAll ? 13 : 12} className="py-8 text-center text-slate-400 font-bold">
+                  <td colSpan={isAll ? 14 : 13} className="py-8 text-center text-slate-400 font-bold">
                     لا توجد حركات تصنيع خارجي مسجلة
                   </td>
                 </tr>
@@ -245,6 +249,14 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
 
                     <td className="py-2 px-2 font-black bg-slate-100 dark:bg-zinc-800 text-[#0284c7] dark:text-[#38bdf8] print:text-black text-center text-xs">
                       {row.financialBalance.toLocaleString("ar-EG")}
+                    </td>
+
+                    <td className="py-2 px-1 text-center print:hidden">
+                      <DeleteButton
+                        id={row.id}
+                        itemName={row.description}
+                        deleteAction={row.type === "PRODUCTION" ? deleteProductionOrder : deleteExpense}
+                      />
                     </td>
                   </tr>
                 ))

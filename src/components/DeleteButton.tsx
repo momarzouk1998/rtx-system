@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Trash2, AlertTriangle, Loader2 } from "lucide-react";
 import { Modal } from "./Modal";
+import toast from "react-hot-toast";
 
 interface DeleteButtonProps {
   /** دالة الحذف (server action) — بتستدعى بعد التأكيد */
@@ -22,18 +23,34 @@ interface DeleteButtonProps {
 export function DeleteButton({ onDelete, deleteAction, id, itemName, variant = "icon", warning }: DeleteButtonProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
   async function handleConfirm() {
     setIsPending(true);
+    setErrorMessage(null);
     try {
+      let res: any;
       if (deleteAction && id) {
-        await deleteAction(id);
+        res = await deleteAction(id);
       } else if (onDelete) {
-        await onDelete();
+        res = await onDelete();
       }
+
+      if (res && res.success === false) {
+        const errorText = res.error || "حدث خطأ أثناء عملية الحذف";
+        setErrorMessage(errorText);
+        toast.error(errorText);
+        return;
+      }
+
+      toast.success("تم الحذف بنجاح");
+      setIsOpen(false);
+    } catch (err: any) {
+      const errorText = err?.message || "حدث خطأ غير متوقع أثناء الحذف";
+      setErrorMessage(errorText);
+      toast.error(errorText);
     } finally {
       setIsPending(false);
-      setIsOpen(false);
     }
   }
 
@@ -78,6 +95,11 @@ export function DeleteButton({ onDelete, deleteAction, id, itemName, variant = "
               </p>
               {warning && (
                 <p className="text-xs text-red-600 dark:text-red-400 pt-1">{warning}</p>
+              )}
+              {errorMessage && (
+                <p className="text-xs font-bold text-red-600 bg-red-50 dark:bg-red-950/40 p-2 rounded-lg border border-red-200 dark:border-red-900 mt-2">
+                  {errorMessage}
+                </p>
               )}
             </div>
           </div>

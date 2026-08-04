@@ -99,6 +99,10 @@ export async function deletePayment(id: string) {
     });
 
     revalidatePath("/payments");
+    revalidatePath("/clients-list");
+    revalidatePath("/statement");
+    revalidatePath("/sales-stage");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error deleting payment:", error);

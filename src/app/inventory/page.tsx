@@ -1,6 +1,8 @@
 import { prisma } from "@/lib/prisma";
 import { Package, Box, ArrowUpRight, ArrowDownLeft, Warehouse, FileText } from "lucide-react";
 import { AddTransactionModal } from "./AddTransactionModal";
+import { DeleteButton } from "@/components/DeleteButton";
+import { deleteInventoryTransactionAction } from "../actions/inventory";
 
 export const dynamic = 'force-dynamic';
 
@@ -169,12 +171,13 @@ export default async function InventoryDashboard() {
                 <th className="px-4 py-3 font-bold">البيان والسبب</th>
                 <th className="px-4 py-3 font-bold">الكمية</th>
                 <th className="px-4 py-3 font-bold">ملاحظات</th>
+                <th className="px-4 py-3 font-bold text-center">الإجراءات</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-200 dark:divide-zinc-800">
               {recentTransactions.length === 0 ? (
                 <tr>
-                  <td colSpan={7} className="px-4 py-10 text-center text-slate-400 font-medium">
+                  <td colSpan={8} className="px-4 py-10 text-center text-slate-400 font-medium">
                     لا توجد حركات مخزنية مسجلة بعد.
                   </td>
                 </tr>
@@ -208,6 +211,13 @@ export default async function InventoryDashboard() {
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
                       {t.notes || "—"}
+                    </td>
+                    <td className="px-4 py-3 text-center">
+                      <DeleteButton
+                        id={t.id}
+                        itemName={`حركة ${t.type === "IN" ? "وارد" : "منصرف"} (${t.material ? t.material.name : t.product?.name})`}
+                        deleteAction={deleteInventoryTransactionAction}
+                      />
                     </td>
                   </tr>
                 ))

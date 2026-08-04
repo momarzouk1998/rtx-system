@@ -229,26 +229,30 @@ export async function updateSalesInvoice(id: string, data: FormData) {
 
 export async function deleteInvoice(id: string) {
   try {
-    // Get invoice with items
+    // Get invoice
     const invoice = await prisma.salesInvoice.findUnique({
       where: { id },
-      include: { items: true }
     });
 
     if (!invoice) {
       return { success: false, error: "الفاتورة غير موجودة" };
     }
 
-    if (invoice.items.length > 0) {
-      return { success: false, error: `لا يمكن حذف الفاتورة لأنها تحتوي على ${invoice.items.length} صنف.` };
-    }
-
-    await prisma.salesInvoice.delete({
-      where: { id },
-    });
+    await prisma.$transaction([
+      prisma.inventoryTransaction.deleteMany({
+        where: { referenceId: id },
+      }),
+      prisma.salesInvoice.delete({
+        where: { id },
+      }),
+    ]);
 
     revalidatePath("/sales-stage");
     revalidatePath("/orders-track");
+    revalidatePath("/inventory");
+    revalidatePath("/clients-list");
+    revalidatePath("/statement");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error deleting invoice:", error);

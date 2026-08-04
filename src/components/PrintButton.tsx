@@ -42,8 +42,8 @@ export function PrintButton({
       // تأكد إن الـ DOM نضيف قبل ما نبدأ
       cleanupDomAfterPdf();
       
-      // Let UI update loader state
-      await new Promise((r) => setTimeout(r, 100));
+      // Let UI update loader state and ensure DOM stability
+      await new Promise((r) => setTimeout(r, 250));
 
       const element = document.getElementById(targetId) || document.querySelector(".printable-statement-content") || document.querySelector(".printable-content") || document.body;
       
@@ -57,13 +57,26 @@ export function PrintButton({
       const opt = {
         margin: 5,
         filename: `${fileName}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.95 },
+        image: { type: 'jpeg' as const, quality: 0.98 },
         html2canvas: { 
           scale: 2, 
           useCORS: true, 
+          allowTaint: true,
           logging: false,
           backgroundColor: '#ffffff',
-          onclone: (clonedDoc: Document) => {
+          onclone: async (clonedDoc: Document) => {
+            // Wait for all images to fully load in the cloned document
+            const images = Array.from(clonedDoc.images);
+            await Promise.all(
+              images.map((img) => {
+                if (img.complete) return Promise.resolve();
+                return new Promise((resolve) => {
+                  img.onload = resolve;
+                  img.onerror = resolve;
+                });
+              })
+            );
+
             // Fix html2canvas unsupported 'lab()' and 'oklch()' colors from Tailwind v4
             const styleElements = clonedDoc.querySelectorAll('style');
             styleElements.forEach((s) => {

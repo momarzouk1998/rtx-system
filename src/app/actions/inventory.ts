@@ -63,6 +63,11 @@ export async function deleteInventoryTransactionAction(id: string) {
       where: { id },
     });
     revalidatePath("/inventory");
+    revalidatePath("/materials-stage");
+    revalidatePath("/production-stage");
+    revalidatePath("/sales-stage");
+    revalidatePath("/statement");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error deleting inventory transaction:", error);

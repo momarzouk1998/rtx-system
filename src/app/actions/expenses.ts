@@ -91,6 +91,10 @@ export async function deleteExpense(id: string) {
     });
 
     revalidatePath("/expenses");
+    revalidatePath("/statement");
+    revalidatePath("/factories-list");
+    revalidatePath("/suppliers-list");
+    revalidatePath("/");
     return { success: true };
   } catch (error) {
     console.error("Error deleting expense:", error);

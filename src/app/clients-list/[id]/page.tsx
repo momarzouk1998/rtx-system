@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Edit, FileText, Phone, MessageCircle, PhoneCall, MapPin } from "lucide-react";
 import { deleteClient } from "../../actions/clients";
+import { deletePayment } from "../../actions/payments";
 import { DeleteButton } from "@/components/DeleteButton";
 
 export const dynamic = "force-dynamic";
@@ -170,6 +171,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                 <tr>
                   <th className="px-4 py-3 text-xs">التاريخ</th>
                   <th className="px-4 py-3 text-xs">المبلغ</th>
+                  <th className="px-4 py-3 text-xs text-center">الإجراءات</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -177,6 +179,13 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                   <tr key={payment.id}>
                     <td className="px-4 py-3 text-sm">{new Date(payment.date).toISOString().split("T")[0]}</td>
                     <td className="px-4 py-3 text-sm font-medium">{payment.amount.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-center">
+                      <DeleteButton
+                        id={payment.id}
+                        itemName={`دفعة بقيمة ${payment.amount.toLocaleString()}`}
+                        deleteAction={deletePayment}
+                      />
+                    </td>
                   </tr>
                 ))}
               </tbody>
