@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Printer, Download, Loader2 } from "lucide-react";
+import { Printer, Download, Loader2, FileDown } from "lucide-react";
 import toast from "react-hot-toast";
 
 export function PrintButton({ 
@@ -14,6 +14,59 @@ export function PrintButton({
   orientation?: "portrait" | "landscape";
 }) {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+  // طريقة بديلة باستخدام html2pdf.js (أكثر استقراراً)
+  const handleDownloadPdfAlternative = async () => {
+    if (isGeneratingPdf) return;
+
+    try {
+      setIsGeneratingPdf(true);
+      
+      const element = (
+        document.getElementById(targetId) || 
+        document.querySelector(".printable-statement-content") || 
+        document.querySelector(".printable-content")
+      ) as HTMLElement;
+      
+      if (!element) {
+        throw new Error("لم يتم العثور على العنصر");
+      }
+
+      await new Promise((r) => setTimeout(r, 300));
+
+      // استخدام html2pdf
+      const html2pdf = (await import("html2pdf.js")).default;
+      
+      const opt = {
+        margin: [10, 10, 10, 10],
+        filename: `${fileName}.pdf`,
+        image: { type: 'jpeg', quality: 0.85 },
+        html2canvas: { 
+          scale: 2,
+          useCORS: true,
+          logging: false,
+          backgroundColor: '#ffffff'
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: 'a4', 
+          orientation: orientation,
+          compress: true
+        },
+        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
+      };
+
+      await html2pdf().set(opt).from(element).save();
+      
+      toast.success("✅ تم تحميل ملف الـ PDF بنجاح");
+    } catch (err) {
+      console.error("خطأ في الطريقة البديلة:", err);
+      toast.error("حدث خطأ، جاري فتح الطباعة المباشرة");
+      setTimeout(() => window.print(), 300);
+    } finally {
+      setIsGeneratingPdf(false);
+    }
+  };
 
   const handleDownloadPdf = async () => {
     if (isGeneratingPdf) return;
@@ -30,44 +83,66 @@ export function PrintButton({
       ) as HTMLElement;
       
       if (!element) {
-        window.print();
-        return;
+        throw new Error("لم يتم العثور على العنصر المراد طباعته");
       }
 
-      // Briefly wait to ensure all elements and images are rendered
-      await new Promise((r) => setTimeout(r, 200));
+      // انتظار أطول لضمان تحميل كل العناصر
+      await new Promise((r) => setTimeout(r, 500));
 
       const html2canvasModule = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
 
-      // Capture the element directly from live DOM to avoid iframe style loss
+      // محاولة التقاط الصفحة بإعدادات محسّنة
       const canvas = await html2canvasModule(element, {
-        scale: 2,
+        scale: 1.5, // تقليل الجودة قليلاً لتجنب مشاكل الذاكرة
         useCORS: true,
         allowTaint: true,
-        logging: false,
+        logging: true, // تفعيل السجلات لمعرفة المشكلة
         backgroundColor: '#ffffff',
-        windowWidth: element.scrollWidth,
-        windowHeight: element.scrollHeight,
+        removeContainer: true,
+        imageTimeout: 15000,
+        foreignObjectRendering: false, // تعطيل foreignObject الذي قد يسبب مشاكل
         onclone: (clonedDoc: Document) => {
-          // Hide no-print elements in capture
-          clonedDoc.querySelectorAll('.no-print').forEach((el) => {
-            (el as HTMLElement).style.display = 'none';
-          });
+          try {
+            // إخفاء العناصر غير المطلوبة
+            clonedDoc.querySelectorAll('.no-print').forEach((el) => {
+              (el as HTMLElement).style.display = 'none';
+            });
 
-          // Fix unsupported 'lab()' and 'oklch()' color functions from Tailwind v4
-          const styleElements = clonedDoc.querySelectorAll('style');
-          styleElements.forEach((s) => {
-            if (s.textContent && (s.textContent.includes('lab(') || s.textContent.includes('oklch('))) {
-              s.textContent = s.textContent
-                .replace(/lab\([^)]+\)/g, '#0284c7')
-                .replace(/oklch\([^)]+\)/g, '#0284c7');
-            }
-          });
+            // إصلاح ألوان Tailwind
+            const styleElements = clonedDoc.querySelectorAll('style');
+            styleElements.forEach((s) => {
+              if (s.textContent) {
+                s.textContent = s.textContent
+                  .replace(/lab\([^)]+\)/g, '#0284c7')
+                  .replace(/oklch\([^)]+\)/g, '#0284c7')
+                  .replace(/color-mix\([^)]+\)/g, '#0284c7');
+              }
+            });
+
+            // إصلاح الصور
+            clonedDoc.querySelectorAll('img').forEach((img) => {
+              if (img.src && img.src.startsWith('/')) {
+                img.src = window.location.origin + img.src;
+              }
+            });
+          } catch (cloneErr) {
+            console.warn("خطأ في onclone:", cloneErr);
+          }
         }
       });
 
-      const imgData = canvas.toDataURL("image/jpeg", 0.98);
+      if (!canvas || canvas.width === 0 || canvas.height === 0) {
+        throw new Error("فشل في إنشاء الصورة من المحتوى");
+      }
+
+      // تحويل Canvas إلى صورة بجودة معقولة
+      const imgData = canvas.toDataURL("image/jpeg", 0.85);
+      
+      if (!imgData || imgData === "data:,") {
+        throw new Error("فشل في تحويل المحتوى إلى صورة");
+      }
+
       const pdf = new jsPDF({
         orientation: orientation,
         unit: "mm",
@@ -101,11 +176,17 @@ export function PrintButton({
       }
 
       pdf.save(`${fileName}.pdf`);
-      toast.success("تم تحميل ملف الـ PDF بنجاح");
+      toast.success("✅ تم تحميل ملف الـ PDF بنجاح");
     } catch (err) {
-      console.warn("PDF generation error, falling back to window.print():", err);
+      console.error("تفاصيل خطأ PDF:", err);
+      const errorMsg = err instanceof Error ? err.message : "خطأ غير معروف";
+      console.error("رسالة الخطأ:", errorMsg);
       toast.error("حدث خطأ أثناء إعداد الـ PDF، جاري فتح الطباعة المباشرة");
-      window.print();
+      
+      // الانتظار قليلاً قبل فتح نافذة الطباعة
+      setTimeout(() => {
+        window.print();
+      }, 300);
     } finally {
       setIsGeneratingPdf(false);
     }
@@ -126,7 +207,7 @@ export function PrintButton({
         onClick={handleDownloadPdf}
         disabled={isGeneratingPdf}
         className="bg-[#0284c7] hover:bg-[#0369a1] text-white px-4 py-2 rounded-xl font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-70 cursor-pointer"
-        title="تحميل كملف PDF"
+        title="تحميل كملف PDF (الطريقة الأساسية)"
       >
         {isGeneratingPdf ? (
           <Loader2 className="w-4 h-4 animate-spin" />
@@ -134,6 +215,20 @@ export function PrintButton({
           <Download className="w-4 h-4 text-white" />
         )}
         {isGeneratingPdf ? "جاري التحميل..." : "تحميل PDF"}
+      </button>
+
+      <button
+        onClick={handleDownloadPdfAlternative}
+        disabled={isGeneratingPdf}
+        className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-70 cursor-pointer"
+        title="تحميل PDF (طريقة بديلة)"
+      >
+        {isGeneratingPdf ? (
+          <Loader2 className="w-4 h-4 animate-spin" />
+        ) : (
+          <FileDown className="w-4 h-4 text-white" />
+        )}
+        {isGeneratingPdf ? "جاري..." : "بديل"}
       </button>
     </div>
   );
