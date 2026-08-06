@@ -38,7 +38,7 @@ export function PrintButton({
       const html2pdf = (await import("html2pdf.js")).default;
       
       const opt = {
-        margin: [10, 10, 10, 10],
+        margin: [10, 10, 10, 10] as [number, number, number, number],
         filename: `${fileName}.pdf`,
         image: { type: 'jpeg', quality: 0.85 },
         html2canvas: { 
