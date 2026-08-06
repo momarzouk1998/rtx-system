@@ -40,7 +40,7 @@ export function PrintButton({
       const opt = {
         margin: [10, 10, 10, 10] as [number, number, number, number],
         filename: `${fileName}.pdf`,
-        image: { type: 'jpeg', quality: 0.85 },
+        image: { type: 'jpeg' as const, quality: 0.85 },
         html2canvas: { 
           scale: 2,
           useCORS: true,
@@ -48,7 +48,7 @@ export function PrintButton({
           backgroundColor: '#ffffff'
         },
         jsPDF: { 
-          unit: 'mm', 
+          unit: 'mm' as const, 
           format: 'a4', 
           orientation: orientation,
           compress: true
