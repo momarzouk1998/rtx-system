@@ -15,7 +15,46 @@ export function PrintButton({
 }) {
   const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
 
-  // طريقة بديلة باستخدام html2pdf.js (أكثر استقراراً)
+  // دالة لإصلاح الألوان المتقدمة التي لا تدعمها المكتبات
+  const sanitizeStyles = (element: HTMLElement) => {
+    // استخراج كل الـ styles المحسوبة وتطبيقها inline
+    const allElements = element.querySelectorAll('*');
+    allElements.forEach((el) => {
+      const htmlEl = el as HTMLElement;
+      const computed = window.getComputedStyle(htmlEl);
+      
+      // تطبيق الألوان الأساسية فقط بدون lab/oklch
+      const color = computed.color;
+      const bgColor = computed.backgroundColor;
+      const borderColor = computed.borderColor;
+      
+      // استبدال أي قيم lab/oklch/color-mix بألوان ثابتة
+      if (color && !color.startsWith('rgb')) {
+        htmlEl.style.color = '#0f172a';
+      } else if (color) {
+        htmlEl.style.color = color;
+      }
+      
+      if (bgColor && !bgColor.startsWith('rgb')) {
+        htmlEl.style.backgroundColor = '#ffffff';
+      } else if (bgColor) {
+        htmlEl.style.backgroundColor = bgColor;
+      }
+      
+      if (borderColor && !borderColor.startsWith('rgb')) {
+        htmlEl.style.borderColor = '#e2e8f0';
+      } else if (borderColor) {
+        htmlEl.style.borderColor = borderColor;
+      }
+    });
+    
+    // إزالة كل CSS stylesheets وتطبيق inline styles فقط
+    element.querySelectorAll('style, link[rel="stylesheet"]').forEach((el) => {
+      el.remove();
+    });
+  };
+
+  // طريقة بديلة محسّنة تتجنب مشاكل الألوان
   const handleDownloadPdfAlternative = async () => {
     if (isGeneratingPdf) return;
 
@@ -32,31 +71,76 @@ export function PrintButton({
         throw new Error("لم يتم العثور على العنصر");
       }
 
-      await new Promise((r) => setTimeout(r, 300));
-
-      // استخدام html2pdf
-      const html2pdf = (await import("html2pdf.js")).default;
+      // نسخ العنصر
+      const clonedElement = element.cloneNode(true) as HTMLElement;
       
-      const opt = {
-        margin: [10, 10, 10, 10] as [number, number, number, number],
-        filename: `${fileName}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.85 },
-        html2canvas: { 
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          backgroundColor: '#ffffff'
-        },
-        jsPDF: { 
-          unit: 'mm' as const, 
-          format: 'a4', 
-          orientation: orientation,
-          compress: true
-        },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      };
+      // إخفاء العناصر غير المطلوبة
+      clonedElement.querySelectorAll('.no-print').forEach((el) => {
+        (el as HTMLElement).style.display = 'none';
+      });
+      
+      // إضافة للـ body مؤقتاً
+      clonedElement.style.position = 'absolute';
+      clonedElement.style.left = '-99999px';
+      clonedElement.style.top = '0';
+      document.body.appendChild(clonedElement);
+      
+      // إصلاح الألوان
+      sanitizeStyles(clonedElement);
+      
+      await new Promise((r) => setTimeout(r, 500));
 
-      await html2pdf().set(opt).from(element).save();
+      // استخدام html2canvas مباشرة بدلاً من html2pdf
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+      
+      const canvas = await html2canvas(clonedElement, {
+        scale: 1.5,
+        useCORS: true,
+        allowTaint: true,
+        logging: false,
+        backgroundColor: '#ffffff',
+        removeContainer: true,
+        foreignObjectRendering: false,
+        imageTimeout: 15000
+      });
+
+      // إنشاء PDF
+      const imgData = canvas.toDataURL("image/jpeg", 0.90);
+      const pdf = new jsPDF({
+        orientation: orientation,
+        unit: "mm",
+        format: "a4",
+        compress: true
+      });
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const imgWidth = canvas.width;
+      const imgHeight = canvas.height;
+      const renderWidth = pdfWidth - 16; // margins
+      const renderHeight = (imgHeight * renderWidth) / imgWidth;
+
+      let position = 8;
+      if (renderHeight <= pdfHeight - 16) {
+        pdf.addImage(imgData, "JPEG", 8, position, renderWidth, renderHeight);
+      } else {
+        let heightLeft = renderHeight;
+        pdf.addImage(imgData, "JPEG", 8, position, renderWidth, renderHeight);
+        heightLeft -= (pdfHeight - 16);
+
+        while (heightLeft > 0) {
+          position = heightLeft - renderHeight + 8;
+          pdf.addPage();
+          pdf.addImage(imgData, "JPEG", 8, position, renderWidth, renderHeight);
+          heightLeft -= pdfHeight;
+        }
+      }
+
+      pdf.save(`${fileName}.pdf`);
+      
+      // تنظيف
+      document.body.removeChild(clonedElement);
       
       toast.success("✅ تم تحميل ملف الـ PDF بنجاح");
     } catch (err) {
@@ -74,7 +158,6 @@ export function PrintButton({
     try {
       setIsGeneratingPdf(true);
 
-      // Find the element to export
       const element = (
         document.getElementById(targetId) || 
         document.querySelector(".printable-statement-content") || 
@@ -86,41 +169,36 @@ export function PrintButton({
         throw new Error("لم يتم العثور على العنصر المراد طباعته");
       }
 
-      // انتظار أطول لضمان تحميل كل العناصر
       await new Promise((r) => setTimeout(r, 500));
 
       const html2canvasModule = (await import("html2canvas")).default;
       const { jsPDF } = await import("jspdf");
 
-      // محاولة التقاط الصفحة بإعدادات محسّنة
       const canvas = await html2canvasModule(element, {
-        scale: 1.5, // تقليل الجودة قليلاً لتجنب مشاكل الذاكرة
+        scale: 1.5,
         useCORS: true,
         allowTaint: true,
-        logging: true, // تفعيل السجلات لمعرفة المشكلة
+        logging: true,
         backgroundColor: '#ffffff',
         removeContainer: true,
         imageTimeout: 15000,
-        foreignObjectRendering: false, // تعطيل foreignObject الذي قد يسبب مشاكل
+        foreignObjectRendering: false,
         onclone: (clonedDoc: Document) => {
           try {
-            // إخفاء العناصر غير المطلوبة
             clonedDoc.querySelectorAll('.no-print').forEach((el) => {
               (el as HTMLElement).style.display = 'none';
             });
 
-            // إصلاح ألوان Tailwind
             const styleElements = clonedDoc.querySelectorAll('style');
             styleElements.forEach((s) => {
               if (s.textContent) {
                 s.textContent = s.textContent
-                  .replace(/lab\([^)]+\)/g, '#0284c7')
-                  .replace(/oklch\([^)]+\)/g, '#0284c7')
-                  .replace(/color-mix\([^)]+\)/g, '#0284c7');
+                  .replace(/lab\([^)]+\)/g, 'rgb(2, 132, 199)')
+                  .replace(/oklch\([^)]+\)/g, 'rgb(2, 132, 199)')
+                  .replace(/color-mix\([^)]+\)/g, 'rgb(2, 132, 199)');
               }
             });
 
-            // إصلاح الصور
             clonedDoc.querySelectorAll('img').forEach((img) => {
               if (img.src && img.src.startsWith('/')) {
                 img.src = window.location.origin + img.src;
@@ -136,7 +214,6 @@ export function PrintButton({
         throw new Error("فشل في إنشاء الصورة من المحتوى");
       }
 
-      // تحويل Canvas إلى صورة بجودة معقولة
       const imgData = canvas.toDataURL("image/jpeg", 0.85);
       
       if (!imgData || imgData === "data:,") {
@@ -183,7 +260,6 @@ export function PrintButton({
       console.error("رسالة الخطأ:", errorMsg);
       toast.error("حدث خطأ أثناء إعداد الـ PDF، جاري فتح الطباعة المباشرة");
       
-      // الانتظار قليلاً قبل فتح نافذة الطباعة
       setTimeout(() => {
         window.print();
       }, 300);
@@ -221,14 +297,14 @@ export function PrintButton({
         onClick={handleDownloadPdfAlternative}
         disabled={isGeneratingPdf}
         className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl font-bold text-xs shadow-xs transition-all flex items-center gap-1.5 disabled:opacity-70 cursor-pointer"
-        title="تحميل PDF (طريقة بديلة)"
+        title="تحميل PDF (طريقة بديلة - موصى بها)"
       >
         {isGeneratingPdf ? (
           <Loader2 className="w-4 h-4 animate-spin" />
         ) : (
           <FileDown className="w-4 h-4 text-white" />
         )}
-        {isGeneratingPdf ? "جاري..." : "بديل"}
+        {isGeneratingPdf ? "جاري..." : "بديل ⭐"}
       </button>
     </div>
   );
