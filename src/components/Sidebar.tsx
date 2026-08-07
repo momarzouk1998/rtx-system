@@ -4,7 +4,6 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { cn } from '@/lib/utils';
 import {
   ShoppingCart,
   Settings,
@@ -41,7 +40,6 @@ const menuItems = [
   { name: 'المدفوعات', href: '/payments', icon: Banknote, emoji: '💰' },
   { name: 'خزنة RTX', href: '/treasury', icon: Banknote, emoji: '🏦' },
   { name: 'كشف حساب', href: '/statement', icon: FileText, emoji: '📄' },
-  // Users list is added dynamically based on role
   { name: 'الصفحة الشخصية', href: '/profile', icon: UserCircle, emoji: '👤' },
 ];
 
@@ -50,12 +48,10 @@ export function Sidebar({ user }: { user?: { name?: string, role?: string } | nu
   const router = useRouter();
   const [open, setOpen] = useState(false);
 
-  // أغلق الـ drawer عند تغيير الصفحة
   useEffect(() => {
     setOpen(false);
   }, [pathname]);
 
-  // قفل/فتح scroll الـ body عند فتح الـ drawer
   useEffect(() => {
     if (open) {
       document.body.style.overflow = 'hidden';
@@ -65,7 +61,6 @@ export function Sidebar({ user }: { user?: { name?: string, role?: string } | nu
     return () => { document.body.style.overflow = ''; };
   }, [open]);
 
-  // إغلاق بـ ESC
   useEffect(() => {
     function onKey(e: KeyboardEvent) {
       if (e.key === 'Escape') setOpen(false);
@@ -84,12 +79,16 @@ export function Sidebar({ user }: { user?: { name?: string, role?: string } | nu
     return null;
   }
 
-  // Add users list if user is manager
   const displayMenuItems = [...menuItems];
   if (user?.role === 'MANAGER') {
-    // Insert before profile
     displayMenuItems.splice(displayMenuItems.length - 1, 0, { name: 'المستخدمين', href: '/users-list', icon: UsersRound as any, emoji: '👨‍👩‍👧' });
   }
+
+  const triggerInstall = () => {
+    const event = new Event('prompt-install');
+    window.dispatchEvent(event);
+    setOpen(false);
+  };
 
   return (
     <>
@@ -139,20 +138,24 @@ export function Sidebar({ user }: { user?: { name?: string, role?: string } | nu
             <div className="flex-1 overflow-y-auto">
               <SidebarContent menuItems={displayMenuItems} pathname={pathname} onNavigate={() => setOpen(false)} />
             </div>
-            <div className="p-3 border-t border-white/10">
-              <Link href="/profile" onClick={() => setOpen(false)} className="block w-full py-2.5 rounded-lg bg-[#12829b]/20 text-[#38bdf8] hover:bg-[#12829b]/30 text-sm font-medium text-center mb-2">
-                👤 الملف الشخصي
-              </Link>
-              <button onClick={logout} className="w-full py-2.5 rounded-lg bg-red-500/20 text-red-100 hover:bg-red-500/30 text-sm font-medium mb-2">
-                🚪 تسجيل خروج
-              </button>
-              <button onClick={() => {
-                const event = new Event('prompt-install');
-                window.dispatchEvent(event);
-                setOpen(false);
-              }} className="w-full py-2.5 flex items-center justify-center gap-2 rounded-lg bg-[#38bdf8]/20 text-[#38bdf8] hover:bg-[#38bdf8]/30 text-sm font-medium">
+
+            {/* Mobile Bottom Row: Install App + Logout */}
+            <div className="p-3 border-t border-white/10 flex items-center gap-2">
+              <button
+                onClick={triggerInstall}
+                className="flex-1 py-2.5 px-3 flex items-center justify-center gap-1.5 rounded-xl bg-[#38bdf8]/15 hover:bg-[#38bdf8]/25 border border-[#38bdf8]/30 text-[#38bdf8] text-xs font-bold transition-all"
+                title="تثبيت التطبيق"
+              >
                 <Download className="w-4 h-4" />
-                تثبيت البرنامج
+                <span>تثبيت</span>
+              </button>
+              <button
+                onClick={logout}
+                className="py-2.5 px-3 flex items-center justify-center gap-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-400/30 text-red-200 text-xs font-bold transition-all shrink-0"
+                title="تسجيل الخروج"
+              >
+                <LogOut className="w-4 h-4 text-red-300" />
+                <span>خروج</span>
               </button>
             </div>
           </aside>
@@ -162,19 +165,27 @@ export function Sidebar({ user }: { user?: { name?: string, role?: string } | nu
       {/* Desktop sidebar */}
       <aside className="hidden md:flex flex-col w-64 bg-header-gradient text-white fixed right-0 top-0 bottom-0 shadow-2xl shrink-0 no-print print:hidden overflow-hidden">
         <SidebarContent menuItems={displayMenuItems} pathname={pathname} onNavigate={() => {}} userName={user?.name} />
-        <div className="p-4 border-t border-white/10">
-          <Link href="/profile" className="block w-full py-2 rounded-lg bg-[#12829b]/20 text-[#38bdf8] hover:bg-[#12829b]/30 text-sm text-center mb-2">
-            👤 الملف الشخصي
-          </Link>
-          <button onClick={logout} className="w-full py-2 rounded-lg bg-red-500/20 text-red-100 hover:bg-red-500/30 text-sm mb-2">
-            🚪 تسجيل خروج
-          </button>
-          <button onClick={() => {
-            const event = new Event('prompt-install');
-            window.dispatchEvent(event);
-          }} className="w-full py-2 flex items-center justify-center gap-2 rounded-lg bg-[#38bdf8]/20 text-[#38bdf8] hover:bg-[#38bdf8]/30 text-sm">
+
+        {/* Desktop Bottom Row: Install App + Logout */}
+        <div className="p-3.5 border-t border-white/10 flex items-center gap-2">
+          <button
+            onClick={() => {
+              const event = new Event('prompt-install');
+              window.dispatchEvent(event);
+            }}
+            className="flex-1 py-2 px-3 flex items-center justify-center gap-1.5 rounded-xl bg-[#38bdf8]/15 hover:bg-[#38bdf8]/25 border border-[#38bdf8]/30 text-[#38bdf8] text-xs font-bold transition-all cursor-pointer"
+            title="تثبيت التطبيق"
+          >
             <Download className="w-4 h-4" />
-            تثبيت البرنامج
+            <span>تثبيت</span>
+          </button>
+          <button
+            onClick={logout}
+            className="py-2 px-3 flex items-center justify-center gap-1.5 rounded-xl bg-red-500/15 hover:bg-red-500/25 border border-red-400/30 text-red-200 text-xs font-bold transition-all cursor-pointer shrink-0"
+            title="تسجيل الخروج"
+          >
+            <LogOut className="w-4 h-4 text-red-300" />
+            <span>خروج</span>
           </button>
         </div>
       </aside>

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { PrintButton } from "@/components/PrintButton";
 import { FactoryStatement } from "./FactoryStatement";
 import { StatementPrintTemplate } from "./StatementPrintTemplate";
+import { EntitySearchSelect } from "./EntitySearchSelect";
 
 export default async function StatementPage({
   searchParams,
@@ -211,15 +212,12 @@ export default async function StatementPage({
         </Link>
       </div>
 
-      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xs border border-slate-200 dark:border-zinc-800 p-3 no-print">
-        <label className="block text-xs font-black uppercase tracking-wider text-slate-400 dark:text-slate-500 mb-2">اختر {getTypeLabel()}:</label>
-        <div className="flex flex-wrap gap-1.5">
-          <Link href={`/statement?type=${type}&id=all`} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedId === "all" ? "bg-[#0ea5e9] text-white shadow-xs" : "bg-sky-50 dark:bg-sky-950/30 text-sky-700 dark:text-sky-300 hover:bg-sky-100"}`}>كشف مجمع (الكل)</Link>
-          {activeList.map((c) => (
-            <Link key={c.id} href={`/statement?type=${type}&id=${c.id}`} className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${selectedId === c.id ? "bg-slate-900 text-white shadow-xs" : "bg-slate-100 dark:bg-zinc-800 text-slate-700"}`}>{c.name}</Link>
-          ))}
-        </div>
-      </div>
+      <EntitySearchSelect
+        type={type}
+        typeLabel={getTypeLabel()}
+        selectedId={selectedId}
+        items={activeList}
+      />
 
       {!selectedEntity ? (
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xs border border-slate-200 dark:border-zinc-800 p-12 text-center">
