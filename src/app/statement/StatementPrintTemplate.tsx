@@ -82,28 +82,87 @@ export function StatementPrintTemplate({ data }: { data: StatementPrintData }) {
           boxSizing: "border-box",
         }}
       >
-        {/* ═══ 1. HEADER ════════════════════════════════════════════════════════ */}
+        {/* ═══ 1. TOP ACCENT LINE ════════════════════════════════════════════════ */}
         <div
           style={{
-            background: `linear-gradient(135deg, ${C.blue}, ${C.darkBlue})`,
-            color: C.white,
-            padding: "1.5rem 2rem",
+            height: "4px",
+            width: "100%",
+            background: "linear-gradient(90deg, #0ea5e9 0%, #0284c7 50%, #0f172a 100%)",
+          }}
+        />
+
+        {/* ═══ 2. HEADER CONTENT ═════════════════════════════════════════════════ */}
+        <div
+          style={{
+            padding: "1.2rem 1.8rem",
             display: "flex",
             justifyContent: "space-between",
             alignItems: "center",
+            backgroundColor: C.white,
+            borderBottom: "2px solid #0f172a",
           }}
         >
-          <div>
-            <div style={{ fontSize: "1.5rem", fontWeight: "800", color: C.white, margin: 0 }}>
-              RTX للتجارة والتصنيع
+          {/* Right side: Logo & Title */}
+          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+            <div
+              style={{
+                backgroundColor: "#090d16",
+                borderRadius: "12px",
+                padding: "6px 10px",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+                border: "1px solid rgba(255,255,255,0.1)",
+              }}
+            >
+              <img
+                src="/rtx-logo.png"
+                alt="RTX Logo"
+                style={{ height: "36px", width: "auto", display: "block" }}
+              />
             </div>
-            <div style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.9)", margin: 0 }}>
-              RTX Trading &amp; Manufacturing
+            <div>
+              <div
+                style={{
+                  fontSize: "1.35rem",
+                  fontWeight: "900",
+                  color: "#0f172a",
+                  lineHeight: "1.2",
+                }}
+              >
+                RTX للتجارة والتصنيع
+              </div>
             </div>
           </div>
-          <h2 style={{ fontWeight: "700", margin: 0, fontSize: "1.3rem", color: C.white }}>
-            {isAll ? `كشف مجمع — ${typeLabel}ين` : `كشف حساب ${typeLabel}`}
-          </h2>
+
+          {/* Left side: Badge & Date */}
+          <div style={{ textAlign: "left" }}>
+            <div
+              style={{
+                display: "inline-block",
+                background: "linear-gradient(90deg, #0f172a 0%, #0284c7 100%)",
+                color: "#ffffff",
+                padding: "5px 18px",
+                borderRadius: "20px",
+                fontSize: "0.85rem",
+                fontWeight: "800",
+                boxShadow: "0 2px 6px rgba(2,132,199,0.25)",
+              }}
+            >
+              {isAll ? `كشف مجمع — ${typeLabel}ين` : `كشف حساب ${typeLabel}`}
+            </div>
+            <div
+              style={{
+                fontSize: "0.8rem",
+                color: "#64748b",
+                fontWeight: "700",
+                marginTop: "6px",
+              }}
+            >
+              تاريخ الاستخراج: {dateStr}
+            </div>
+          </div>
         </div>
 
         {/* ═══ 2. BODY ══════════════════════════════════════════════════════════ */}
