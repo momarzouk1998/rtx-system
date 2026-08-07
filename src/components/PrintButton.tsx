@@ -40,7 +40,7 @@ export function PrintButton({
         scale: 1.8,
         logging: false,
         backgroundColor: "#ffffff",
-        width: statementElement.scrollWidth,
+        width: 800,
         height: statementElement.scrollHeight,
         scrollX: 0,
         scrollY: 0,
