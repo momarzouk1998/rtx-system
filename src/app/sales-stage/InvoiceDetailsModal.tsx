@@ -140,28 +140,30 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
           logging: false,
           backgroundColor: '#ffffff',
           onclone: (clonedDoc: Document) => {
-            // regex يتعامل مع الأقواس المتداخلة (مثل lab() داخل linear-gradient())
-            const labPattern = /lab\([^)]*(?:\([^)]*\)[^)]*)*\)/g;
-            const oklchPattern = /oklch\([^)]*(?:\([^)]*\)[^)]*)*\)/g;
-            const colorMixPattern = /color-mix\([^)]*(?:\([^)]*\)[^)]*)*\)/g;
+            function replaceColors(text: string): string {
+              if (!text) return text;
+              let prev = "";
+              let result = text;
+              let iterations = 0;
+              do {
+                prev = result;
+                result = result
+                  .replace(/lab\([^()]*\)/gi, "rgb(15, 23, 42)")
+                  .replace(/oklch\([^()]*\)/gi, "rgb(2, 132, 199)")
+                  .replace(/color-mix\([^()]*\)/gi, "rgb(2, 132, 199)");
+                iterations++;
+              } while (result !== prev && iterations < 10);
+              return result;
+            }
 
             clonedDoc.querySelectorAll('style').forEach((s) => {
               if (s.textContent) {
-                s.textContent = s.textContent
-                  .replace(labPattern, 'rgb(2, 132, 199)')
-                  .replace(oklchPattern, 'rgb(2, 132, 199)')
-                  .replace(colorMixPattern, 'rgb(2, 132, 199)');
+                s.textContent = replaceColors(s.textContent);
               }
             });
 
-            // حذف الـ external stylesheets لمنع html2canvas من تحليلها
-            clonedDoc.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
-              link.remove();
-            });
-
-            // إخفاء العناصر غير المطلوبة
             clonedDoc.querySelectorAll('.no-print').forEach((el) => {
-              (el as HTMLElement).style.display = 'none';
+              (el as HTMLElement).style.setProperty('display', 'none', 'important');
             });
           }
         },
