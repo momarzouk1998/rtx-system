@@ -150,7 +150,13 @@ export function StatementPrintTemplate({ data }: { data: StatementPrintData }) {
                 boxShadow: "0 2px 6px rgba(2,132,199,0.25)",
               }}
             >
-              {isAll ? `كشف مجمع — ${typeLabel}ين` : `كشف حساب ${typeLabel}`}
+              {isAll
+                ? typeLabel.includes("مورد")
+                  ? "كشف مجمع — الموردين"
+                  : typeLabel.includes("مصنع")
+                  ? "كشف مجمع — المصانع"
+                  : "كشف مجمع — العملاء"
+                : `كشف حساب ${typeLabel}`}
             </div>
             <div
               style={{
@@ -166,102 +172,31 @@ export function StatementPrintTemplate({ data }: { data: StatementPrintData }) {
         </div>
 
         {/* ═══ 2. BODY ══════════════════════════════════════════════════════════ */}
-        <div style={{ padding: "1.8rem" }}>
-          {/* Main Title */}
-          <div style={{ textAlign: "center", marginBottom: "1.5rem" }}>
-            <h1
-              style={{
-                fontWeight: "800",
-                color: C.blue,
-                fontSize: "1.8rem",
-                margin: "0 0 0.4rem 0",
-              }}
-            >
-              كــشــف حــســاب
-            </h1>
-            <div
-              style={{
-                width: "60px",
-                height: "3px",
-                backgroundColor: C.blue,
-                margin: "0 auto",
-                borderRadius: "2px",
-              }}
-            />
-          </div>
-
-          {/* Client Name Banner */}
-          <div
-            style={{
-              background: `linear-gradient(135deg, ${C.blue}, ${C.darkBlue})`,
-              color: C.white,
-              borderRadius: "8px",
-              padding: "1rem 1.2rem",
-              marginBottom: "1.5rem",
-            }}
-          >
-            <div style={{ fontSize: "0.85rem", color: "rgba(255,255,255,0.85)", marginBottom: "0.2rem" }}>
-              اسم {typeLabel}
-            </div>
-            <div style={{ fontSize: "1.4rem", fontWeight: "800" }}>{entityName}</div>
-          </div>
-
-          {/* Info Grid (Date & Period) */}
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "1rem",
-              marginBottom: "1.5rem",
-            }}
-          >
+        <div style={{ padding: "1.5rem 1.8rem" }}>
+          {/* Simple Account Bar for Single Entity */}
+          {!isAll && (
             <div
               style={{
                 backgroundColor: C.lightBg,
-                borderRadius: "8px",
-                padding: "0.9rem 1rem",
                 border: `1px solid ${C.border}`,
+                borderRadius: "8px",
+                padding: "0.8rem 1.2rem",
+                marginBottom: "1.2rem",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
               }}
             >
-              <div style={{ fontSize: "0.85rem", color: C.slate600, marginBottom: "0.2rem" }}>
-                تاريخ الاستخراج
-              </div>
-              <div style={{ fontSize: "1.1rem", fontWeight: "700", color: C.blue }}>
-                {dateStr}
-              </div>
-            </div>
-
-            <div
-              style={{
-                backgroundColor: C.lightBg,
-                borderRadius: "8px",
-                padding: "0.9rem 1rem",
-                border: `1px solid ${C.border}`,
-              }}
-            >
-              <div style={{ fontSize: "0.85rem", color: C.slate600, marginBottom: "0.2rem" }}>
-                فترة الكشف
-              </div>
-              <div style={{ fontSize: "1.1rem", fontWeight: "700", color: C.blue }}>
-                {isAll ? "شامل كل الحسابات" : "كشف حساب كامل"}
+              <div>
+                <span style={{ color: C.slate600, fontSize: "0.9rem", fontWeight: "600" }}>
+                  اسم {typeLabel}:{" "}
+                </span>
+                <span style={{ color: C.text, fontWeight: "800", fontSize: "1.2rem" }}>
+                  {entityName}
+                </span>
               </div>
             </div>
-          </div>
-
-          {/* Financial Section Title */}
-          <div style={{ textAlign: "center", marginBottom: "1rem" }}>
-            <h3 style={{ color: C.blue, fontWeight: "700", fontSize: "1.3rem", margin: 0 }}>
-              التفاصيل المالية
-            </h3>
-            <div
-              style={{
-                width: "50px",
-                height: "2px",
-                backgroundColor: C.blue,
-                margin: "0.3rem auto 0.8rem",
-              }}
-            />
-          </div>
+          )}
 
           {/* Financial Cards Grid */}
           <div
