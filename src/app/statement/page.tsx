@@ -4,6 +4,7 @@ import { FileText, Users, Factory as FactoryIcon, Truck, ExternalLink } from "lu
 import Link from "next/link";
 import { PrintButton } from "@/components/PrintButton";
 import { FactoryStatement } from "./FactoryStatement";
+import { StatementPrintTemplate } from "./StatementPrintTemplate";
 
 export default async function StatementPage({
   searchParams,
@@ -155,6 +156,30 @@ export default async function StatementPage({
 
   const currentDateFormatted = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
 
+  // Serialised data for the hidden print template (no Date objects → strings)
+  const printData = selectedEntity && !(type === "factory" && selectedId && selectedId !== "all") ? {
+    entityName: selectedEntity.name,
+    typeLabel: getTypeLabel(),
+    isAll,
+    dateStr: currentDateFormatted,
+    totals,
+    movements: movements.map((m) => ({
+      date: m.date instanceof Date ? m.date.toISOString() : String(m.date),
+      type: m.type,
+      description: m.description,
+      debit: m.debit,
+      credit: m.credit,
+    })),
+    summaryRows: summaryRows.map((r) => ({
+      id: r.id,
+      name: r.name,
+      statusLabel: r.statusLabel,
+      netBalance: r.netBalance,
+      totalInvoices: r.totalInvoices,
+      totalPayments: r.totalPayments,
+    })),
+  } : null;
+
   return (
     <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500 max-w-7xl mx-auto">
       <div className="flex items-center justify-between no-print flex-wrap gap-3 bg-white dark:bg-zinc-900 p-4 rounded-xl border border-slate-200 dark:border-zinc-800 shadow-xs">
@@ -206,7 +231,7 @@ export default async function StatementPage({
           {type === "factory" && selectedId && selectedId !== "all" ? (
             <FactoryStatement factoryId={selectedId} />
           ) : (
-            <div id="printable-client-statement" className="space-y-4 printable-statement-content bg-white w-full">
+            <div className="space-y-4 printable-statement-content bg-white w-full">
               <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-xs border border-slate-200 dark:border-zinc-800 print:border-none">
                 <div className="h-1 w-full bg-gradient-to-r from-[#0ea5e9] via-[#38bdf8] to-slate-900"></div>
                 <div className="p-4">
@@ -355,6 +380,9 @@ export default async function StatementPage({
           )}
         </>
       )}
+      {/* Hidden print template — targeted by PrintButton via id="printable-client-statement" */}
+      {printData && <StatementPrintTemplate data={printData} />}
     </div>
+
   );
 }
