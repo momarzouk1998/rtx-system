@@ -61,9 +61,11 @@ export function StatementPrintTemplate({ data }: { data: StatementPrintData }) {
 
   return (
     /* Outer container allows horizontal scrolling on small screens while keeping document at fixed 800px width */
-    <div style={{ width: "100%", overflowX: "auto", paddingBottom: "1rem" }}>
+    <div className="statement-wrapper-container" style={{ width: "100%", overflowX: "auto", paddingBottom: "1rem" }}>
       <div
         id="statement"
+        data-print-id="printable-client-statement"
+        className="printable-statement-content print-template-root"
         style={{
           width: "800px",
           minWidth: "800px",

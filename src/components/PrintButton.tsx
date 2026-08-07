@@ -21,8 +21,9 @@ export function PrintButton({
 
     try {
       const statementElement = (
-        document.getElementById(targetId) ||
+        (targetId ? document.getElementById(targetId) : null) ||
         document.getElementById("statement") ||
+        document.getElementById("printable-client-statement") ||
         document.querySelector(".printable-statement-content")
       ) as HTMLElement | null;
 
