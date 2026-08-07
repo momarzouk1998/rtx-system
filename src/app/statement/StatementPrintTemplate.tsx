@@ -2,7 +2,7 @@
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 export interface PrintMovement {
-  date: string; // ISO string
+  date: string;
   type: string;
   description: string;
   debit: number;
@@ -28,12 +28,12 @@ export interface StatementPrintData {
   summaryRows: PrintSummaryRow[];
 }
 
-// ─── Palette (hex only — zero Tailwind, zero external CSS) ───────────────────
+// ─── Palette (hex only) ───────────────────────────────────────────────────────
 const P = {
   blue: "#0284c7",
-  blue2: "#0369a1",
+  blueDark: "#0369a1",
   blueFade: "#e0f2fe",
-  blue50: "#f0f9ff",
+  blueLight: "#f0f9ff",
   blueText: "#bae6fd",
   slate50: "#f8fafc",
   slate100: "#f1f5f9",
@@ -55,10 +55,8 @@ const P = {
 const n = (v: number) =>
   Math.abs(v).toLocaleString("en-US", { minimumFractionDigits: 0 });
 
-// Note: direction: ltr on table container prevents html2canvas from reversing Arabic text.
-// Column order in HTML source goes Left → Right. So Cell 1 is Leftmost, Last Cell is Rightmost.
 const thRight: React.CSSProperties = {
-  padding: "10px 14px",
+  padding: "12px 14px",
   color: P.white,
   fontWeight: "700",
   fontSize: "12px",
@@ -74,7 +72,7 @@ const thCenter: React.CSSProperties = {
 };
 
 const tdRight: React.CSSProperties = {
-  padding: "9px 14px",
+  padding: "11px 14px",
   borderBottom: `1px solid ${P.border}`,
   fontSize: "12px",
   color: P.slate700,
@@ -112,29 +110,33 @@ function Card({
   return (
     <div
       style={{
-        flex: 1,
         backgroundColor: bg,
         border: `1.5px solid ${bord}`,
-        borderRadius: "12px",
-        padding: "14px 8px",
+        borderRadius: "14px",
+        padding: "16px 12px",
         textAlign: "center",
         boxShadow: glow
-          ? "0 4px 14px rgba(2,132,199,0.30)"
-          : "0 1px 4px rgba(0,0,0,0.05)",
+          ? "0 4px 14px rgba(2,132,199,0.25)"
+          : "0 1px 3px rgba(0,0,0,0.04)",
       }}
     >
       <div
         style={{
           color: labCol,
-          fontSize: "11px",
+          fontSize: "12px",
           fontWeight: "700",
-          marginBottom: "6px",
+          marginBottom: "8px",
+          whiteSpace: "nowrap",
         }}
       >
         {label}
       </div>
-      <div style={{ color: col, fontSize: "18px", fontWeight: "900" }}>{value}</div>
-      <div style={{ color: subCol, fontSize: "10px", marginTop: "3px" }}>{sub}</div>
+      <div style={{ color: col, fontSize: "20px", fontWeight: "900", lineHeight: "1.2" }}>
+        {value}
+      </div>
+      <div style={{ color: subCol, fontSize: "11px", marginTop: "4px", fontWeight: "600" }}>
+        {sub}
+      </div>
     </div>
   );
 }
@@ -147,18 +149,17 @@ function MovementsTable({
   totals: StatementPrintData["totals"];
 }) {
   const bal = totals.balance;
-  const balLabel = bal > 0 ? "مدين" : bal < 0 ? "دائن" : "متزن";
+  const balLabel = bal > 0 ? "عليه\u00A0ديون" : bal < 0 ? "له\u00A0مستحقات" : "خالص";
 
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
       <thead>
-        <tr style={{ background: `linear-gradient(to left,${P.blue2},${P.blue})` }}>
-          {/* Leftmost to Rightmost in LTR table */}
-          <th style={{ ...thCenter, borderRight: "none" }}>له (دائن)</th>
-          <th style={thCenter}>عليه (مدين)</th>
-          <th style={{ ...thRight, width: "36%" }}>البيان والتفاصيل</th>
-          <th style={thRight}>نوع الحركة</th>
-          <th style={thRight}>التاريخ</th>
+        <tr style={{ background: `linear-gradient(to left, ${P.blueDark}, ${P.blue})` }}>
+          <th style={{ ...thCenter, width: "18%", borderRight: "none" }}>له\u00A0مستحقات</th>
+          <th style={{ ...thCenter, width: "18%" }}>عليه\u00A0ديون</th>
+          <th style={{ ...thRight, width: "36%" }}>البيان\u00A0والتفاصيل</th>
+          <th style={{ ...thRight, width: "14%" }}>نوع\u00A0الحركة</th>
+          <th style={{ ...thRight, width: "14%" }}>التاريخ</th>
         </tr>
       </thead>
       <tbody>
@@ -168,17 +169,16 @@ function MovementsTable({
               colSpan={5}
               style={{
                 ...tdCenter,
-                padding: "28px",
+                padding: "32px",
                 color: P.slate300,
               }}
             >
-              لا توجد حركات مسجلة على هذا الحساب
+              لا\u00A0توجد\u00A0حركات\u00A0مسجلة\u00A0على\u00A0هذا\u00A0الحساب
             </td>
           </tr>
         ) : (
           rows.map((m, i) => (
             <tr key={i} style={{ backgroundColor: i % 2 === 0 ? P.white : P.slate50 }}>
-              {/* 1. Credit (Leftmost) */}
               <td
                 style={{
                   ...tdCenter,
@@ -189,7 +189,6 @@ function MovementsTable({
               >
                 {m.credit > 0 ? n(m.credit) : "—"}
               </td>
-              {/* 2. Debit */}
               <td
                 style={{
                   ...tdCenter,
@@ -200,17 +199,15 @@ function MovementsTable({
               >
                 {m.debit > 0 ? n(m.debit) : "—"}
               </td>
-              {/* 3. Description */}
               <td style={{ ...tdRight, color: P.slate900 }}>{m.description}</td>
-              {/* 4. Type */}
               <td style={tdRight}>
                 <span
                   style={{
                     display: "inline-block",
-                    backgroundColor: P.blue50,
+                    backgroundColor: P.blueLight,
                     border: `1px solid ${P.blueFade}`,
                     color: P.blue,
-                    padding: "2px 10px",
+                    padding: "3px 12px",
                     borderRadius: "20px",
                     fontSize: "11px",
                     fontWeight: "700",
@@ -220,7 +217,6 @@ function MovementsTable({
                   {m.type}
                 </span>
               </td>
-              {/* 5. Date (Rightmost) */}
               <td style={{ ...tdRight, color: P.slate600, fontWeight: "600", whiteSpace: "nowrap" }}>
                 {new Date(m.date).toISOString().split("T")[0]}
               </td>
@@ -229,11 +225,11 @@ function MovementsTable({
         )}
       </tbody>
       <tfoot>
-        <tr style={{ background: `linear-gradient(to left,${P.blue2},${P.blue})` }}>
+        <tr style={{ background: `linear-gradient(to left, ${P.blueDark}, ${P.blue})` }}>
           <td
             colSpan={2}
             style={{
-              padding: "11px 14px",
+              padding: "12px 14px",
               color: P.white,
               fontWeight: "900",
               fontSize: "16px",
@@ -241,21 +237,21 @@ function MovementsTable({
             }}
           >
             {n(bal)}{" "}
-            <span style={{ fontSize: "11px", fontWeight: "600", opacity: 0.85 }}>
+            <span style={{ fontSize: "12px", fontWeight: "600", opacity: 0.9 }}>
               ({balLabel})
             </span>
           </td>
           <td
             colSpan={3}
             style={{
-              padding: "11px 14px",
+              padding: "12px 14px",
               color: P.white,
               fontWeight: "700",
-              fontSize: "12px",
+              fontSize: "13px",
               textAlign: "right",
             }}
           >
-            الرصيد المستحق النهائي
+            الرصيد\u00A0المستحق\u00A0النهائي
           </td>
         </tr>
       </tfoot>
@@ -273,16 +269,15 @@ function SummaryTable({
   totals: StatementPrintData["totals"];
 }) {
   return (
-    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+    <table style={{ width: "100%", borderCollapse: "collapse", tableLayout: "fixed" }}>
       <thead>
-        <tr style={{ background: `linear-gradient(to left,${P.blue2},${P.blue})` }}>
-          {/* LTR order: Leftmost to Rightmost */}
-          <th style={{ ...thCenter, borderRight: "none" }}>صافي الرصيد</th>
-          <th style={thCenter}>إجمالي المدفوعات</th>
-          <th style={thCenter}>إجمالي الفواتير</th>
-          <th style={thCenter}>حالة الحساب</th>
-          <th style={thRight}>اسم {typeLabel}</th>
-          <th style={{ ...thCenter, width: "36px" }}>#</th>
+        <tr style={{ background: `linear-gradient(to left, ${P.blueDark}, ${P.blue})` }}>
+          <th style={{ ...thCenter, width: "18%", borderRight: "none" }}>صافي\u00A0الرصيد</th>
+          <th style={{ ...thCenter, width: "18%" }}>إجمالي\u00A0المدفوعات</th>
+          <th style={{ ...thCenter, width: "18%" }}>إجمالي\u00A0الفواتير</th>
+          <th style={{ ...thCenter, width: "18%" }}>حالة\u00A0الحساب</th>
+          <th style={{ ...thRight, width: "23%" }}>اسم\u00A0{typeLabel}</th>
+          <th style={{ ...thCenter, width: "5%" }}>#</th>
         </tr>
       </thead>
       <tbody>
@@ -291,7 +286,7 @@ function SummaryTable({
           const isC = r.netBalance < 0;
           return (
             <tr key={r.id} style={{ backgroundColor: i % 2 === 0 ? P.white : P.slate50 }}>
-              {/* 1. Net Balance (Leftmost) */}
+              {/* 1. Net Balance */}
               <td
                 style={{
                   ...tdCenter,
@@ -315,14 +310,16 @@ function SummaryTable({
                 <span
                   style={{
                     display: "inline-block",
+                    minWidth: "90px",
                     backgroundColor: isD ? P.rose50 : isC ? P.green50 : P.slate100,
                     border: `1px solid ${isD ? P.rose200 : isC ? P.green200 : P.border}`,
                     color: isD ? P.rose700 : isC ? P.green700 : P.slate600,
-                    padding: "2px 10px",
+                    padding: "3px 12px",
                     borderRadius: "20px",
                     fontSize: "11px",
                     fontWeight: "700",
                     whiteSpace: "nowrap",
+                    textAlign: "center",
                   }}
                 >
                   {r.statusLabel}
@@ -332,7 +329,7 @@ function SummaryTable({
               <td style={{ ...tdRight, color: P.slate900, fontWeight: "800", fontSize: "13px" }}>
                 {r.name}
               </td>
-              {/* 6. Index (Rightmost) */}
+              {/* 6. Index */}
               <td style={{ ...tdCenter, color: P.slate600, fontWeight: "600" }}>
                 {i + 1}
               </td>
@@ -341,18 +338,18 @@ function SummaryTable({
         })}
       </tbody>
       <tfoot>
-        <tr style={{ background: `linear-gradient(to left,${P.blue2},${P.blue})` }}>
-          <td style={{ padding: "11px 14px", color: P.white, fontWeight: "900", textAlign: "center", fontSize: "15px" }}>
+        <tr style={{ background: `linear-gradient(to left, ${P.blueDark}, ${P.blue})` }}>
+          <td style={{ padding: "12px 14px", color: P.white, fontWeight: "900", textAlign: "center", fontSize: "15px" }}>
             {n(totals.balance)}
           </td>
-          <td style={{ padding: "11px 14px", color: P.white, fontWeight: "900", textAlign: "center", fontSize: "13px" }}>
+          <td style={{ padding: "12px 14px", color: P.white, fontWeight: "900", textAlign: "center", fontSize: "13px" }}>
             {n(totals.credit)}
           </td>
-          <td style={{ padding: "11px 14px", color: P.white, fontWeight: "900", textAlign: "center", fontSize: "13px" }}>
+          <td style={{ padding: "12px 14px", color: P.white, fontWeight: "900", textAlign: "center", fontSize: "13px" }}>
             {n(totals.debit)}
           </td>
-          <td colSpan={3} style={{ padding: "11px 14px", color: P.white, fontWeight: "700", fontSize: "12px", textAlign: "right" }}>
-            إجمالي كافة الحسابات
+          <td colSpan={3} style={{ padding: "12px 14px", color: P.white, fontWeight: "700", fontSize: "13px", textAlign: "right" }}>
+            إجمالي\u00A0كافة\u00A0الحسابات
           </td>
         </tr>
       </tfoot>
@@ -365,7 +362,11 @@ function SummaryTable({
 export function StatementPrintTemplate({ data }: { data: StatementPrintData }) {
   const { entityName, typeLabel, isAll, dateStr, totals, movements, summaryRows } = data;
   const bal = totals.balance;
-  const balSub = bal > 0 ? "مدين" : bal < 0 ? "دائن" : "متزن";
+  const balSub = bal > 0 ? "عليه\u00A0ديون" : bal < 0 ? "له\u00A0مستحقات" : "خالص";
+
+  const docTitle = isAll
+    ? `كشف\u00A0مجمع\u00A0شامل`
+    : `كشف\u00A0حساب\u00A0${typeLabel}`;
 
   return (
     <div
@@ -378,7 +379,6 @@ export function StatementPrintTemplate({ data }: { data: StatementPrintData }) {
         width: "794px",
         backgroundColor: P.white,
         fontFamily: "'Cairo', 'Segoe UI', Tahoma, Arial, sans-serif",
-        // Crucial fix: direction ltr prevents html2canvas from reversing Arabic strings!
         direction: "ltr",
         textAlign: "right",
         fontSize: "13px",
@@ -387,58 +387,60 @@ export function StatementPrintTemplate({ data }: { data: StatementPrintData }) {
         color: P.slate900,
       }}
     >
-      {/* ═══ HEADER (flex-direction: row-reverse places Right element on Right, Left element on Left) ═══ */}
+      {/* ═══ HEADER ══════════════════════════════════════════════════════════ */}
       <div
         style={{
-          background: `linear-gradient(135deg, ${P.blue2} 0%, ${P.blue} 55%, #0ea5e9 100%)`,
-          padding: "20px 28px",
+          background: `linear-gradient(135deg, ${P.blueDark} 0%, ${P.blue} 60%, #0ea5e9 100%)`,
+          padding: "22px 32px",
           display: "flex",
           flexDirection: "row-reverse",
           justifyContent: "space-between",
           alignItems: "center",
         }}
       >
-        {/* Right side: Brand & Logo */}
-        <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "center", gap: "14px" }}>
+        {/* Right Side: Brand & Logo */}
+        <div style={{ display: "flex", flexDirection: "row-reverse", alignItems: "center", gap: "16px" }}>
           <div
             style={{
-              background: "rgba(0,0,0,0.25)",
-              border: "1.5px solid rgba(255,255,255,0.25)",
-              borderRadius: "12px",
-              padding: "8px 16px",
+              background: "rgba(0,0,0,0.30)",
+              border: "1.5px solid rgba(255,255,255,0.30)",
+              borderRadius: "14px",
+              padding: "9px 18px",
               color: P.white,
               fontWeight: "900",
-              fontSize: "18px",
+              fontSize: "20px",
+              letterSpacing: "1px",
             }}
           >
             RTX
           </div>
           <div style={{ textAlign: "right" }}>
-            <div style={{ color: P.white, fontWeight: "900", fontSize: "17px" }}>
-              RTX للتجارة والتصنيع
+            <div style={{ color: P.white, fontWeight: "900", fontSize: "18px", lineHeight: "1.2" }}>
+              RTX\u00A0للتجارة\u00A0والتصنيع
             </div>
-            <div style={{ color: P.blueText, fontSize: "11px", marginTop: "1px" }}>
-              نظام إدارة الحسابات والمالية
+            <div style={{ color: P.blueText, fontSize: "12px", marginTop: "4px" }}>
+              نظام\u00A0إدارة\u00A0الحسابات\u00A0والمالية
             </div>
           </div>
         </div>
 
-        {/* Left side: Doc title */}
+        {/* Left Side: Document Title & Date */}
         <div style={{ textAlign: "center" }}>
           <div
             style={{
-              background: "rgba(255,255,255,0.14)",
-              border: "1px solid rgba(255,255,255,0.28)",
-              borderRadius: "10px",
-              padding: "7px 18px",
+              background: "rgba(255,255,255,0.16)",
+              border: "1px solid rgba(255,255,255,0.30)",
+              borderRadius: "12px",
+              padding: "8px 20px",
               color: P.white,
               fontWeight: "800",
-              fontSize: "13px",
+              fontSize: "14px",
+              whiteSpace: "nowrap",
             }}
           >
-            {isAll ? `كشف مجمع — ${typeLabel}ين` : `كشف حساب ${typeLabel}`}
+            {docTitle}
           </div>
-          <div style={{ color: P.blueText, fontSize: "11px", marginTop: "5px" }}>
+          <div style={{ color: P.blueText, fontSize: "12px", marginTop: "6px" }}>
             {dateStr}
           </div>
         </div>
@@ -448,60 +450,61 @@ export function StatementPrintTemplate({ data }: { data: StatementPrintData }) {
       <div
         style={{
           height: "4px",
-          background: `linear-gradient(to left, ${P.blue2}, ${P.blueText}, ${P.blue2})`,
+          background: `linear-gradient(to left, ${P.blueDark}, ${P.blueText}, ${P.blueDark})`,
         }}
       />
 
       {/* ═══ ENTITY BAR ══════════════════════════════════════════════════════ */}
       <div
         style={{
-          backgroundColor: P.blue50,
+          backgroundColor: P.blueLight,
           borderBottom: `1px solid ${P.border}`,
-          padding: "10px 28px",
+          padding: "12px 32px",
           display: "flex",
           flexDirection: "row-reverse",
           justifyContent: "space-between",
           alignItems: "center",
         }}
       >
-        {/* Right side */}
+        {/* Right side: Entity Name */}
         <div>
-          <span style={{ color: P.slate600, fontSize: "12px", fontWeight: "600" }}>
-            اسم الحساب:{" "}
+          <span style={{ color: P.slate600, fontSize: "13px", fontWeight: "600" }}>
+            اسم\u00A0الحساب:\u00A0
           </span>
-          <span style={{ color: P.slate900, fontWeight: "900", fontSize: "15px" }}>
+          <span style={{ color: P.slate900, fontWeight: "900", fontSize: "16px" }}>
             {entityName}
           </span>
         </div>
-        {/* Left side */}
+        {/* Left side: Type Label Badge */}
         <div
           style={{
             backgroundColor: P.blue,
             color: P.white,
             borderRadius: "20px",
-            padding: "3px 14px",
-            fontSize: "11px",
+            padding: "4px 18px",
+            fontSize: "12px",
             fontWeight: "700",
+            whiteSpace: "nowrap",
           }}
         >
           {typeLabel}
         </div>
       </div>
 
-      {/* ═══ SUMMARY CARDS (row-reverse places Card 1 on Right, Card 4 on Left) ═══ */}
+      {/* ═══ SUMMARY CARDS ════════════════════════════════════════════════════ */}
       <div
         style={{
-          display: "flex",
-          flexDirection: "row-reverse",
-          gap: "12px",
-          padding: "16px 28px",
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr 1fr 1fr",
+          gap: "14px",
+          padding: "18px 32px",
           backgroundColor: P.slate50,
           borderBottom: `1px solid ${P.border}`,
         }}
       >
-        {/* Rightmost: Opening Balance */}
+        {/* Card 1 (Rightmost in row-reverse order if grid) -> We reverse array in grid */}
         <Card
-          label="رصيد افتتاحي"
+          label="رصيد\u00A0افتتاحي"
           value={n(totals.opening)}
           sub="جنيه"
           bg={P.white}
@@ -510,9 +513,8 @@ export function StatementPrintTemplate({ data }: { data: StatementPrintData }) {
           labCol={P.slate600}
           subCol={P.slate300}
         />
-        {/* Middle Right: Total Invoices / Debit */}
         <Card
-          label={isAll ? "إجمالي الفواتير" : "المدين"}
+          label={isAll ? "إجمالي\u00A0الفواتير" : "المدين"}
           value={n(totals.debit)}
           sub="جنيه"
           bg={P.rose50}
@@ -521,9 +523,8 @@ export function StatementPrintTemplate({ data }: { data: StatementPrintData }) {
           labCol={P.rose700}
           subCol="#fca5a5"
         />
-        {/* Middle Left: Total Payments / Credit */}
         <Card
-          label={isAll ? "إجمالي المدفوعات" : "الدائن"}
+          label={isAll ? "إجمالي\u00A0المدفوعات" : "الدائن"}
           value={n(totals.credit)}
           sub="جنيه"
           bg={P.green50}
@@ -532,13 +533,12 @@ export function StatementPrintTemplate({ data }: { data: StatementPrintData }) {
           labCol={P.green700}
           subCol="#6ee7b7"
         />
-        {/* Leftmost: Final Balance */}
         <Card
-          label="الرصيد النهائي"
+          label="الرصيد\u00A0النهائي"
           value={n(bal)}
           sub={balSub}
           bg={P.blue}
-          bord={P.blue2}
+          bord={P.blueDark}
           col={P.white}
           labCol={P.blueText}
           subCol={P.blueText}
@@ -546,8 +546,8 @@ export function StatementPrintTemplate({ data }: { data: StatementPrintData }) {
         />
       </div>
 
-      {/* ═══ TABLE ════════════════════════════════════════════════════════════ */}
-      <div style={{ padding: "20px 28px" }}>
+      {/* ═══ TABLE AREA ═══════════════════════════════════════════════════════ */}
+      <div style={{ padding: "24px 32px" }}>
         {isAll ? (
           <SummaryTable rows={summaryRows} typeLabel={typeLabel} totals={totals} />
         ) : (
@@ -559,7 +559,7 @@ export function StatementPrintTemplate({ data }: { data: StatementPrintData }) {
       <div
         style={{
           borderTop: `2px solid ${P.border}`,
-          padding: "10px 28px",
+          padding: "12px 32px",
           display: "flex",
           flexDirection: "row-reverse",
           justifyContent: "space-between",
@@ -567,11 +567,11 @@ export function StatementPrintTemplate({ data }: { data: StatementPrintData }) {
           backgroundColor: P.slate50,
         }}
       >
-        <div style={{ color: P.slate600, fontSize: "10px" }}>
-          هذه الوثيقة صادرة إلكترونياً من نظام RTX — جميع الحقوق محفوظة
+        <div style={{ color: P.slate600, fontSize: "11px" }}>
+          هذه\u00A0الوثيقة\u00A0صادرة\u00A0إلكترونياً\u00A0من\u00A0نظام\u00A0RTX\u00A0—\u00A0جميع\u00A0الحقوق\u00A0محفوظة
         </div>
-        <div style={{ color: P.blue, fontSize: "10px", fontWeight: "700" }}>
-          RTX System · {dateStr}
+        <div style={{ color: P.blue, fontSize: "11px", fontWeight: "700" }}>
+          RTX\u00A0System\u00A0·\u00A0{dateStr}
         </div>
       </div>
     </div>

@@ -28,7 +28,7 @@ export default async function StatementPage({
 
   const isAll = selectedId === "all";
   const selectedEntity = isAll 
-    ? { id: "all", name: `كشف مجمع شامل لكل (${type === "client" ? "العملاء" : type === "supplier" ? "الموردين" : "المصانع"})`, openingBalance: activeList.reduce((s, c) => s + c.openingBalance, 0) } 
+    ? { id: "all", name: `كشف مجمع شامل لكل ${type === "client" ? "العملاء" : type === "supplier" ? "الموردين" : "المصانع"}`, openingBalance: activeList.reduce((s, c) => s + c.openingBalance, 0) } 
     : (selectedId ? activeList.find((c) => c.id === selectedId) : null);
 
   let movements: Array<{ date: Date; type: string; description: string; debit: number; credit: number; entityName?: string }> = [];
@@ -53,10 +53,10 @@ export default async function StatementPage({
           const totalPayments = c.payments.reduce((sum, pay) => sum + pay.amount, 0);
           const netBalance = c.openingBalance + totalInvoices - totalPayments;
           
-          let statusLabel = "متزن (خالص)";
+          let statusLabel = "خالص";
           let statusColor = "bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-slate-300";
-          if (netBalance > 0) { statusLabel = "عليه مديونية (مدين)"; statusColor = "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200"; } 
-          else if (netBalance < 0) { statusLabel = "له مستحقات (دائن)"; statusColor = "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200"; }
+          if (netBalance > 0) { statusLabel = "عليه ديون"; statusColor = "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200"; } 
+          else if (netBalance < 0) { statusLabel = "له مستحقات"; statusColor = "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200"; }
 
           return { id: c.id, name: c.name, createdAt: c.createdAt as any, openingBalance: c.openingBalance, statusLabel, statusColor, totalInvoices, totalPayments, netBalance };
         });
@@ -79,10 +79,10 @@ export default async function StatementPage({
           const totalPayments = s.expenses.reduce((sum, e) => sum + e.amount, 0);
           const netBalance = s.openingBalance + totalPurchases - totalPayments;
 
-          let statusLabel = "متزن (خالص)";
+          let statusLabel = "خالص";
           let statusColor = "bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-slate-300";
-          if (netBalance > 0) { statusLabel = "له مستحقات (دائن)"; statusColor = "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200"; } 
-          else if (netBalance < 0) { statusLabel = "مدين"; statusColor = "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200"; }
+          if (netBalance > 0) { statusLabel = "له مستحقات"; statusColor = "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200"; } 
+          else if (netBalance < 0) { statusLabel = "عليه ديون"; statusColor = "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200"; }
 
           return { id: s.id, name: s.name, createdAt: s.createdAt as any, openingBalance: s.openingBalance, statusLabel, statusColor, totalInvoices: totalPurchases, totalPayments, netBalance };
         });
@@ -105,10 +105,10 @@ export default async function StatementPage({
           const totalPayments = f.expenses.reduce((sum, e) => sum + e.amount, 0);
           const netBalance = f.openingBalance + totalOperating - totalPayments;
 
-          let statusLabel = "متزن (خالص)";
+          let statusLabel = "خالص";
           let statusColor = "bg-slate-100 text-slate-700 dark:bg-zinc-800 dark:text-slate-300";
-          if (netBalance > 0) { statusLabel = "له مستحقات (دائن)"; statusColor = "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200"; } 
-          else if (netBalance < 0) { statusLabel = "مدين"; statusColor = "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200"; }
+          if (netBalance > 0) { statusLabel = "له مستحقات"; statusColor = "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 border border-emerald-200"; } 
+          else if (netBalance < 0) { statusLabel = "عليه ديون"; statusColor = "bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-300 border border-rose-200"; }
 
           return { id: f.id, name: f.name, createdAt: f.createdAt as any, openingBalance: f.openingBalance, statusLabel, statusColor, totalInvoices: totalOperating, totalPayments, netBalance };
         });
