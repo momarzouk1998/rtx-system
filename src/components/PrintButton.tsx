@@ -4,29 +4,6 @@ import { useState } from "react";
 import { Printer, Download, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
-/**
- * دالة لاستبدال جميع دالّات الألوان الحديثة (lab / oklch / color-mix)
- * التي لا يدعمها html2canvas بألوان rgb بديلة آمنة.
- * تستخدم do-while للتعامل مع أي أقواس متداخلة بأمان كامل.
- */
-function replaceUnsupportedColors(text: string): string {
-  if (!text) return text;
-  let prev = "";
-  let result = text;
-  let iterations = 0;
-
-  do {
-    prev = result;
-    result = result
-      .replace(/lab\([^()]*\)/gi, "rgb(15, 23, 42)")
-      .replace(/oklch\([^()]*\)/gi, "rgb(2, 132, 199)")
-      .replace(/color-mix\([^()]*\)/gi, "rgb(2, 132, 199)");
-    iterations++;
-  } while (result !== prev && iterations < 10);
-
-  return result;
-}
-
 export function PrintButton({
   targetId = "printable-area",
   fileName = "RTX-Document",
@@ -44,138 +21,82 @@ export function PrintButton({
     try {
       setIsGeneratingPdf(true);
 
-      const element = (document.getElementById(targetId) ||
+      const element = (
+        document.getElementById(targetId) ||
         document.querySelector(".printable-statement-content") ||
-        document.querySelector(".printable-content") ||
-        document.body) as HTMLElement;
+        document.querySelector(".printable-content")
+      ) as HTMLElement | null;
 
       if (!element) {
         throw new Error("لم يتم العثور على العنصر المراد طباعته");
       }
 
-      const html2canvas = (await import("html2canvas")).default;
-      const { jsPDF } = await import("jspdf");
+      // ============================================================
+      // الحل الجذري: نستخدم html2pdf.js الذي يتعامل مع lab/oklch
+      // بشكل أكثر مرونة، مع تنظيف الستايل في onclone
+      // ============================================================
+      const html2pdf = (await import("html2pdf.js")).default;
 
-      const canvas = await html2canvas(element, {
-        scale: 2, // دقة عالية جداً ووضوح للنصوص
-        useCORS: true,
-        allowTaint: true,
-        logging: false,
-        backgroundColor: "#ffffff",
-        imageTimeout: 15000,
-        onclone: (clonedDoc: Document) => {
-          try {
-            // 1. إخفاء كافة العناصر المستثناة من الطباعة
-            clonedDoc.querySelectorAll(".no-print").forEach((el) => {
-              (el as HTMLElement).style.setProperty("display", "none", "important");
-            });
+      const customerFileName = fileName;
 
-            // 2. إصلاح مسارات الصور النسبية
-            clonedDoc.querySelectorAll("img").forEach((img) => {
-              if (img.src && img.src.startsWith("/")) {
-                img.src = window.location.origin + img.src;
-              }
-            });
+      await html2pdf()
+        .set({
+          margin: [8, 8, 8, 8],
+          filename: `${customerFileName}.pdf`,
+          image: { type: "jpeg", quality: 0.95 },
+          html2canvas: {
+            scale: 2,
+            useCORS: true,
+            allowTaint: true,
+            logging: false,
+            backgroundColor: "#ffffff",
+            onclone: (clonedDoc: Document) => {
+              // إخفاء عناصر no-print
+              clonedDoc.querySelectorAll(".no-print").forEach((el) => {
+                (el as HTMLElement).style.setProperty("display", "none", "important");
+              });
 
-            // 3. استبدال lab/oklch في كافة ملفات الـ CSS والستايل المستنسخ
-            clonedDoc.querySelectorAll("style").forEach((styleEl) => {
-              if (styleEl.textContent) {
-                styleEl.textContent = replaceUnsupportedColors(styleEl.textContent);
-              }
-            });
-
-            // 4. فحص الألوان المباشرة والمحسوبة على كل عنصر لضمان عدم وجود lab/oklch
-            const allNodes = clonedDoc.querySelectorAll("*");
-            allNodes.forEach((node) => {
-              const htmlEl = node as HTMLElement;
-
-              // الستايل المباشر
-              const styleAttr = htmlEl.getAttribute("style");
-              if (
-                styleAttr &&
-                (styleAttr.includes("lab") ||
-                  styleAttr.includes("oklch") ||
-                  styleAttr.includes("color-mix"))
-              ) {
-                htmlEl.setAttribute("style", replaceUnsupportedColors(styleAttr));
-              }
-
-              // الستايل المحسوب من Tailwind v4
-              try {
-                const cs = clonedDoc.defaultView?.getComputedStyle(htmlEl);
-                if (cs) {
-                  const props = ["color", "backgroundColor", "borderColor", "outlineColor"];
-                  props.forEach((p) => {
-                    const val = cs.getPropertyValue(p);
-                    if (
-                      val &&
-                      (val.includes("lab") ||
-                        val.includes("oklch") ||
-                        val.includes("color-mix"))
-                    ) {
-                      htmlEl.style.setProperty(p, replaceUnsupportedColors(val));
-                    }
-                  });
+              // إصلاح الصور النسبية
+              clonedDoc.querySelectorAll("img").forEach((img: HTMLImageElement) => {
+                if (img.getAttribute("src")?.startsWith("/")) {
+                  img.src = window.location.origin + img.getAttribute("src")!;
                 }
-              } catch {
-                // ignore computed style read errors
-              }
-            });
-          } catch (cloneErr) {
-            console.warn("تننيبيه أثناء تجهيز المستند للطباعة:", cloneErr);
-          }
-        },
-      });
+              });
 
-      if (!canvas || canvas.width === 0 || canvas.height === 0) {
-        throw new Error("فشل في تحويل الصفحة إلى صورة");
-      }
+              // ✅ استبدال lab/oklch/color-mix في كل <style> tags
+              // بالطريقة الأكثر شمولاً والأبسط
+              clonedDoc.querySelectorAll("style").forEach((styleEl) => {
+                if (!styleEl.textContent) return;
+                let css = styleEl.textContent;
 
-      const imgData = canvas.toDataURL("image/jpeg", 0.95);
-      if (!imgData || imgData === "data:,") {
-        throw new Error("فشل في توليد صورة المحتوى");
-      }
+                // نكرر حتى لا يبقى أي oklch/lab/color-mix (للأقواس المتداخلة)
+                for (let i = 0; i < 5; i++) {
+                  const before = css;
+                  css = css
+                    .replace(/oklch\([^()]*\)/g, "#0284c7")
+                    .replace(/lab\([^()]*\)/g, "#0f172a")
+                    .replace(/color-mix\([^()]*\)/g, "#0284c7");
+                  if (css === before) break;
+                }
 
-      // إنشاء مستند PDF بقياس A4
-      const pdf = new jsPDF({
-        orientation: orientation,
-        unit: "mm",
-        format: "a4",
-        compress: true,
-      });
+                styleEl.textContent = css;
+              });
+            },
+          },
+          jsPDF: {
+            unit: "mm",
+            format: "a4",
+            orientation: orientation,
+          },
+        })
+        .from(element)
+        .save();
 
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const marginX = 8;
-      const marginY = 8;
-      const printableWidth = pageWidth - marginX * 2;
-      const printableHeight = pageHeight - marginY * 2;
-
-      const imgWidth = printableWidth;
-      const imgHeight = (canvas.height * printableWidth) / canvas.width;
-
-      let heightLeft = imgHeight;
-      let pageIndex = 0;
-
-      while (heightLeft > 0) {
-        if (pageIndex > 0) {
-          pdf.addPage();
-        }
-
-        // إزاحة الصورة رأساً على عقب بمقدار ارتفاع كل صفحة
-        const positionY = marginY - pageIndex * printableHeight;
-        pdf.addImage(imgData, "JPEG", marginX, positionY, imgWidth, imgHeight);
-
-        heightLeft -= printableHeight;
-        pageIndex++;
-      }
-
-      pdf.save(`${fileName}.pdf`);
       toast.success("✅ تم تحميل ملف الـ PDF بنجاح");
     } catch (err) {
-      console.error("خطأ أثناء إنشاء الـ PDF:", err);
-      toast.error("حدث خطأ في التصدير، جاري استخدام الطباعة المباشرة...");
-      setTimeout(() => window.print(), 300);
+      const msg = err instanceof Error ? err.message : String(err);
+      console.error("❌ خطأ PDF:", msg, err);
+      toast.error(`خطأ: ${msg.slice(0, 80)}`);
     } finally {
       setIsGeneratingPdf(false);
     }
