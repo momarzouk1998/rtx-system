@@ -140,13 +140,28 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
           logging: false,
           backgroundColor: '#ffffff',
           onclone: (clonedDoc: Document) => {
-            const styleElements = clonedDoc.querySelectorAll('style');
-            styleElements.forEach((s) => {
-              if (s.textContent && (s.textContent.includes('lab(') || s.textContent.includes('oklch('))) {
+            // regex يتعامل مع الأقواس المتداخلة (مثل lab() داخل linear-gradient())
+            const labPattern = /lab\([^)]*(?:\([^)]*\)[^)]*)*\)/g;
+            const oklchPattern = /oklch\([^)]*(?:\([^)]*\)[^)]*)*\)/g;
+            const colorMixPattern = /color-mix\([^)]*(?:\([^)]*\)[^)]*)*\)/g;
+
+            clonedDoc.querySelectorAll('style').forEach((s) => {
+              if (s.textContent) {
                 s.textContent = s.textContent
-                  .replace(/lab\([^)]+\)/g, '#0284c7')
-                  .replace(/oklch\([^)]+\)/g, '#0284c7');
+                  .replace(labPattern, 'rgb(2, 132, 199)')
+                  .replace(oklchPattern, 'rgb(2, 132, 199)')
+                  .replace(colorMixPattern, 'rgb(2, 132, 199)');
               }
+            });
+
+            // حذف الـ external stylesheets لمنع html2canvas من تحليلها
+            clonedDoc.querySelectorAll('link[rel="stylesheet"]').forEach((link) => {
+              link.remove();
+            });
+
+            // إخفاء العناصر غير المطلوبة
+            clonedDoc.querySelectorAll('.no-print').forEach((el) => {
+              (el as HTMLElement).style.display = 'none';
             });
           }
         },
