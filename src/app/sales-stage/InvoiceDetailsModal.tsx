@@ -1,10 +1,11 @@
-"use client";
+﻿"use client";
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Eye, X, Printer, Package, User, Calendar, Tag, Phone, Download, Loader2 } from "lucide-react";
+import toast from "react-hot-toast";
 
-// إضافة CSS للطباعة
+// حقن CSS للطباعة
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
   style.innerHTML = `
@@ -55,6 +56,7 @@ interface Invoice {
   status: string;
   subTotal: number;
   discountValue?: number | null;
+  discount?: number | null;
   netTotal: number;
   notes?: string | null;
   client?: {
@@ -75,24 +77,17 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
 
   const cleanupDomAfterPdf = () => {
     try {
-      // إزالة كل العناصر المؤقتة اللي html2pdf بيضيفها
       document.querySelectorAll('.html2pdf__container, .html2pdf__overlay, iframe[src="about:blank"]').forEach((el) => {
         el.remove();
       });
-      
-      // إلغاء أي تأثيرات على الـ body
       document.body.style.pointerEvents = 'auto';
       document.body.style.userSelect = 'auto';
-      document.body.style.overflow = '';
-      
-      // إزالة أي classes مؤقتة
       document.body.classList.remove('html2pdf__generating');
     } catch (err) {
       console.warn('Cleanup error:', err);
     }
   };
 
-  // منع scroll لما المودال مفتوح وإلغاء المنع لما يقفل مع تنظيف الـ DOM
   useEffect(() => {
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -100,8 +95,6 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
       document.body.style.overflow = '';
       cleanupDomAfterPdf();
     }
-    
-    // Cleanup عند unmount
     return () => {
       document.body.style.overflow = '';
       cleanupDomAfterPdf();
@@ -114,87 +107,169 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
     if (isGeneratingPdf) return;
     try {
       setIsGeneratingPdf(true);
-      
-      // تأكد إن الـ DOM نضيف قبل ما نبدأ
-      cleanupDomAfterPdf();
-      
-      await new Promise((r) => setTimeout(r, 100));
 
-      const element = document.getElementById(`invoice-container-${invoice.id}`) || document.querySelector(".printable-invoice-content") || document.body;
+      const element =
+        document.getElementById(`invoice-container-${invoice.id}`) ||
+        (document.querySelector(".printable-invoice-content") as HTMLElement) ||
+        document.body;
+
       if (!element) {
-        window.print();
+        toast.error("تعذر العثور على محتوى الفاتورة");
         return;
       }
-      
-      const html2pdfModule = (await import("html2pdf.js")).default;
-      const customerName = invoice.client?.name || "عميل";
-      const invoiceNumber = invoice.orderNumber || "0";
-      
-      const opt = {
-        margin: 5,
-        filename: `فاتورة_RTX_${customerName}_${invoiceNumber}.pdf`,
-        image: { type: 'jpeg' as const, quality: 0.95 },
-        html2canvas: { 
-          scale: 2, 
-          useCORS: true, 
-          logging: false,
-          backgroundColor: '#ffffff',
-          onclone: (clonedDoc: Document) => {
-            function replaceColors(text: string): string {
-              if (!text) return text;
-              let prev = "";
-              let result = text;
-              let iterations = 0;
-              do {
-                prev = result;
-                result = result
-                  .replace(/lab\([^()]*\)/gi, "rgb(15, 23, 42)")
-                  .replace(/oklch\([^()]*\)/gi, "rgb(2, 132, 199)")
-                  .replace(/color-mix\([^()]*\)/gi, "rgb(2, 132, 199)");
-                iterations++;
-              } while (result !== prev && iterations < 10);
-              return result;
-            }
 
-            clonedDoc.querySelectorAll('style').forEach((s) => {
-              if (s.textContent) {
-                s.textContent = replaceColors(s.textContent);
+      const html2canvas = (await import("html2canvas")).default;
+      const { jsPDF } = await import("jspdf");
+
+      const canvas = await html2canvas(element, {
+        useCORS: true,
+        allowTaint: true,
+        scale: 2,
+        logging: false,
+        backgroundColor: "#ffffff",
+        scrollX: 0,
+        scrollY: 0,
+        onclone: (clonedDoc, clonedElement) => {
+          const tempCanvas = clonedDoc.createElement("canvas");
+          const ctx = tempCanvas.getContext("2d");
+
+          const convertOklchToRgb = (str: string): string => {
+            if (!str || typeof str !== "string" || !str.includes("oklch")) return str;
+            if (!ctx) return str.replace(/oklch\([^)]+\)/gi, "rgb(2, 132, 199)");
+            return str.replace(/oklch\([^)]+\)/gi, (match) => {
+              try {
+                ctx.fillStyle = "#000000";
+                ctx.fillStyle = match;
+                return ctx.fillStyle;
+              } catch {
+                return "rgb(2, 132, 199)";
               }
             });
+          };
 
-            clonedDoc.querySelectorAll('.no-print').forEach((el) => {
-              (el as HTMLElement).style.setProperty('display', 'none', 'important');
-            });
+          // 1. تنظيف وسوم style
+          clonedDoc.querySelectorAll("style").forEach((s) => {
+            if (s.textContent && s.textContent.includes("oklch")) {
+              s.textContent = convertOklchToRgb(s.textContent);
+            }
+          });
+
+          // 2. إخفاء no-print
+          clonedDoc.querySelectorAll(".no-print").forEach((el) => {
+            (el as HTMLElement).style.setProperty("display", "none", "important");
+          });
+
+          // 3. تحويل computed colors لألوان RGB صريحة
+          const origAll = [element, ...Array.from(element.querySelectorAll("*"))] as HTMLElement[];
+          const clonedAll = [clonedElement, ...Array.from(clonedElement.querySelectorAll("*"))] as HTMLElement[];
+
+          const COLOR_PROPS = [
+            "color",
+            "backgroundColor",
+            "borderColor",
+            "borderTopColor",
+            "borderBottomColor",
+            "borderLeftColor",
+            "borderRightColor",
+            "outlineColor",
+            "boxShadow",
+          ];
+
+          for (let i = 0; i < origAll.length; i++) {
+            const orig = origAll[i];
+            const clone = clonedAll[i];
+            if (!orig || !clone) continue;
+
+            if (clone.style) {
+              for (let s = 0; s < clone.style.length; s++) {
+                const prop = clone.style[s];
+                const val = clone.style.getPropertyValue(prop);
+                if (val && val.includes("oklch")) {
+                  clone.style.setProperty(prop, convertOklchToRgb(val));
+                }
+              }
+            }
+
+            try {
+              const computed = window.getComputedStyle(orig);
+              for (const prop of COLOR_PROPS) {
+                const val = (computed as any)[prop];
+                if (val && typeof val === "string" && val.includes("oklch")) {
+                  const rgbVal = convertOklchToRgb(val);
+                  const cssProp = prop.replace(/([A-Z])/g, "-$1").toLowerCase();
+                  clone.style.setProperty(cssProp, rgbVal, "important");
+                }
+              }
+            } catch {}
           }
         },
-        jsPDF: { 
-          unit: 'mm', 
-          format: 'a4', 
-          orientation: 'portrait' as const,
-          compress: true
-        },
-        pagebreak: { mode: ['avoid-all', 'css', 'legacy'] }
-      };
+      });
 
-      await html2pdfModule().set(opt).from(element).save();
-      
-      // انتظر شوية قبل التنضيف عشان التحميل يخلص
-      await new Promise((r) => setTimeout(r, 500));
-      
+      if (!canvas || canvas.width === 0 || canvas.height === 0) {
+        toast.error("حدث خطأ أثناء إنشاء ملف PDF");
+        return;
+      }
+
+      const imgData = canvas.toDataURL("image/jpeg", 0.92);
+      const pdf = new jsPDF("p", "mm", "a4");
+
+      const pdfWidth = pdf.internal.pageSize.getWidth();
+      const pdfHeight = pdf.internal.pageSize.getHeight();
+      const margin = 8;
+      const printableWidth = pdfWidth - margin * 2;
+      const printableHeight = pdfHeight - margin * 2;
+
+      const imgWidth = printableWidth;
+      const imgHeight = (canvas.height * imgWidth) / canvas.width;
+
+      if (imgHeight <= printableHeight) {
+        const x = (pdfWidth - imgWidth) / 2;
+        const y = margin;
+        pdf.addImage(imgData, "JPEG", x, y, imgWidth, imgHeight);
+      } else {
+        const pageCanvasHeight = (canvas.width * printableHeight) / printableWidth;
+        let positionY = 0;
+        let pageCount = 0;
+
+        while (positionY < canvas.height) {
+          const sliceHeight = Math.min(pageCanvasHeight, canvas.height - positionY);
+          const pageCanvas = document.createElement("canvas");
+          pageCanvas.width = canvas.width;
+          pageCanvas.height = sliceHeight;
+
+          const ctx = pageCanvas.getContext("2d");
+          if (ctx) {
+            ctx.fillStyle = "#ffffff";
+            ctx.fillRect(0, 0, pageCanvas.width, pageCanvas.height);
+            ctx.drawImage(canvas, 0, positionY, canvas.width, sliceHeight, 0, 0, canvas.width, sliceHeight);
+          }
+
+          const pageImgData = pageCanvas.toDataURL("image/jpeg", 0.92);
+          const pageImgHeight = (sliceHeight * printableWidth) / canvas.width;
+
+          if (pageCount > 0) pdf.addPage();
+          pdf.addImage(pageImgData, "JPEG", margin, margin, printableWidth, pageImgHeight);
+
+          positionY += sliceHeight;
+          pageCount++;
+        }
+      }
+
+      const customerName = invoice.client?.name || "عميل";
+      const invoiceNumber = invoice.orderNumber || "0";
+      pdf.save(`فاتورة_RTX_${customerName}_${invoiceNumber}.pdf`);
+      toast.success("تم تحميل ملف PDF بنجاح");
     } catch (err) {
-      console.warn("PDF export error, falling back to window.print():", err);
+      console.error("PDF generation failed:", err);
+      toast.error("فشل إنشاء ملف PDF، جاري فتح الطباعة");
       window.print();
     } finally {
       setIsGeneratingPdf(false);
-      
-      // تنضيف شامل بعد ما نخلص
       cleanupDomAfterPdf();
-      
-      // تأكد إن الـ overflow راجع طبيعي لو المودال لسه مفتوح
       if (isOpen) {
-        document.body.style.overflow = 'hidden';
+        document.body.style.overflow = "hidden";
       } else {
-        document.body.style.overflow = '';
+        document.body.style.overflow = "";
       }
     }
   };
@@ -230,7 +305,6 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
     <div 
       className="fixed inset-0 z-[99999] flex items-center justify-center bg-slate-950/70 backdrop-blur-xs p-4 modal-print-container animate-fade-in"
       onClick={(e) => {
-        // لو الضغط على الـ overlay نفسه (مش على المودال)، قفل المودال
         if (e.target === e.currentTarget) {
           setIsOpen(false);
         }
@@ -240,7 +314,6 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
         className="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl max-w-3xl w-full max-h-[92vh] overflow-hidden flex flex-col border border-slate-200 dark:border-zinc-800 print:shadow-none print:border-none print:max-h-none print:w-full print:rounded-none"
         onClick={(e) => e.stopPropagation()}
       >
-        
         {/* Header (Screen mode) */}
         <div className="px-6 py-4 bg-slate-900 border-b border-sky-500/30 text-white flex items-center justify-between no-print">
           <div className="flex items-center gap-3">
@@ -303,7 +376,7 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
           <div className="grid grid-cols-2 gap-4 p-4 bg-sky-50/50 dark:bg-zinc-800/50 rounded-xl border border-sky-200/80 dark:border-zinc-700 text-sm print:bg-slate-50 print:border-slate-300">
             <div className="space-y-1">
               <span className="text-slate-500 text-xs font-bold flex items-center gap-1.5">
-                <User className="w-4 h-4 text-[#0ea5e9]" /> اسم العميل المكرم:
+                <User className="w-4 h-4 text-[#0ea5e9]" /> اسم العميل المحترم:
               </span>
               <p className="font-black text-slate-900 dark:text-white text-base">
                 {invoice.client?.name || "عميل غير محدد"}
@@ -319,32 +392,33 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
               <span className="text-slate-500 text-xs font-bold flex items-center gap-1.5">
                 <Tag className="w-4 h-4 text-[#0ea5e9]" /> حالة الفاتورة:
               </span>
-              <div className="mt-1 no-print">
-                {getStatusBadge(invoice.status)}
-              </div>
-              <div className="hidden print:block font-bold text-slate-900 text-sm">
-                {getStatusText(invoice.status)}
+              <div className="font-bold text-sm">
+                <span className="print:hidden">{getStatusBadge(invoice.status)}</span>
+                <span className="hidden print:inline font-bold border border-slate-400 px-3 py-0.5 rounded-full text-xs">
+                  {getStatusText(invoice.status)}
+                </span>
               </div>
             </div>
           </div>
 
           {/* Items Table */}
-          <div>
-            <h4 className="font-bold text-slate-900 dark:text-white text-sm mb-3 flex items-center gap-2 no-print">
-              <Package className="w-4 h-4 text-[#0ea5e9]" /> الأصناف المسجلة ({invoice.items?.length || 0})
-            </h4>
-            <div className="border border-slate-200 dark:border-zinc-700 rounded-xl overflow-hidden shadow-xs print:rounded-none print:border-slate-400">
-              <table className="w-full text-right text-sm" dir="rtl">
-                <thead className="bg-gradient-to-r from-[#0284c7] to-[#0369a1] text-white text-xs print:bg-[#0284c7]">
-                  <tr>
-                    <th className="px-4 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold w-12 text-center">#</th>
-                    <th className="px-4 py-3 border-b border-[#0369a1] print:border-slate-400 font-bold">اسم المنتج</th>
-                    <th className="px-4 py-3 border-b border-[#0369a1] print:border-slate-400 text-center font-bold bg-white/10">الكمية (أكياس)</th>
-                    <th className="px-4 py-3 border-b border-[#0369a1] print:border-slate-400 text-center font-bold bg-white/10">سعر الكيس</th>
-                    <th className="px-4 py-3 border-b border-[#0369a1] print:border-slate-400 text-left font-bold">الإجمالي</th>
+          <div className="rounded-xl border border-slate-200 dark:border-zinc-800 overflow-hidden shadow-xs print:border-slate-400">
+            <div className="bg-slate-900 text-white px-4 py-2.5 font-bold text-xs flex items-center gap-2 print:bg-slate-900 print:text-white">
+              <Package className="w-4 h-4 text-[#38bdf8]" />
+              الأصناف والمنتجات المطلوبة
+            </div>
+            <div className="overflow-x-auto">
+              <table className="w-full text-right text-sm border-collapse">
+                <thead>
+                  <tr className="bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 text-xs font-black border-b border-slate-200 dark:border-zinc-700 print:bg-slate-200 print:text-black">
+                    <th className="px-4 py-2.5 w-12 text-center">#</th>
+                    <th className="px-4 py-2.5">اسم الصنف</th>
+                    <th className="px-4 py-2.5 text-center">الكمية (أكياس)</th>
+                    <th className="px-4 py-2.5 text-center">سعر الكيس</th>
+                    <th className="px-4 py-2.5 text-left">الإجمالي (ج.م)</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-slate-200 dark:divide-zinc-800 print:divide-slate-300">
+                <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60 print:divide-slate-300 text-slate-700 dark:text-slate-300">
                   {invoice.items && invoice.items.length > 0 ? (
                     invoice.items.map((item: any, idx: number) => {
                       const qty = item.quantity || item.quantityBags || 0;
@@ -356,13 +430,11 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
                           <td className="px-4 py-3 font-extrabold text-slate-900 dark:text-white">
                             {item.product?.name || "صنف غير معروف"}
                           </td>
-                          {/* تمييز الكمية بلون مميز */}
                           <td className="px-4 py-3 text-center bg-blue-50/50 dark:bg-blue-950/20 print:bg-blue-50">
                             <span className="text-[#0284c7] dark:text-blue-400 font-black text-base px-2 py-1 print:text-[#0284c7]">
                               {qty.toLocaleString("ar-EG")}
                             </span>
                           </td>
-                          {/* تمييز سعر الكيس بلون مميز */}
                           <td className="px-4 py-3 text-center bg-amber-50/50 dark:bg-amber-950/20 print:bg-amber-50">
                             <span className="text-amber-700 dark:text-amber-400 font-black text-base px-2 py-1 print:text-amber-700">
                               {price.toLocaleString("ar-EG")}
@@ -386,50 +458,41 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
             </div>
           </div>
 
-          {/* Total Calculation Breakdown with Distinct Net Total Color Box */}
+          {/* Total Calculation Breakdown */}
           <div className="flex justify-end">
             <div className="w-full sm:w-80 space-y-3 text-sm print:w-72">
               {discountAmount > 0 ? (
-                <>
-                  {/* إذا فيه خصم - نعرض 3 صناديق */}
-                  <div className="grid grid-cols-3 gap-2">
-                    {/* قبل الخصم */}
-                    <div className="bg-slate-100 dark:bg-zinc-800 p-3 rounded-xl border-2 border-slate-300 dark:border-zinc-700 text-center print:bg-slate-100 print:border-slate-400">
-                      <div className="text-xs text-slate-600 dark:text-slate-400 font-bold mb-1">قبل الخصم</div>
-                      <div className="text-lg font-black text-slate-900 dark:text-white print:text-slate-900">
-                        {(invoice.subTotal || 0).toLocaleString("ar-EG")}
-                      </div>
-                    </div>
-                    
-                    {/* قيمة الخصم */}
-                    <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-xl border-2 border-amber-300 dark:border-amber-800 text-center print:bg-amber-50 print:border-amber-400">
-                      <div className="text-xs text-amber-700 dark:text-amber-400 font-bold mb-1">الخصم</div>
-                      <div className="text-lg font-black text-amber-700 dark:text-amber-300 print:text-amber-700">
-                        {discountAmount.toLocaleString("ar-EG")}
-                      </div>
-                    </div>
-                    
-                    {/* صافي الفاتورة */}
-                    <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 p-3 rounded-xl border-2 border-emerald-600 dark:border-emerald-500 text-center shadow-lg print:bg-emerald-600 print:border-emerald-700">
-                      <div className="text-xs text-white font-bold mb-1">صافي الفاتورة</div>
-                      <div className="text-lg font-black text-white">
-                        {(invoice.netTotal || 0).toLocaleString("ar-EG")}
-                      </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <div className="bg-slate-100 dark:bg-zinc-800 p-3 rounded-xl border-2 border-slate-300 dark:border-zinc-700 text-center print:bg-slate-100 print:border-slate-400">
+                    <div className="text-xs text-slate-600 dark:text-slate-400 font-bold mb-1">قبل الخصم</div>
+                    <div className="text-lg font-black text-slate-900 dark:text-white print:text-slate-900">
+                      {(invoice.subTotal || 0).toLocaleString("ar-EG")}
                     </div>
                   </div>
-                </>
+                  
+                  <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-xl border-2 border-amber-300 dark:border-amber-800 text-center print:bg-amber-50 print:border-amber-400">
+                    <div className="text-xs text-amber-700 dark:text-amber-400 font-bold mb-1">الخصم</div>
+                    <div className="text-lg font-black text-amber-700 dark:text-amber-300 print:text-amber-700">
+                      {discountAmount.toLocaleString("ar-EG")}
+                    </div>
+                  </div>
+                  
+                  <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 p-3 rounded-xl border-2 border-emerald-600 dark:border-emerald-500 text-center shadow-lg print:bg-emerald-600 print:border-emerald-700">
+                    <div className="text-xs text-white font-bold mb-1">صافي الفاتورة</div>
+                    <div className="text-lg font-black text-white">
+                      {(invoice.netTotal || 0).toLocaleString("ar-EG")}
+                    </div>
+                  </div>
+                </div>
               ) : (
-                <>
-                  {/* إذا مفيش خصم - نعرض صندوق واحد كبير للصافي */}
-                  <div className="bg-gradient-to-br from-[#0284c7] to-[#0369a1] dark:from-[#0369a1] dark:to-[#0284c7] text-white p-5 rounded-xl shadow-lg border-2 border-[#0369a1] print:bg-[#0284c7] print:border-[#0369a1]">
-                    <div className="flex justify-between items-center">
-                      <span className="font-black text-lg">صافي الفاتورة:</span>
-                      <span className="text-3xl font-black">
-                        {(invoice.netTotal || 0).toLocaleString("ar-EG")}
-                      </span>
-                    </div>
+                <div className="bg-gradient-to-br from-[#0284c7] to-[#0369a1] dark:from-[#0369a1] dark:to-[#0284c7] text-white p-5 rounded-xl shadow-lg border-2 border-[#0369a1] print:bg-[#0284c7] print:border-[#0369a1]">
+                  <div className="flex justify-between items-center">
+                    <span className="font-black text-lg">صافي الفاتورة:</span>
+                    <span className="text-3xl font-black">
+                      {(invoice.netTotal || 0).toLocaleString("ar-EG")}
+                    </span>
                   </div>
-                </>
+                </div>
               )}
             </div>
           </div>
