@@ -5,6 +5,26 @@ import { createPortal } from "react-dom";
 import { Eye, X, Printer, Package, User, Calendar, Tag, Phone, Download, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 
+// ألوان قياسية نقية بدون oklch
+const C = {
+  blue: "#0284c7",
+  lightBlue: "#e0f2fe",
+  darkBlue: "#0369a1",
+  slateDark: "#0f172a",
+  slateHeader: "#1e293b",
+  border: "#e2e8f0",
+  text: "#1e293b",
+  muted: "#64748b",
+  white: "#ffffff",
+  lightBg: "#f8fafc",
+  amber: "#d97706",
+  amberBg: "#fef3c7",
+  emerald: "#059669",
+  emeraldBg: "#d1fae5",
+  rose: "#e11d48",
+  roseBg: "#ffe4e6",
+} as const;
+
 // حقن CSS للطباعة
 if (typeof document !== 'undefined') {
   const style = document.createElement('style');
@@ -277,15 +297,15 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "PROCESSING":
-        return <span className="bg-amber-100 text-amber-800 border border-amber-300 px-3 py-1 rounded-full text-xs font-bold">قيد التشغيل</span>;
+        return <span style={{ backgroundColor: C.amberBg, color: C.amber, border: `1px solid ${C.amber}`, padding: "2px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: "bold" }}>قيد التشغيل</span>;
       case "ORDERED":
-        return <span className="bg-sky-100 text-sky-800 border border-sky-300 px-3 py-1 rounded-full text-xs font-bold">تم الطلب</span>;
+        return <span style={{ backgroundColor: C.lightBlue, color: C.blue, border: `1px solid ${C.blue}`, padding: "2px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: "bold" }}>تم الطلب</span>;
       case "SHIPPED":
-        return <span className="bg-purple-100 text-purple-800 border border-purple-300 px-3 py-1 rounded-full text-xs font-bold">تم الشحن</span>;
+        return <span style={{ backgroundColor: "#f3e8ff", color: "#7e22ce", border: "1px solid #7e22ce", padding: "2px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: "bold" }}>تم الشحن</span>;
       case "DELIVERED":
-        return <span className="bg-emerald-100 text-emerald-800 border border-emerald-300 px-3 py-1 rounded-full text-xs font-bold">تم التسليم</span>;
+        return <span style={{ backgroundColor: C.emeraldBg, color: C.emerald, border: `1px solid ${C.emerald}`, padding: "2px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: "bold" }}>تم التسليم</span>;
       default:
-        return <span className="bg-rose-100 text-rose-800 border border-rose-300 px-3 py-1 rounded-full text-xs font-bold">ملغي</span>;
+        return <span style={{ backgroundColor: C.roseBg, color: C.rose, border: `1px solid ${C.rose}`, padding: "2px 10px", borderRadius: "999px", fontSize: "11px", fontWeight: "bold" }}>ملغي</span>;
     }
   };
 
@@ -322,7 +342,7 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
             </div>
             <div>
               <h3 className="font-extrabold text-white text-lg flex items-center gap-2">
-                فاتورة مبيعات <span className="text-[#38bdf8]">#{invoice.orderNumber}</span>
+                فاتورة مبيعات <span style={{ color: "#38bdf8" }}>#{invoice.orderNumber}</span>
               </h3>
               <p className="text-xs text-slate-300 flex items-center gap-1 mt-0.5">
                 <Calendar className="w-3 h-3 text-[#38bdf8]" /> {formattedDate}
@@ -338,160 +358,155 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
         </div>
 
         {/* Printable Corporate Invoice Container */}
-        <div id={`invoice-container-${invoice.id}`} className="p-6 overflow-y-auto space-y-6 flex-1 print:p-0 print:overflow-visible printable-invoice-content bg-white">
-          
+        <div
+          id={`invoice-container-${invoice.id}`}
+          className="p-6 overflow-y-auto space-y-6 flex-1 print:p-0 print:overflow-visible printable-invoice-content"
+          style={{ backgroundColor: C.white, color: C.text, direction: "rtl", textAlign: "right", fontFamily: "'Cairo', 'Segoe UI', Tahoma, sans-serif" }}
+        >
           {/* Cyan Top Line */}
-          <div className="h-1.5 w-full bg-gradient-to-r from-[#0284c7] via-[#38bdf8] to-slate-900 rounded-full mb-2 print:rounded-none"></div>
+          <div style={{ height: "4px", width: "100%", background: `linear-gradient(90deg, ${C.blue} 0%, #38bdf8 50%, ${C.slateDark} 100%)`, borderRadius: "4px", marginBottom: "8px" }} />
 
           {/* Official Header matching Invoice.html */}
-          <div className="border-b-2 border-slate-900 pb-5">
-            <div className="flex justify-between items-start">
-              
+          <div style={{ borderBottom: `2px solid ${C.slateDark}`, paddingBottom: "1rem" }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               {/* Logo & Company Name */}
-              <div className="flex items-center gap-4">
-                <div className="bg-slate-950 p-2.5 rounded-2xl border-2 border-sky-400/40 shadow-md flex items-center justify-center print:border-slate-800">
-                  <img src="/rtx-logo.png" alt="RTX Logo" className="h-14 w-auto object-contain" />
+              <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ backgroundColor: C.slateDark, padding: "8px", borderRadius: "12px", border: `2px solid #38bdf8`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <img src="/rtx-logo.png" alt="RTX Logo" style={{ height: "45px", width: "auto", objectFit: "contain" }} />
                 </div>
                 <div>
-                  <h1 className="text-2xl font-black text-slate-900 dark:text-white tracking-tight">
+                  <h1 style={{ fontSize: "1.4rem", fontWeight: 900, color: C.slateDark, margin: 0 }}>
                     RTX للتجارة والتصنيع
                   </h1>
                 </div>
               </div>
 
               {/* Document Badge */}
-              <div className="text-left">
-                <div className="inline-block bg-gradient-to-r from-slate-900 to-[#0284c7] text-white px-5 py-2 rounded-xl text-sm font-black shadow-xs print:bg-slate-900 print:text-white print:border print:border-black">
+              <div style={{ textAlign: "left" }}>
+                <div style={{ display: "inline-block", background: `linear-gradient(90deg, ${C.slateDark} 0%, ${C.blue} 100%)`, color: C.white, padding: "5px 16px", borderRadius: "10px", fontSize: "0.85rem", fontWeight: 800 }}>
                   فاتورة مبيعات
                 </div>
-                <div className="mt-2 text-xs font-bold text-slate-700 dark:text-slate-300 space-y-1 text-left">
-                  <p>رقم الفاتورة: <span className="text-[#0284c7] dark:text-[#38bdf8] font-black text-sm">#{invoice.orderNumber}</span></p>
-                  <p>التاريخ: <span className="text-slate-900 dark:text-white">{formattedDate}</span></p>
+                <div style={{ marginTop: "6px", fontSize: "0.75rem", fontWeight: "bold", color: C.muted }}>
+                  <div>رقم الفاتورة: <strong style={{ color: C.blue, fontSize: "0.85rem" }}>#{invoice.orderNumber}</strong></div>
+                  <div>التاريخ: <strong>{formattedDate}</strong></div>
                 </div>
               </div>
             </div>
           </div>
 
           {/* Client Info Bar */}
-          <div className="grid grid-cols-2 gap-4 p-4 bg-sky-50/50 dark:bg-zinc-800/50 rounded-xl border border-sky-200/80 dark:border-zinc-700 text-sm print:bg-slate-50 print:border-slate-300">
-            <div className="space-y-1">
-              <span className="text-slate-500 text-xs font-bold flex items-center gap-1.5">
-                <User className="w-4 h-4 text-[#0ea5e9]" /> اسم العميل المحترم:
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem", padding: "0.75rem 1rem", backgroundColor: C.lightBg, borderRadius: "10px", border: `1px solid ${C.border}`, fontSize: "0.85rem" }}>
+            <div>
+              <span style={{ color: C.muted, fontSize: "0.75rem", fontWeight: "bold", display: "flex", alignItems: "center", gap: "4px" }}>
+                <User className="w-3.5 h-3.5" style={{ color: C.blue }} /> اسم العميل المحترم:
               </span>
-              <p className="font-black text-slate-900 dark:text-white text-base">
+              <p style={{ fontWeight: 900, color: C.slateDark, fontSize: "1rem", margin: "2px 0 0 0" }}>
                 {invoice.client?.name || "عميل غير محدد"}
               </p>
               {invoice.client?.phone && (
-                <p className="text-xs text-slate-600 dark:text-slate-400 flex items-center gap-1 font-semibold">
-                  <Phone className="w-3.5 h-3.5 text-[#0ea5e9]" /> {invoice.client.phone}
+                <p style={{ fontSize: "0.75rem", color: C.muted, display: "flex", alignItems: "center", gap: "4px", margin: "2px 0 0 0", fontWeight: 600 }}>
+                  <Phone className="w-3 h-3" style={{ color: C.blue }} /> {invoice.client.phone}
                 </p>
               )}
             </div>
 
-            <div className="space-y-1 text-left flex flex-col justify-center items-end">
-              <span className="text-slate-500 text-xs font-bold flex items-center gap-1.5">
-                <Tag className="w-4 h-4 text-[#0ea5e9]" /> حالة الفاتورة:
+            <div style={{ textAlign: "left", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "flex-end" }}>
+              <span style={{ color: C.muted, fontSize: "0.75rem", fontWeight: "bold", display: "flex", alignItems: "center", gap: "4px" }}>
+                <Tag className="w-3.5 h-3.5" style={{ color: C.blue }} /> حالة الفاتورة:
               </span>
-              <div className="font-bold text-sm">
-                <span className="print:hidden">{getStatusBadge(invoice.status)}</span>
-                <span className="hidden print:inline font-bold border border-slate-400 px-3 py-0.5 rounded-full text-xs">
-                  {getStatusText(invoice.status)}
-                </span>
+              <div style={{ marginTop: "4px" }}>
+                {getStatusBadge(invoice.status)}
               </div>
             </div>
           </div>
 
           {/* Items Table */}
-          <div className="rounded-xl border border-slate-200 dark:border-zinc-800 overflow-hidden shadow-xs print:border-slate-400">
-            <div className="bg-slate-900 text-white px-4 py-2.5 font-bold text-xs flex items-center gap-2 print:bg-slate-900 print:text-white">
-              <Package className="w-4 h-4 text-[#38bdf8]" />
+          <div style={{ borderRadius: "10px", border: `1px solid ${C.border}`, overflow: "hidden" }}>
+            <div style={{ backgroundColor: C.slateDark, color: C.white, padding: "8px 12px", fontWeight: "bold", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "6px" }}>
+              <Package className="w-3.5 h-3.5" style={{ color: "#38bdf8" }} />
               الأصناف والمنتجات المطلوبة
             </div>
-            <div className="overflow-x-auto">
-              <table className="w-full text-right text-sm border-collapse">
-                <thead>
-                  <tr className="bg-slate-100 dark:bg-zinc-800 text-slate-700 dark:text-slate-300 text-xs font-black border-b border-slate-200 dark:border-zinc-700 print:bg-slate-200 print:text-black">
-                    <th className="px-4 py-2.5 w-12 text-center">#</th>
-                    <th className="px-4 py-2.5">اسم الصنف</th>
-                    <th className="px-4 py-2.5 text-center">الكمية (أكياس)</th>
-                    <th className="px-4 py-2.5 text-center">سعر الكيس</th>
-                    <th className="px-4 py-2.5 text-left">الإجمالي (ج.م)</th>
+            <table style={{ width: "100%", textAlign: "right", fontSize: "0.82rem", borderCollapse: "collapse" }}>
+              <thead>
+                <tr style={{ backgroundColor: "#f1f5f9", color: C.text, fontSize: "0.75rem", fontWeight: 900, borderBottom: `1px solid ${C.border}` }}>
+                  <th style={{ padding: "8px 12px", width: "40px", textAlign: "center" }}>#</th>
+                  <th style={{ padding: "8px 12px" }}>اسم الصنف</th>
+                  <th style={{ padding: "8px 12px", textAlign: "center" }}>الكمية (أكياس)</th>
+                  <th style={{ padding: "8px 12px", textAlign: "center" }}>سعر الكيس</th>
+                  <th style={{ padding: "8px 12px", textAlign: "left" }}>الإجمالي (ج.م)</th>
+                </tr>
+              </thead>
+              <tbody>
+                {invoice.items && invoice.items.length > 0 ? (
+                  invoice.items.map((item: any, idx: number) => {
+                    const qty = item.quantity || item.quantityBags || 0;
+                    const price = item.bagPrice || item.pricePerUnit || 0;
+                    const total = item.totalPrice || qty * price;
+                    return (
+                      <tr key={item.id || idx} style={{ borderBottom: `1px solid #f1f5f9`, backgroundColor: idx % 2 === 0 ? C.white : C.lightBg }}>
+                        <td style={{ padding: "8px 12px", color: C.muted, fontWeight: "bold", fontSize: "0.75rem", textAlign: "center" }}>{idx + 1}</td>
+                        <td style={{ padding: "8px 12px", fontWeight: 800, color: C.slateDark }}>
+                          {item.product?.name || "صنف غير معروف"}
+                        </td>
+                        <td style={{ padding: "8px 12px", textAlign: "center", backgroundColor: C.lightBlue }}>
+                          <span style={{ color: C.blue, fontWeight: 900, fontSize: "0.9rem" }}>
+                            {qty.toLocaleString("ar-EG")}
+                          </span>
+                        </td>
+                        <td style={{ padding: "8px 12px", textAlign: "center", backgroundColor: C.amberBg }}>
+                          <span style={{ color: C.amber, fontWeight: 900, fontSize: "0.9rem" }}>
+                            {price.toLocaleString("ar-EG")}
+                          </span>
+                        </td>
+                        <td style={{ padding: "8px 12px", textAlign: "left", fontWeight: 900, color: C.slateDark, fontSize: "0.9rem" }}>
+                          {total.toLocaleString("ar-EG")}
+                        </td>
+                      </tr>
+                    );
+                  })
+                ) : (
+                  <tr>
+                    <td colSpan={5} style={{ padding: "16px", textAlign: "center", color: C.muted }}>
+                      لا توجد أصناف في هذه الفاتورة
+                    </td>
                   </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100 dark:divide-zinc-800/60 print:divide-slate-300 text-slate-700 dark:text-slate-300">
-                  {invoice.items && invoice.items.length > 0 ? (
-                    invoice.items.map((item: any, idx: number) => {
-                      const qty = item.quantity || item.quantityBags || 0;
-                      const price = item.bagPrice || item.pricePerUnit || 0;
-                      const total = item.totalPrice || qty * price;
-                      return (
-                        <tr key={item.id || idx} className="hover:bg-sky-50/40 dark:hover:bg-zinc-800/40 transition-colors">
-                          <td className="px-4 py-3 text-slate-500 font-bold text-xs text-center">{idx + 1}</td>
-                          <td className="px-4 py-3 font-extrabold text-slate-900 dark:text-white">
-                            {item.product?.name || "صنف غير معروف"}
-                          </td>
-                          <td className="px-4 py-3 text-center bg-blue-50/50 dark:bg-blue-950/20 print:bg-blue-50">
-                            <span className="text-[#0284c7] dark:text-blue-400 font-black text-base px-2 py-1 print:text-[#0284c7]">
-                              {qty.toLocaleString("ar-EG")}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-center bg-amber-50/50 dark:bg-amber-950/20 print:bg-amber-50">
-                            <span className="text-amber-700 dark:text-amber-400 font-black text-base px-2 py-1 print:text-amber-700">
-                              {price.toLocaleString("ar-EG")}
-                            </span>
-                          </td>
-                          <td className="px-4 py-3 text-left font-black text-[#0284c7] dark:text-[#38bdf8] print:text-black text-base">
-                            {total.toLocaleString("ar-EG")}
-                          </td>
-                        </tr>
-                      );
-                    })
-                  ) : (
-                    <tr>
-                      <td colSpan={5} className="px-4 py-6 text-center text-slate-400 font-medium">
-                        لا توجد أصناف في هذه الفاتورة
-                      </td>
-                    </tr>
-                  )}
-                </tbody>
-              </table>
-            </div>
+                )}
+              </tbody>
+            </table>
           </div>
 
           {/* Total Calculation Breakdown */}
-          <div className="flex justify-end">
-            <div className="w-full sm:w-80 space-y-3 text-sm print:w-72">
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            <div style={{ width: "280px" }}>
               {discountAmount > 0 ? (
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="bg-slate-100 dark:bg-zinc-800 p-3 rounded-xl border-2 border-slate-300 dark:border-zinc-700 text-center print:bg-slate-100 print:border-slate-400">
-                    <div className="text-xs text-slate-600 dark:text-slate-400 font-bold mb-1">قبل الخصم</div>
-                    <div className="text-lg font-black text-slate-900 dark:text-white print:text-slate-900">
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "6px", textAlign: "center" }}>
+                  <div style={{ backgroundColor: C.lightBg, padding: "8px 4px", borderRadius: "8px", border: `1px solid ${C.border}` }}>
+                    <div style={{ fontSize: "0.68rem", color: C.muted, fontWeight: "bold", marginBottom: "2px" }}>قبل الخصم</div>
+                    <div style={{ fontSize: "0.95rem", fontWeight: 900, color: C.slateDark }}>
                       {(invoice.subTotal || 0).toLocaleString("ar-EG")}
                     </div>
                   </div>
                   
-                  <div className="bg-amber-50 dark:bg-amber-950/30 p-3 rounded-xl border-2 border-amber-300 dark:border-amber-800 text-center print:bg-amber-50 print:border-amber-400">
-                    <div className="text-xs text-amber-700 dark:text-amber-400 font-bold mb-1">الخصم</div>
-                    <div className="text-lg font-black text-amber-700 dark:text-amber-300 print:text-amber-700">
+                  <div style={{ backgroundColor: C.amberBg, padding: "8px 4px", borderRadius: "8px", border: `1px solid ${C.amber}` }}>
+                    <div style={{ fontSize: "0.68rem", color: C.amber, fontWeight: "bold", marginBottom: "2px" }}>الخصم</div>
+                    <div style={{ fontSize: "0.95rem", fontWeight: 900, color: C.amber }}>
                       {discountAmount.toLocaleString("ar-EG")}
                     </div>
                   </div>
                   
-                  <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 dark:from-emerald-600 dark:to-emerald-700 p-3 rounded-xl border-2 border-emerald-600 dark:border-emerald-500 text-center shadow-lg print:bg-emerald-600 print:border-emerald-700">
-                    <div className="text-xs text-white font-bold mb-1">صافي الفاتورة</div>
-                    <div className="text-lg font-black text-white">
+                  <div style={{ backgroundColor: C.emeraldBg, padding: "8px 4px", borderRadius: "8px", border: `1px solid ${C.emerald}` }}>
+                    <div style={{ fontSize: "0.68rem", color: C.emerald, fontWeight: "bold", marginBottom: "2px" }}>الصافي</div>
+                    <div style={{ fontSize: "0.95rem", fontWeight: 900, color: C.emerald }}>
                       {(invoice.netTotal || 0).toLocaleString("ar-EG")}
                     </div>
                   </div>
                 </div>
               ) : (
-                <div className="bg-gradient-to-br from-[#0284c7] to-[#0369a1] dark:from-[#0369a1] dark:to-[#0284c7] text-white p-5 rounded-xl shadow-lg border-2 border-[#0369a1] print:bg-[#0284c7] print:border-[#0369a1]">
-                  <div className="flex justify-between items-center">
-                    <span className="font-black text-lg">صافي الفاتورة:</span>
-                    <span className="text-3xl font-black">
-                      {(invoice.netTotal || 0).toLocaleString("ar-EG")}
-                    </span>
-                  </div>
+                <div style={{ background: `linear-gradient(135deg, ${C.blue} 0%, ${C.darkBlue} 100%)`, color: C.white, padding: "12px 16px", borderRadius: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                  <span style={{ fontWeight: 900, fontSize: "0.95rem" }}>صافي الفاتورة:</span>
+                  <span style={{ fontSize: "1.4rem", fontWeight: 900 }}>
+                    {(invoice.netTotal || 0).toLocaleString("ar-EG")} ج.م
+                  </span>
                 </div>
               )}
             </div>
@@ -499,8 +514,8 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
 
           {/* Notes */}
           {invoice.notes && (
-            <div className="bg-amber-50/80 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 p-3.5 rounded-xl text-xs text-amber-900 dark:text-amber-300 print:bg-slate-50 print:border-slate-300 print:text-black">
-              <span className="font-bold block mb-1">ملاحظات الفاتورة:</span>
+            <div style={{ backgroundColor: C.amberBg, border: `1px solid ${C.amber}`, padding: "10px", borderRadius: "8px", fontSize: "0.75rem", color: C.text }}>
+              <strong style={{ display: "block", marginBottom: "2px" }}>ملاحظات الفاتورة:</strong>
               {invoice.notes}
             </div>
           )}
