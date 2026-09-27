@@ -6,6 +6,10 @@ import Link from "next/link";
 import { AddPaymentButton } from "./AddPaymentButton";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deletePayment } from "../actions/payments";
+import { SearchBar } from "@/components/SearchBar";
+import { Pagination } from "@/components/Pagination";
+import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
+import type { Prisma } from "@/generated/prisma/client";
 
 const methodLabels: Record<string, string> = {
   CASH: "نقدي",
@@ -22,19 +26,45 @@ const typeLabels: Record<string, string> = {
   OTHER: "أخرى",
 };
 
-export default async function PaymentsPage() {
-  const [payments, clients] = await Promise.all([
+export default async function PaymentsPage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const params = await searchParams;
+  const q = getSearchQuery(params);
+  const { skip, take, page, pageSize } = getSkipTake(params);
+
+  const where: Prisma.PaymentWhereInput = q
+    ? {
+        OR: [
+          { notes: { contains: q, mode: "insensitive" } },
+          { client: { name: { contains: q, mode: "insensitive" } } },
+        ],
+      }
+    : {};
+
+  const [payments, totalCount, clients, totals, clientGroups] = await Promise.all([
     prisma.payment.findMany({
+      where,
       orderBy: { date: "desc" },
+      skip,
+      take,
       include: { client: true },
     }),
+    prisma.payment.count({ where }),
     prisma.client.findMany({
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
+    // ملخص الإجماليات دايمًا من كل السجلات عشان يفضل صحيح ١٠٠٪ حتى مع البحث
+    prisma.payment.aggregate({ _sum: { amount: true }, _count: true }),
+    prisma.payment.groupBy({ by: ["clientId"] }),
   ]);
 
-  const total = payments.reduce((sum, p) => sum + p.amount, 0);
+  const total = totals._sum.amount ?? 0;
+  const totalPaymentsCount = totals._count;
+  const distinctClientsCount = clientGroups.length;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -43,7 +73,10 @@ export default async function PaymentsPage() {
           <Banknote className="w-8 h-8 text-[#12829b]" />
           المدفوعات
         </h1>
-        <AddPaymentButton clients={clients} />
+        <div className="flex items-center gap-3 flex-wrap">
+          <SearchBar basePath="/payments" defaultValue={q} placeholder="بحث بالعميل أو الملاحظات..." />
+          <AddPaymentButton clients={clients} />
+        </div>
       </div>
 
       {/* ملخص */}
@@ -54,12 +87,12 @@ export default async function PaymentsPage() {
         </div>
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
           <div className="text-sm text-gray-500 dark:text-gray-400">عدد الدفعات</div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{payments.length}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{totalPaymentsCount}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
           <div className="text-sm text-gray-500 dark:text-gray-400">عدد العملاء</div>
           <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
-            {new Set(payments.map((p) => p.clientId)).size}
+            {distinctClientsCount}
           </div>
         </div>
       </div>
@@ -121,6 +154,14 @@ export default async function PaymentsPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={getTotalPages(totalCount, pageSize)}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          searchParams={params}
+          basePath="/payments"
+        />
       </div>
     </div>
   );

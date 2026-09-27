@@ -3,6 +3,10 @@ import { prisma } from "@/lib/prisma";
 export const dynamic = "force-dynamic";
 import { ClipboardList } from "lucide-react";
 import { StatusUpdater } from "./StatusUpdater";
+import { SearchBar } from "@/components/SearchBar";
+import { Pagination } from "@/components/Pagination";
+import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
+import type { Prisma } from "@/generated/prisma/client";
 
 type Status = "PROCESSING" | "ORDERED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
 
@@ -14,31 +18,57 @@ const statusLabels: Record<Status, string> = {
   CANCELLED: "إلغاء الطلب",
 };
 
-export default async function OrdersTrackPage() {
-  const invoices = await prisma.salesInvoice.findMany({
-    orderBy: { date: "desc" },
-    include: {
-      client: true,
-      items: true,
-    },
-  });
+export default async function OrdersTrackPage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const params = await searchParams;
+  const q = getSearchQuery(params);
+  const { skip, take, page, pageSize } = getSkipTake(params);
 
-  // إحصائيات حسب الحالة
-  const counts = {
-    PROCESSING: invoices.filter((i) => i.status === "PROCESSING").length,
-    ORDERED: invoices.filter((i) => i.status === "ORDERED").length,
-    SHIPPED: invoices.filter((i) => i.status === "SHIPPED").length,
-    DELIVERED: invoices.filter((i) => i.status === "DELIVERED").length,
-    CANCELLED: invoices.filter((i) => i.status === "CANCELLED").length,
+  const asNumber = q && /^\d+$/.test(q) ? parseInt(q, 10) : undefined;
+  const where: Prisma.SalesInvoiceWhereInput = q
+    ? {
+        OR: [
+          { client: { name: { contains: q, mode: "insensitive" } } },
+          ...(asNumber !== undefined ? [{ orderNumber: asNumber }] : []),
+        ],
+      }
+    : {};
+
+  const [invoices, totalCount, statusGroups] = await Promise.all([
+    prisma.salesInvoice.findMany({
+      where,
+      orderBy: { date: "desc" },
+      skip,
+      take,
+      include: {
+        client: true,
+        _count: { select: { items: true } },
+      },
+    }),
+    prisma.salesInvoice.count({ where }),
+    // إحصائيات الحالة دايمًا من كل الطلبات (مش الصفحة المعروضة فقط) عشان تفضل صحيحة ١٠٠٪
+    prisma.salesInvoice.groupBy({ by: ["status"], _count: true }),
+  ]);
+
+  const counts: Record<Status, number> = {
+    PROCESSING: statusGroups.find((g) => g.status === "PROCESSING")?._count ?? 0,
+    ORDERED: statusGroups.find((g) => g.status === "ORDERED")?._count ?? 0,
+    SHIPPED: statusGroups.find((g) => g.status === "SHIPPED")?._count ?? 0,
+    DELIVERED: statusGroups.find((g) => g.status === "DELIVERED")?._count ?? 0,
+    CANCELLED: statusGroups.find((g) => g.status === "CANCELLED")?._count ?? 0,
   };
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
           <ClipboardList className="w-8 h-8 text-[#12829b]" />
           متابعة الطلبات
         </h1>
+        <SearchBar basePath="/orders-track" defaultValue={q} placeholder="بحث برقم الطلب أو اسم العميل..." />
       </div>
 
       {/* إحصائيات الحالات */}
@@ -82,7 +112,7 @@ export default async function OrdersTrackPage() {
                       {inv.client?.name || "—"}
                     </td>
                     <td className="px-6 py-4 text-gray-600 dark:text-gray-300">
-                      {inv.items.length} صنف
+                      {inv._count.items} صنف
                     </td>
                     <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
                       {inv.netTotal.toLocaleString("ar-EG")}                    </td>
@@ -95,6 +125,14 @@ export default async function OrdersTrackPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={getTotalPages(totalCount, pageSize)}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          searchParams={params}
+          basePath="/orders-track"
+        />
       </div>
     </div>
   );

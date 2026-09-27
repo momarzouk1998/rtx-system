@@ -6,21 +6,51 @@ import Link from "next/link";
 import { AddSupplierButton } from "./AddSupplierButton";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteSupplier } from "../actions/partners";
+import { SearchBar } from "@/components/SearchBar";
+import { Pagination } from "@/components/Pagination";
+import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
+import type { Prisma } from "@/generated/prisma/client";
 
-export default async function SuppliersListPage() {
-  const suppliers = await prisma.supplier.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      addMaterials: true,
-      expenses: true,
-    }
-  });
+export default async function SuppliersListPage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const params = await searchParams;
+  const q = getSearchQuery(params);
+  const { skip, take, page, pageSize } = getSkipTake(params);
+
+  const where: Prisma.SupplierWhereInput = q
+    ? {
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { phone: { contains: q, mode: "insensitive" } },
+        ],
+      }
+    : {};
+
+  const [suppliers, totalCount] = await Promise.all([
+    prisma.supplier.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+      include: {
+        addMaterials: { select: { totalCost: true } },
+        expenses: { select: { amount: true } },
+      }
+    }),
+    prisma.supplier.count({ where }),
+  ]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <p className="text-sm text-gray-500">{suppliers.length} مورد</p>
-        <AddSupplierButton />
+        <p className="text-sm text-gray-500">{totalCount} مورد</p>
+        <div className="flex items-center gap-3 flex-wrap">
+          <SearchBar basePath="/suppliers-list" defaultValue={q} placeholder="بحث بالاسم أو الهاتف..." />
+          <AddSupplierButton />
+        </div>
       </div>
 
       <div className="card overflow-hidden">
@@ -115,6 +145,14 @@ export default async function SuppliersListPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={getTotalPages(totalCount, pageSize)}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          searchParams={params}
+          basePath="/suppliers-list"
+        />
       </div>
     </div>
   );

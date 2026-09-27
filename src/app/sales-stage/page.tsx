@@ -7,35 +7,64 @@ import { AddInvoiceButton } from "./AddInvoiceButton";
 import { InvoiceDetailsModal } from "./InvoiceDetailsModal";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteInvoice } from "../actions/sales";
+import { SearchBar } from "@/components/SearchBar";
+import { Pagination } from "@/components/Pagination";
+import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
+import type { Prisma } from "@/generated/prisma/client";
 
-export default async function SalesStagePage() {
-  const invoices = await prisma.salesInvoice.findMany({
-    orderBy: { date: "desc" },
-    include: {
-      client: true,
-      items: {
-        include: {
-          product: true
+export default async function SalesStagePage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const params = await searchParams;
+  const q = getSearchQuery(params);
+  const { skip, take, page, pageSize } = getSkipTake(params);
+
+  const asNumber = q && /^\d+$/.test(q) ? parseInt(q, 10) : undefined;
+  const where: Prisma.SalesInvoiceWhereInput = q
+    ? {
+        OR: [
+          { client: { name: { contains: q, mode: "insensitive" } } },
+          ...(asNumber !== undefined ? [{ orderNumber: asNumber }] : []),
+        ],
+      }
+    : {};
+
+  const [invoices, totalCount, clients, products] = await Promise.all([
+    prisma.salesInvoice.findMany({
+      where,
+      orderBy: { date: "desc" },
+      skip,
+      take,
+      include: {
+        client: true,
+        items: {
+          include: {
+            product: true
+          }
         }
       }
-    }
-  });
-
-  const clients = await prisma.client.findMany({
-    select: { id: true, name: true },
-    orderBy: { name: "asc" }
-  });
-
-  const products = await prisma.product.findMany({
-    select: { id: true, name: true, bagPrice: true },
-    orderBy: { name: "asc" }
-  });
+    }),
+    prisma.salesInvoice.count({ where }),
+    prisma.client.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" }
+    }),
+    prisma.product.findMany({
+      select: { id: true, name: true, bagPrice: true },
+      orderBy: { name: "asc" }
+    }),
+  ]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <p className="text-sm text-gray-500">{invoices.length} فاتورة</p>
-        <AddInvoiceButton clients={clients} products={products} />
+        <p className="text-sm text-gray-500">{totalCount} فاتورة</p>
+        <div className="flex items-center gap-3 flex-wrap">
+          <SearchBar basePath="/sales-stage" defaultValue={q} placeholder="بحث برقم الفاتورة أو اسم العميل..." />
+          <AddInvoiceButton clients={clients} products={products} />
+        </div>
       </div>
 
       <div className="card overflow-hidden">
@@ -109,6 +138,14 @@ export default async function SalesStagePage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={getTotalPages(totalCount, pageSize)}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          searchParams={params}
+          basePath="/sales-stage"
+        />
       </div>
     </div>
   );

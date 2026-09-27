@@ -4,16 +4,41 @@ import { Briefcase } from "lucide-react";
 import { AddMaterialButton } from "./AddMaterialButton";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteMaterialTransaction } from "../actions/materials";
+import { SearchBar } from "@/components/SearchBar";
+import { Pagination } from "@/components/Pagination";
+import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
+import type { Prisma } from "@/generated/prisma/client";
 
-export default async function MaterialsStagePage() {
-  const [addMaterials, suppliers, materials] = await Promise.all([
+export default async function MaterialsStagePage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const params = await searchParams;
+  const q = getSearchQuery(params);
+  const { skip, take, page, pageSize } = getSkipTake(params);
+
+  const where: Prisma.AddMaterialWhereInput = q
+    ? {
+        OR: [
+          { supplier: { name: { contains: q, mode: "insensitive" } } },
+          { material: { name: { contains: q, mode: "insensitive" } } },
+        ],
+      }
+    : {};
+
+  const [addMaterials, totalCount, suppliers, materials] = await Promise.all([
     prisma.addMaterial.findMany({
+      where,
       orderBy: { date: "desc" },
+      skip,
+      take,
       include: {
         supplier: true,
         material: true,
       }
     }),
+    prisma.addMaterial.count({ where }),
     prisma.supplier.findMany({ select: { id: true, name: true } }),
     prisma.material.findMany({ select: { id: true, name: true, price: true } }),
   ]);
@@ -27,7 +52,10 @@ export default async function MaterialsStagePage() {
           </h2>
           <p className="mt-1 text-gray-400">سجل عمليات توريد الخامات من الموردين للمخزن</p>
         </div>
-        <AddMaterialButton suppliers={suppliers} materials={materials} />
+        <div className="flex items-center gap-3 flex-wrap">
+          <SearchBar basePath="/materials-stage" defaultValue={q} placeholder="بحث بالمورد أو الخامة..." />
+          <AddMaterialButton suppliers={suppliers} materials={materials} />
+        </div>
       </div>
 
       <div className="card overflow-hidden">
@@ -81,6 +109,14 @@ export default async function MaterialsStagePage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={getTotalPages(totalCount, pageSize)}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          searchParams={params}
+          basePath="/materials-stage"
+        />
       </div>
     </div>
   );

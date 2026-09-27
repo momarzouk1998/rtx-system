@@ -4,20 +4,46 @@ export const dynamic = "force-dynamic";
 import { UsersRound, Phone, MessageCircle, Mail, Edit } from "lucide-react";
 import Link from "next/link";
 import { AddUserButton } from "./AddUserButton";
+import { SearchBar } from "@/components/SearchBar";
+import { Pagination } from "@/components/Pagination";
+import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
+import type { Prisma } from "@/generated/prisma/client";
 
-export default async function UsersListPage() {
-  const users = await prisma.user.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+export default async function UsersListPage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const params = await searchParams;
+  const q = getSearchQuery(params);
+  const { skip, take, page, pageSize } = getSkipTake(params);
+
+  const where: Prisma.UserWhereInput = q
+    ? {
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { phone: { contains: q, mode: "insensitive" } },
+          { job: { contains: q, mode: "insensitive" } },
+        ],
+      }
+    : {};
+
+  const [users, totalCount] = await Promise.all([
+    prisma.user.findMany({ where, orderBy: { createdAt: "desc" }, skip, take }),
+    prisma.user.count({ where }),
+  ]);
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h1 className="text-3xl font-bold tracking-tight text-gray-900 dark:text-white flex items-center gap-3">
           <UsersRound className="w-8 h-8 text-[#12829b]" />
           قائمة المستخدمين
         </h1>
-        <AddUserButton />
+        <div className="flex items-center gap-3 flex-wrap">
+          <SearchBar basePath="/users-list" defaultValue={q} placeholder="بحث بالاسم أو الهاتف أو الوظيفة..." />
+          <AddUserButton />
+        </div>
       </div>
 
       <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden">
@@ -92,6 +118,14 @@ export default async function UsersListPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={getTotalPages(totalCount, pageSize)}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          searchParams={params}
+          basePath="/users-list"
+        />
       </div>
     </div>
   );

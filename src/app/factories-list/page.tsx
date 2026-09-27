@@ -6,21 +6,51 @@ import Link from "next/link";
 import { AddFactoryButton } from "./AddFactoryButton";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteFactory } from "../actions/partners";
+import { SearchBar } from "@/components/SearchBar";
+import { Pagination } from "@/components/Pagination";
+import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
+import type { Prisma } from "@/generated/prisma/client";
 
-export default async function FactoriesListPage() {
-  const factories = await prisma.factory.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      productionOrders: true,
-      expenses: true,
-    }
-  });
+export default async function FactoriesListPage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const params = await searchParams;
+  const q = getSearchQuery(params);
+  const { skip, take, page, pageSize } = getSkipTake(params);
+
+  const where: Prisma.FactoryWhereInput = q
+    ? {
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { phone: { contains: q, mode: "insensitive" } },
+        ],
+      }
+    : {};
+
+  const [factories, totalCount] = await Promise.all([
+    prisma.factory.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+      include: {
+        productionOrders: { select: { totalOperatingCost: true } },
+        expenses: { select: { amount: true } },
+      }
+    }),
+    prisma.factory.count({ where }),
+  ]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <p className="text-sm text-gray-500">{factories.length} مصنع</p>
-        <AddFactoryButton />
+        <p className="text-sm text-gray-500">{totalCount} مصنع</p>
+        <div className="flex items-center gap-3 flex-wrap">
+          <SearchBar basePath="/factories-list" defaultValue={q} placeholder="بحث بالاسم أو الهاتف..." />
+          <AddFactoryButton />
+        </div>
       </div>
 
       <div className="card overflow-hidden">
@@ -115,6 +145,14 @@ export default async function FactoriesListPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={getTotalPages(totalCount, pageSize)}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          searchParams={params}
+          basePath="/factories-list"
+        />
       </div>
     </div>
   );

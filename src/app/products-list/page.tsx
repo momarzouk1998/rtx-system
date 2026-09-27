@@ -6,15 +6,41 @@ import Link from "next/link";
 import { AddProductButton } from "./AddProductButton";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteProduct } from "../actions/products";
+import { SearchBar } from "@/components/SearchBar";
+import { Pagination } from "@/components/Pagination";
+import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
+import type { Prisma } from "@/generated/prisma/client";
 
-export default async function ProductsListPage() {
-  const products = await prisma.product.findMany({
-    include: {
-      material: true,
-    },
-    orderBy: { createdAt: "desc" },
-  });
+export default async function ProductsListPage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const params = await searchParams;
+  const q = getSearchQuery(params);
+  const { skip, take, page, pageSize } = getSkipTake(params);
 
+  const where: Prisma.ProductWhereInput = q
+    ? {
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { material: { name: { contains: q, mode: "insensitive" } } },
+        ],
+      }
+    : {};
+
+  const [products, totalCount] = await Promise.all([
+    prisma.product.findMany({
+      where,
+      include: { material: true },
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+    }),
+    prisma.product.count({ where }),
+  ]);
+
+  // قائمة كاملة (بدون بحث/تقسيم صفحات) لاستخدامها في فورم "إضافة منتج"
   const materials = await prisma.material.findMany({
     select: { id: true, name: true },
     orderBy: { name: "asc" }
@@ -23,8 +49,11 @@ export default async function ProductsListPage() {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <p className="text-sm text-gray-500">{products.length} منتج</p>
-        <AddProductButton materials={materials} />
+        <p className="text-sm text-gray-500">{totalCount} منتج</p>
+        <div className="flex items-center gap-3 flex-wrap">
+          <SearchBar basePath="/products-list" defaultValue={q} placeholder="بحث بالمنتج أو الخامة..." />
+          <AddProductButton materials={materials} />
+        </div>
       </div>
 
       <div className="card overflow-hidden">
@@ -82,6 +111,14 @@ export default async function ProductsListPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={getTotalPages(totalCount, pageSize)}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          searchParams={params}
+          basePath="/products-list"
+        />
       </div>
     </div>
   );

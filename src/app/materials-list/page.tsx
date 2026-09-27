@@ -6,18 +6,43 @@ import Link from "next/link";
 import { AddMaterialButton } from "./AddMaterialButton";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteMaterial } from "../actions/materials";
+import { SearchBar } from "@/components/SearchBar";
+import { Pagination } from "@/components/Pagination";
+import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
+import type { Prisma } from "@/generated/prisma/client";
 
-export default async function MaterialsListPage() {
-  const materials = await prisma.material.findMany({
-    orderBy: { createdAt: "desc" },
-    // Later we can include stock calculations here
-  });
+export default async function MaterialsListPage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const params = await searchParams;
+  const q = getSearchQuery(params);
+  const { skip, take, page, pageSize } = getSkipTake(params);
+
+  const where: Prisma.MaterialWhereInput = q
+    ? { name: { contains: q, mode: "insensitive" } }
+    : {};
+
+  const [materials, totalCount] = await Promise.all([
+    prisma.material.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+      // Later we can include stock calculations here
+    }),
+    prisma.material.count({ where }),
+  ]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <p className="text-sm text-gray-500">{materials.length} خامة</p>
-        <AddMaterialButton />
+        <p className="text-sm text-gray-500">{totalCount} خامة</p>
+        <div className="flex items-center gap-3 flex-wrap">
+          <SearchBar basePath="/materials-list" defaultValue={q} placeholder="بحث بالاسم..." />
+          <AddMaterialButton />
+        </div>
       </div>
 
       <div className="card overflow-hidden">
@@ -68,6 +93,14 @@ export default async function MaterialsListPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={getTotalPages(totalCount, pageSize)}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          searchParams={params}
+          basePath="/materials-list"
+        />
       </div>
     </div>
   );

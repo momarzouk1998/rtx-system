@@ -1,10 +1,12 @@
 'use client';
 
 import { motion } from 'framer-motion';
-import { Banknote, Plus, Search, TrendingUp, TrendingDown, Wallet, Edit2, X } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { Banknote, Plus, Search, TrendingUp, TrendingDown, Wallet, Edit2, X, ChevronRight, ChevronLeft } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
 import Link from 'next/link';
 import { getTreasuryData, setOpeningBalance } from '../actions/treasury';
+
+const PAGE_SIZE = 20;
 
 type Transaction = {
   id: string;
@@ -27,6 +29,29 @@ export default function Treasury() {
   const [newOpeningBalance, setNewOpeningBalance] = useState('');
   const [saving, setSaving] = useState(false);
   const [dateFilter, setDateFilter] = useState('');
+  const [textFilter, setTextFilter] = useState('');
+  const [currentPage, setCurrentPage] = useState(1);
+
+  // ملاحظة: البحث/التقسيم لصفحات هنا للعرض فقط - الإجماليات (الرصيد الحالي، الوارد/المنصرف الشهري)
+  // بتفضل محسوبة دايمًا من كل الحركات زي ما هي، من غير أي تأثير من الفلترة أو التقسيم.
+  const filteredTransactions = useMemo(() => {
+    return transactions.filter((t) => {
+      if (dateFilter && t.dateString !== dateFilter) return false;
+      if (textFilter) {
+        const needle = textFilter.trim().toLowerCase();
+        if (!t.category.toLowerCase().includes(needle) && !t.description.toLowerCase().includes(needle)) {
+          return false;
+        }
+      }
+      return true;
+    });
+  }, [transactions, dateFilter, textFilter]);
+
+  const totalPages = Math.max(1, Math.ceil(filteredTransactions.length / PAGE_SIZE));
+  // لو الفلترة قللت عدد النتائج وبقت الصفحة الحالية خارج النطاق، نرجع لأول صفحة بدون useEffect
+  const effectivePage = Math.min(currentPage, totalPages);
+  const pageStart = (effectivePage - 1) * PAGE_SIZE;
+  const pagedTransactions = filteredTransactions.slice(pageStart, pageStart + PAGE_SIZE);
 
   useEffect(() => {
     async function loadData() {
@@ -114,17 +139,24 @@ export default function Treasury() {
       <div className="glass-dark rounded-xl overflow-hidden mt-8">
         <div className="p-4 border-b border-white/10 flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <h3 className="text-lg md:text-xl font-semibold text-[#38bdf8]">تقرير حركة الخزينة</h3>
-          <div className="flex gap-2 w-full md:w-auto">
-            <input 
-              type="date" 
+          <div className="flex gap-2 w-full md:w-auto flex-wrap">
+            <input
+              type="text"
+              value={textFilter}
+              onChange={e => { setTextFilter(e.target.value); setCurrentPage(1); }}
+              placeholder="بحث بالتصنيف أو البيان..."
+              className="flex-1 md:w-56 bg-black/20 border border-white/10 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#38bdf8]"
+            />
+            <input
+              type="date"
               value={dateFilter}
-              onChange={e => setDateFilter(e.target.value)}
+              onChange={e => { setDateFilter(e.target.value); setCurrentPage(1); }}
               className="flex-1 md:w-auto bg-black/20 border border-white/10 rounded-lg py-2 px-4 text-white focus:outline-none focus:border-[#38bdf8]"
             />
-            <button 
-              onClick={() => setDateFilter('')}
+            <button
+              onClick={() => { setDateFilter(''); setTextFilter(''); setCurrentPage(1); }}
               className="bg-[#12829b] text-white px-4 py-2 rounded-lg hover:bg-[#107085] transition-colors shrink-0"
-              title={dateFilter ? 'مسح الفلتر' : 'بحث'}
+              title={dateFilter || textFilter ? 'مسح الفلتر' : 'بحث'}
             >
               <Search className="w-5 h-5" />
             </button>
@@ -149,15 +181,13 @@ export default function Treasury() {
                     جاري تحميل البيانات...
                   </td>
                 </tr>
-              ) : transactions.length === 0 ? (
+              ) : filteredTransactions.length === 0 ? (
                 <tr>
                   <td colSpan={5} className="text-center py-8 text-gray-400">
                     لا توجد حركات
                   </td>
                 </tr>
-              ) : transactions
-                  .filter(t => !dateFilter || t.dateString === dateFilter)
-                  .map((trx, i) => (
+              ) : pagedTransactions.map((trx, i) => (
                 <motion.tr 
                   key={trx.id}
                   initial={{ opacity: 0, y: 10 }}
@@ -179,6 +209,30 @@ export default function Treasury() {
             </tbody>
           </table>
         </div>
+        {!loading && filteredTransactions.length > 0 && (
+          <div className="flex items-center justify-between flex-wrap gap-3 px-4 md:px-6 py-3 border-t border-white/10 text-sm text-gray-400">
+            <p>
+              عرض {pageStart + 1}-{Math.min(pageStart + PAGE_SIZE, filteredTransactions.length)} من {filteredTransactions.length}
+            </p>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, effectivePage - 1))}
+                disabled={effectivePage <= 1}
+                className="p-2 rounded-lg border border-white/10 disabled:opacity-40 hover:bg-white/5"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+              <span className="px-2">صفحة {effectivePage} من {totalPages}</span>
+              <button
+                onClick={() => setCurrentPage(Math.min(totalPages, effectivePage + 1))}
+                disabled={effectivePage >= totalPages}
+                className="p-2 rounded-lg border border-white/10 disabled:opacity-40 hover:bg-white/5"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Opening Balance Modal */}

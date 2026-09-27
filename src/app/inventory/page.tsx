@@ -3,33 +3,69 @@ import { Package, Box, ArrowUpRight, ArrowDownLeft, Warehouse, FileText } from "
 import { AddTransactionModal } from "./AddTransactionModal";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteInventoryTransactionAction } from "../actions/inventory";
+import { SearchBar } from "@/components/SearchBar";
+import { Pagination } from "@/components/Pagination";
+import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
+import type { Prisma } from "@/generated/prisma/client";
 
 export const dynamic = 'force-dynamic';
 
-export default async function InventoryDashboard() {
-  // Fetch materials, products and full transaction ledger
-  const [materials, products, recentTransactions] = await Promise.all([
-    prisma.material.findMany({
-      include: {
-        transactions: true,
-      },
-      orderBy: { name: "asc" },
-    }),
-    prisma.product.findMany({
-      include: {
-        transactions: true,
-      },
-      orderBy: { name: "asc" },
-    }),
+export default async function InventoryDashboard({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const params = await searchParams;
+  const q = getSearchQuery(params);
+  const { skip, take, page, pageSize } = getSkipTake(params);
+
+  const where: Prisma.InventoryTransactionWhereInput = q
+    ? {
+        OR: [
+          { material: { name: { contains: q, mode: "insensitive" } } },
+          { product: { name: { contains: q, mode: "insensitive" } } },
+          { notes: { contains: q, mode: "insensitive" } },
+        ],
+      }
+    : {};
+
+  // Fetch materials/products (بدون كل الحركات - الأرصدة بتتحسب بالتجميع في الداتابيز تحت)
+  // وسجل الحركات (مفلتر ومقسّم لصفحات للعرض فقط)، وعدد الحركات الكلي.
+  const [
+    materials,
+    products,
+    recentTransactions,
+    ledgerTotalCount,
+    allTransactionsCount,
+    materialSums,
+    productSums,
+  ] = await Promise.all([
+    prisma.material.findMany({ orderBy: { name: "asc" } }),
+    prisma.product.findMany({ orderBy: { name: "asc" } }),
     prisma.inventoryTransaction.findMany({
-      take: 100,
+      where,
+      skip,
+      take,
       orderBy: { date: 'desc' },
       include: {
         material: true,
         product: true,
         createdBy: true,
       }
-    })
+    }),
+    prisma.inventoryTransaction.count({ where }),
+    prisma.inventoryTransaction.count(),
+    // مجموع الوارد/المنصرف لكل خامة - بديل رياضيًا مطابق لعملية الجمع اليدوية لكن بحساب الداتابيز
+    prisma.inventoryTransaction.groupBy({
+      by: ["materialId", "type"],
+      where: { materialId: { not: null } },
+      _sum: { quantity: true },
+    }),
+    prisma.inventoryTransaction.groupBy({
+      by: ["productId", "type"],
+      where: { productId: { not: null } },
+      _sum: { quantity: true },
+    }),
   ]);
 
   // Calculate balances
@@ -38,12 +74,27 @@ export default async function InventoryDashboard() {
   let totalProductsBags = 0;
   let totalProductsValue = 0;
 
+  const materialMovement = new Map<string, { in: number; out: number }>();
+  for (const g of materialSums) {
+    if (!g.materialId) continue;
+    const entry = materialMovement.get(g.materialId) ?? { in: 0, out: 0 };
+    if (g.type === "IN") entry.in += g._sum.quantity ?? 0;
+    if (g.type === "OUT") entry.out += g._sum.quantity ?? 0;
+    materialMovement.set(g.materialId, entry);
+  }
+
+  const productMovement = new Map<string, { in: number; out: number }>();
+  for (const g of productSums) {
+    if (!g.productId) continue;
+    const entry = productMovement.get(g.productId) ?? { in: 0, out: 0 };
+    if (g.type === "IN") entry.in += g._sum.quantity ?? 0;
+    if (g.type === "OUT") entry.out += g._sum.quantity ?? 0;
+    productMovement.set(g.productId, entry);
+  }
+
   const materialBalances = materials.map((mat) => {
-    let balance = mat.openingBalance;
-    mat.transactions.forEach(t => {
-      if (t.type === "IN") balance += t.quantity;
-      if (t.type === "OUT") balance -= t.quantity;
-    });
+    const movement = materialMovement.get(mat.id) ?? { in: 0, out: 0 };
+    const balance = mat.openingBalance + movement.in - movement.out;
     const totalVal = balance * mat.price;
     totalMaterialsKg += balance;
     totalMaterialsValue += totalVal;
@@ -51,11 +102,8 @@ export default async function InventoryDashboard() {
   });
 
   const productBalances = products.map((prod) => {
-    let balance = prod.openingBalanceBags;
-    prod.transactions.forEach(t => {
-      if (t.type === "IN") balance += t.quantity;
-      if (t.type === "OUT") balance -= t.quantity;
-    });
+    const movement = productMovement.get(prod.id) ?? { in: 0, out: 0 };
+    const balance = prod.openingBalanceBags + movement.in - movement.out;
     const totalVal = balance * prod.bagPrice;
     totalProductsBags += balance;
     totalProductsValue += totalVal;
@@ -143,7 +191,7 @@ export default async function InventoryDashboard() {
             </div>
           </div>
           <div className="mt-4">
-            <p className="text-3xl font-black text-slate-900 dark:text-white">{recentTransactions.length} حركة</p>
+            <p className="text-3xl font-black text-slate-900 dark:text-white">{allTransactionsCount} حركة</p>
             <p className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-1">
               سجل تفصيلي دائم للوارد والمنصرف
             </p>
@@ -154,11 +202,12 @@ export default async function InventoryDashboard() {
 
       {/* Movement Ledger Table */}
       <div className="bg-white dark:bg-zinc-900 shadow-xs border border-slate-200 dark:border-zinc-800 p-6 rounded-2xl">
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-6 flex-wrap gap-3">
           <h3 className="text-lg font-black text-slate-900 dark:text-white flex items-center gap-2">
             <FileText className="w-5 h-5 text-[#0284c7]" />
             سجل حركات المخزن التفصيلي (الوارد والمنصرف والتسويات)
           </h3>
+          <SearchBar basePath="/inventory" defaultValue={q} placeholder="بحث بالصنف أو الملاحظات..." />
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-right text-sm" dir="rtl">
@@ -225,6 +274,14 @@ export default async function InventoryDashboard() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={getTotalPages(ledgerTotalCount, pageSize)}
+          totalCount={ledgerTotalCount}
+          pageSize={pageSize}
+          searchParams={params}
+          basePath="/inventory"
+        />
       </div>
 
       {/* Stock Balances Overview Tables */}

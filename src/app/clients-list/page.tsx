@@ -6,30 +6,60 @@ import Link from "next/link";
 import { AddClientButton } from "./AddClientButton";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteClient } from "../actions/clients";
+import { SearchBar } from "@/components/SearchBar";
+import { Pagination } from "@/components/Pagination";
+import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
+import type { Prisma } from "@/generated/prisma/client";
 
-export default async function ClientsListPage() {
-  const clients = await prisma.client.findMany({
-    orderBy: { createdAt: "desc" },
-    include: {
-      invoices: {
-        select: {
-          status: true,
-          netTotal: true
-        }
-      },
-      payments: {
-        select: {
-          amount: true
-        }
-      },
-    }
-  }).catch(() => []);
+export default async function ClientsListPage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const params = await searchParams;
+  const q = getSearchQuery(params);
+  const { skip, take, page, pageSize } = getSkipTake(params);
+
+  const where: Prisma.ClientWhereInput = q
+    ? {
+        OR: [
+          { name: { contains: q, mode: "insensitive" } },
+          { phone: { contains: q, mode: "insensitive" } },
+        ],
+      }
+    : {};
+
+  const [clients, totalCount] = await Promise.all([
+    prisma.client.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      skip,
+      take,
+      include: {
+        invoices: {
+          select: {
+            status: true,
+            netTotal: true
+          }
+        },
+        payments: {
+          select: {
+            amount: true
+          }
+        },
+      }
+    }).catch(() => []),
+    prisma.client.count({ where }).catch(() => 0),
+  ]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <p className="text-sm text-gray-500">{clients.length} عميل</p>
-        <AddClientButton />
+        <p className="text-sm text-gray-500">{totalCount} عميل</p>
+        <div className="flex items-center gap-3 flex-wrap">
+          <SearchBar basePath="/clients-list" defaultValue={q} placeholder="بحث بالاسم أو الهاتف..." />
+          <AddClientButton />
+        </div>
       </div>
 
       <div className="card overflow-hidden">
@@ -125,6 +155,14 @@ export default async function ClientsListPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={getTotalPages(totalCount, pageSize)}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          searchParams={params}
+          basePath="/clients-list"
+        />
       </div>
     </div>
   );

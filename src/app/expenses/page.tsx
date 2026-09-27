@@ -6,6 +6,10 @@ import Link from "next/link";
 import { AddExpenseButton } from "./AddExpenseButton";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteExpense } from "../actions/expenses";
+import { SearchBar } from "@/components/SearchBar";
+import { Pagination } from "@/components/Pagination";
+import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
+import type { Prisma } from "@/generated/prisma/client";
 
 const categoryLabels: Record<string, string> = {
   INTERNAL: "داخلي",
@@ -19,12 +23,34 @@ const categoryColors: Record<string, string> = {
   SUPPLIER: "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-400",
 };
 
-export default async function ExpensesPage() {
-  const [expenses, factories, suppliers] = await Promise.all([
+export default async function ExpensesPage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const params = await searchParams;
+  const q = getSearchQuery(params);
+  const { skip, take, page, pageSize } = getSkipTake(params);
+
+  const where: Prisma.ExpenseWhereInput = q
+    ? {
+        OR: [
+          { item: { contains: q, mode: "insensitive" } },
+          { factory: { name: { contains: q, mode: "insensitive" } } },
+          { supplier: { name: { contains: q, mode: "insensitive" } } },
+        ],
+      }
+    : {};
+
+  const [expenses, totalCount, factories, suppliers, byCategoryGroups] = await Promise.all([
     prisma.expense.findMany({
+      where,
       orderBy: { date: "desc" },
+      skip,
+      take,
       include: { factory: true, supplier: true },
     }),
+    prisma.expense.count({ where }),
     prisma.factory.findMany({
       select: { id: true, name: true },
       orderBy: { name: "asc" },
@@ -33,14 +59,16 @@ export default async function ExpensesPage() {
       select: { id: true, name: true },
       orderBy: { name: "asc" },
     }),
+    // ملخص الإجماليات دايمًا من كل السجلات (مش الصفحة المعروضة فقط) عشان يفضل صحيح ١٠٠٪
+    prisma.expense.groupBy({ by: ["category"], _sum: { amount: true } }),
   ]);
 
-  const total = expenses.reduce((sum, e) => sum + e.amount, 0);
   const byCategory = {
-    INTERNAL: expenses.filter((e) => e.category === "INTERNAL").reduce((s, e) => s + e.amount, 0),
-    FACTORY: expenses.filter((e) => e.category === "FACTORY").reduce((s, e) => s + e.amount, 0),
-    SUPPLIER: expenses.filter((e) => e.category === "SUPPLIER").reduce((s, e) => s + e.amount, 0),
+    INTERNAL: byCategoryGroups.find((g) => g.category === "INTERNAL")?._sum.amount ?? 0,
+    FACTORY: byCategoryGroups.find((g) => g.category === "FACTORY")?._sum.amount ?? 0,
+    SUPPLIER: byCategoryGroups.find((g) => g.category === "SUPPLIER")?._sum.amount ?? 0,
   };
+  const total = byCategory.INTERNAL + byCategory.FACTORY + byCategory.SUPPLIER;
 
   return (
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
@@ -49,7 +77,10 @@ export default async function ExpensesPage() {
           <Coins className="w-8 h-8 text-[#12829b]" />
           المصروفات
         </h1>
-        <AddExpenseButton factories={factories} suppliers={suppliers} />
+        <div className="flex items-center gap-3 flex-wrap">
+          <SearchBar basePath="/expenses" defaultValue={q} placeholder="بحث بالوصف أو المصنع أو المورد..." />
+          <AddExpenseButton factories={factories} suppliers={suppliers} />
+        </div>
       </div>
 
       {/* ملخص */}
@@ -125,6 +156,14 @@ export default async function ExpensesPage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={getTotalPages(totalCount, pageSize)}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          searchParams={params}
+          basePath="/expenses"
+        />
       </div>
     </div>
   );

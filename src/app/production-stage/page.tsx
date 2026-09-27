@@ -6,33 +6,62 @@ import Link from "next/link";
 import { AddProductionButton } from "./AddProductionButton";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteProductionOrder } from "../actions/production";
+import { SearchBar } from "@/components/SearchBar";
+import { Pagination } from "@/components/Pagination";
+import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
+import type { Prisma } from "@/generated/prisma/client";
 
-export default async function ProductionStagePage() {
-  const productionOrders = await prisma.productionOrder.findMany({
-    orderBy: { date: "desc" },
-    include: {
-      factory: true,
-      product: true,
-      material: true,
-      createdBy: true,
-    }
-  });
+export default async function ProductionStagePage({
+  searchParams,
+}: {
+  searchParams: Promise<RawSearchParams>;
+}) {
+  const params = await searchParams;
+  const q = getSearchQuery(params);
+  const { skip, take, page, pageSize } = getSkipTake(params);
 
-  const factories = await prisma.factory.findMany({
-    select: { id: true, name: true },
-    orderBy: { name: "asc" }
-  });
+  const where: Prisma.ProductionOrderWhereInput = q
+    ? {
+        OR: [
+          { product: { name: { contains: q, mode: "insensitive" } } },
+          { material: { name: { contains: q, mode: "insensitive" } } },
+          { factory: { name: { contains: q, mode: "insensitive" } } },
+        ],
+      }
+    : {};
 
-  const products = await prisma.product.findMany({
-    select: { id: true, name: true, bagsPerKg: true, operatingCost: true, material: { select: { name: true } } },
-    orderBy: { name: "asc" }
-  });
+  const [productionOrders, totalCount, factories, products] = await Promise.all([
+    prisma.productionOrder.findMany({
+      where,
+      orderBy: { date: "desc" },
+      skip,
+      take,
+      include: {
+        factory: true,
+        product: true,
+        material: true,
+        createdBy: true,
+      }
+    }),
+    prisma.productionOrder.count({ where }),
+    prisma.factory.findMany({
+      select: { id: true, name: true },
+      orderBy: { name: "asc" }
+    }),
+    prisma.product.findMany({
+      select: { id: true, name: true, bagsPerKg: true, operatingCost: true, material: { select: { name: true } } },
+      orderBy: { name: "asc" }
+    }),
+  ]);
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
-        <p className="text-sm text-gray-500">{productionOrders.length} أمر تصنيع</p>
-        <AddProductionButton factories={factories} products={products} />
+        <p className="text-sm text-gray-500">{totalCount} أمر تصنيع</p>
+        <div className="flex items-center gap-3 flex-wrap">
+          <SearchBar basePath="/production-stage" defaultValue={q} placeholder="بحث بالمنتج أو الخامة أو المصنع..." />
+          <AddProductionButton factories={factories} products={products} />
+        </div>
       </div>
 
       <div className="card overflow-hidden">
@@ -131,6 +160,14 @@ export default async function ProductionStagePage() {
             </tbody>
           </table>
         </div>
+        <Pagination
+          currentPage={page}
+          totalPages={getTotalPages(totalCount, pageSize)}
+          totalCount={totalCount}
+          pageSize={pageSize}
+          searchParams={params}
+          basePath="/production-stage"
+        />
       </div>
     </div>
   );
