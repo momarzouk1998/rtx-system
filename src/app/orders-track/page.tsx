@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatNumber } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 import { ClipboardList } from "lucide-react";
@@ -115,7 +116,8 @@ export default async function OrdersTrackPage({
                       {inv._count.items} صنف
                     </td>
                     <td className="px-6 py-4 font-semibold text-gray-900 dark:text-white">
-                      {inv.netTotal.toLocaleString("ar-EG")}                    </td>
+                      {formatNumber(inv.netTotal)}
+                    </td>
                     <td className="px-6 py-4">
                       <StatusUpdater invoiceId={inv.id} current={inv.status as Status} />
                     </td>

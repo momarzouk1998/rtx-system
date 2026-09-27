@@ -155,7 +155,7 @@ export default async function StatementPage({
     return "العميل";
   };
 
-  const currentDateFormatted = new Date().toLocaleDateString("ar-EG", { year: "numeric", month: "long", day: "numeric" });
+  const currentDateFormatted = new Date().toLocaleDateString("ar-EG-u-nu-latn", { year: "numeric", month: "long", day: "numeric" });
 
   // Serialised data for the hidden print template (no Date objects → strings)
   const printData = selectedEntity && !(type === "factory" && selectedId && selectedId !== "all") ? {

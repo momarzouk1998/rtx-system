@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Loader2, Trash2 } from "lucide-react";
 import { updateSalesInvoice } from "../../../actions/sales";
+import { formatNumber } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -264,11 +265,11 @@ export function EditInvoiceForm({
         <div className="bg-[#12829b]/10 p-4 rounded-lg border border-[#12829b]/20">
           <div className="flex justify-between items-center text-sm mb-1">
             <span className="text-gray-600 dark:text-gray-300">الإجمالي قبل الخصم:</span>
-            <span className="font-medium text-gray-900 dark:text-gray-100">{subTotal.toLocaleString()}</span>
+            <span className="font-medium text-gray-900 dark:text-gray-100">{formatNumber(subTotal)}</span>
           </div>
           <div className="flex justify-between items-center border-t border-[#12829b]/20 pt-2 mt-2">
             <span className="font-bold text-[#12829b]">الصافي المطلوب:</span>
-            <span className="font-black text-xl text-emerald-600 dark:text-emerald-400">{netTotal.toLocaleString()}</span>
+            <span className="font-black text-xl text-emerald-600 dark:text-emerald-400">{formatNumber(netTotal)}</span>
           </div>
         </div>
       </div>

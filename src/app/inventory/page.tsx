@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatNumber } from "@/lib/utils";
 import { Package, Box, ArrowUpRight, ArrowDownLeft, Warehouse, FileText } from "lucide-react";
 import { AddTransactionModal } from "./AddTransactionModal";
 import { DeleteButton } from "@/components/DeleteButton";
@@ -159,9 +160,9 @@ export default async function InventoryDashboard({
             </div>
           </div>
           <div className="mt-4">
-            <p className="text-3xl font-black text-slate-900 dark:text-white">{totalMaterialsKg.toLocaleString("ar-EG")} كجم</p>
+            <p className="text-3xl font-black text-slate-900 dark:text-white">{formatNumber(totalMaterialsKg)} كجم</p>
             <p className="text-xs font-bold text-amber-600 dark:text-amber-400 mt-1">
-              القيمة الإجمالية: {totalMaterialsValue.toLocaleString("ar-EG")}
+              القيمة الإجمالية: {formatNumber(totalMaterialsValue)}
             </p>
           </div>
         </div>
@@ -175,9 +176,9 @@ export default async function InventoryDashboard({
             </div>
           </div>
           <div className="mt-4">
-            <p className="text-3xl font-black text-slate-900 dark:text-white">{totalProductsBags.toLocaleString("ar-EG")} كيس</p>
+            <p className="text-3xl font-black text-slate-900 dark:text-white">{formatNumber(totalProductsBags)} كيس</p>
             <p className="text-xs font-bold text-[#0284c7] dark:text-sky-400 mt-1">
-              القيمة البيعية المتوقعة: {totalProductsValue.toLocaleString("ar-EG")}
+              القيمة البيعية المتوقعة: {formatNumber(totalProductsValue)}
             </p>
           </div>
         </div>
@@ -256,7 +257,7 @@ export default async function InventoryDashboard({
                       {getReasonLabel(t.reason, t.type)}
                     </td>
                     <td className={`px-4 py-3 font-black text-base ${t.type === "IN" ? "text-emerald-600 dark:text-emerald-400" : "text-rose-600 dark:text-rose-400"}`}>
-                      {t.type === "IN" ? "+" : "-"}{t.quantity.toLocaleString("ar-EG")} {t.material ? "كجم" : "كيس"}
+                      {t.type === "IN" ? "+" : "-"}{formatNumber(t.quantity)} {t.material ? "كجم" : "كيس"}
                     </td>
                     <td className="px-4 py-3 text-xs text-slate-500 dark:text-slate-400">
                       {t.notes || "—"}
@@ -307,8 +308,8 @@ export default async function InventoryDashboard({
                 ) : materialBalances.map(mat => (
                   <tr key={mat.id} className="hover:bg-slate-50 dark:hover:bg-zinc-800/40">
                     <td className="px-4 py-3 font-extrabold text-slate-900 dark:text-white">{mat.name}</td>
-                    <td className="px-4 py-3 text-[#0284c7] font-black">{mat.balance.toLocaleString("ar-EG")} كجم</td>
-                    <td className="px-4 py-3 text-slate-900 dark:text-white font-bold">{mat.totalVal.toLocaleString("ar-EG")}</td>
+                    <td className="px-4 py-3 text-[#0284c7] font-black">{formatNumber(mat.balance)} كجم</td>
+                    <td className="px-4 py-3 text-slate-900 dark:text-white font-bold">{formatNumber(mat.totalVal)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -336,8 +337,8 @@ export default async function InventoryDashboard({
                 ) : productBalances.map(prod => (
                   <tr key={prod.id} className="hover:bg-slate-50 dark:hover:bg-zinc-800/40">
                     <td className="px-4 py-3 font-extrabold text-slate-900 dark:text-white">{prod.name}</td>
-                    <td className="px-4 py-3 text-emerald-600 font-black">{prod.balance.toLocaleString("ar-EG")} كيس</td>
-                    <td className="px-4 py-3 text-slate-900 dark:text-white font-bold">{prod.totalVal.toLocaleString("ar-EG")}</td>
+                    <td className="px-4 py-3 text-emerald-600 font-black">{formatNumber(prod.balance)} كيس</td>
+                    <td className="px-4 py-3 text-slate-900 dark:text-white font-bold">{formatNumber(prod.totalVal)}</td>
                   </tr>
                 ))}
               </tbody>

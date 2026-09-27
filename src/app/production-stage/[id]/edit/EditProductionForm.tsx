@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { Loader2 } from "lucide-react";
 import { updateProductionOrder } from "../../../actions/production";
+import { formatNumber } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import toast from "react-hot-toast";
 
@@ -202,12 +203,12 @@ export function EditProductionForm({
         <h4 className="font-semibold text-[#12829b] mb-3">حسابات متوقعة (تلقائي)</h4>
         <div className="flex justify-between items-center text-sm">
           <span className="text-gray-600 dark:text-gray-300">عدد الأكياس المنتجة:</span>
-          <span className="font-bold text-emerald-600 dark:text-emerald-400">{expectedBags} كيس</span>
+          <span className="font-bold text-emerald-600 dark:text-emerald-400">{formatNumber(expectedBags)} كيس</span>
         </div>
         {category === 'EXTERNAL' && (
           <div className="flex justify-between items-center text-sm">
             <span className="text-gray-600 dark:text-gray-300">إجمالي تكلفة التشغيل:</span>
-            <span className="font-bold text-orange-600 dark:text-orange-400">{expectedCost.toLocaleString()}</span>
+            <span className="font-bold text-orange-600 dark:text-orange-400">{formatNumber(expectedCost)}</span>
           </div>
         )}
       </div>

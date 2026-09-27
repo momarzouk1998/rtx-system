@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatNumber } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 import { Settings, Factory, Edit } from "lucide-react";
@@ -117,7 +118,7 @@ export default async function ProductionStagePage({
                     <td className="px-4 py-3 bg-blue-50/30 border-l-2 border-blue-200">
                       {order.quantityKg > 0 ? (
                         <span className="text-blue-700 font-bold text-sm">
-                          {order.quantityKg} كجم
+                          {formatNumber(order.quantityKg)} كجم
                         </span>
                       ) : (
                         <span className="text-gray-300">—</span>
@@ -127,7 +128,7 @@ export default async function ProductionStagePage({
                     <td className="px-4 py-3 bg-emerald-50/30">
                       {order.receivedQuantityKg && order.receivedQuantityKg > 0 ? (
                         <span className="text-emerald-700 font-bold text-sm">
-                          {order.receivedQuantityKg} كجم
+                          {formatNumber(order.receivedQuantityKg)} كجم
                         </span>
                       ) : (
                         <span className="text-gray-300">—</span>
@@ -137,14 +138,14 @@ export default async function ProductionStagePage({
                     <td className="px-4 py-3 bg-emerald-50/30 border-r-2 border-emerald-200">
                       {order.packagedBags > 0 ? (
                         <span className="text-emerald-600 font-bold text-sm">
-                          {order.packagedBags} كيس
+                          {formatNumber(order.packagedBags)} كيس
                         </span>
                       ) : (
                         <span className="text-gray-300">—</span>
                       )}
                     </td>
                     <td className="px-4 py-3 font-medium text-gray-900 text-sm">
-                      {order.totalOperatingCost.toLocaleString()}
+                      {formatNumber(order.totalOperatingCost)}
                     </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">

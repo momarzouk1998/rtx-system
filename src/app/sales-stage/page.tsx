@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatNumber } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 import { ShoppingCart, Calendar, Edit } from "lucide-react";
@@ -118,9 +119,11 @@ export default async function SalesStagePage({
                       </span>
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-sm line-through decoration-gray-300">
-                      {invoice.subTotal.toLocaleString()}                    </td>
+                      {formatNumber(invoice.subTotal)}
+                    </td>
                     <td className="px-4 py-3 text-emerald-600 font-bold text-sm">
-                      {invoice.netTotal.toLocaleString()}                    </td>
+                      {formatNumber(invoice.netTotal)}
+                    </td>
                     <td className="px-4 py-3 text-sm font-medium">
                       <InvoiceDetailsModal invoice={invoice} />
                     </td>

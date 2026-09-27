@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Plus, X, Save } from 'lucide-react';
 import { createAddMaterial } from '../actions/materials';
+import { formatNumber } from '@/lib/utils';
 
 export function AddMaterialButton({ suppliers, materials }: { suppliers: any[], materials: any[] }) {
   const [isOpen, setIsOpen] = useState(false);
@@ -142,7 +143,7 @@ export function AddMaterialButton({ suppliers, materials }: { suppliers: any[], 
 
               <div className="p-4 bg-gray-50 dark:bg-zinc-800 rounded-xl flex justify-between items-center border border-gray-100 dark:border-zinc-700">
                 <span className="font-bold text-gray-700 dark:text-gray-300">إجمالي الفاتورة:</span>
-                <span className="text-2xl font-bold text-[#12829b]">{total.toLocaleString("ar-EG")}</span>
+                <span className="text-2xl font-bold text-[#12829b]">{formatNumber(total)}</span>
               </div>
 
               <div className="pt-4 flex gap-3">

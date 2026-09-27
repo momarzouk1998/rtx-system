@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatNumber } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 import { Briefcase } from "lucide-react";
 import { AddMaterialButton } from "./AddMaterialButton";
@@ -92,13 +93,13 @@ export default async function MaterialsStagePage({
                       {item.material.name}
                     </td>
                     <td className="px-4 py-3 font-medium text-sm text-gray-900 dark:text-white">
-                      {item.quantityKg}
+                      {formatNumber(item.quantityKg)}
                     </td>
                     <td className="px-4 py-3 text-sm text-gray-600 dark:text-gray-400">
-                      {item.unitPrice}
+                      {formatNumber(item.unitPrice)}
                     </td>
                     <td className="px-4 py-3 font-medium text-[#38bdf8] text-sm">
-                      {item.totalCost.toLocaleString("ar-EG")}
+                      {formatNumber(item.totalCost)}
                     </td>
                     <td className="px-4 py-3">
                       <DeleteButton itemName="عملية التوريد" id={item.id} deleteAction={deleteMaterialTransaction} />

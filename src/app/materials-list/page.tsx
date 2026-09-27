@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatNumber } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 import { Layers, Edit } from "lucide-react";
@@ -72,9 +73,10 @@ export default async function MaterialsListPage({
                       {mat.notes && <div className="text-sm text-gray-500 mt-1">{mat.notes}</div>}
                     </td>
                     <td className="px-4 py-3 text-emerald-600 font-semibold text-sm">
-                      {mat.price}                    </td>
+                      {formatNumber(mat.price)}
+                    </td>
                     <td className="px-4 py-3 text-gray-600 text-sm">
-                      {mat.openingBalance} كجم
+                      {formatNumber(mat.openingBalance)} كجم
                     </td>
                     <td className="px-4 py-3 text-gray-500 text-sm">
                       {new Date(mat.createdAt).toISOString().split("T")[0]}
