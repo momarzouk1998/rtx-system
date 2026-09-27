@@ -51,10 +51,11 @@ export default async function ProductsListPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <p className="text-sm text-gray-500">{totalCount} منتج</p>
-        <div className="flex items-center gap-3 flex-wrap">
-          <SearchBar basePath="/products-list" defaultValue={q} placeholder="بحث بالمنتج أو الخامة..." />
-          <AddProductButton materials={materials} />
-        </div>
+        <AddProductButton materials={materials} />
+      </div>
+
+      <div className="card">
+        <SearchBar basePath="/products-list" defaultValue={q} placeholder="بحث بالمنتج أو الخامة..." />
       </div>
 
       <div className="card overflow-hidden">

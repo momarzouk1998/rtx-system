@@ -48,10 +48,11 @@ export default async function SuppliersListPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <p className="text-sm text-gray-500">{totalCount} مورد</p>
-        <div className="flex items-center gap-3 flex-wrap">
-          <SearchBar basePath="/suppliers-list" defaultValue={q} placeholder="بحث بالاسم أو الهاتف..." />
-          <AddSupplierButton />
-        </div>
+        <AddSupplierButton />
+      </div>
+
+      <div className="card">
+        <SearchBar basePath="/suppliers-list" defaultValue={q} placeholder="بحث بالاسم أو الهاتف..." />
       </div>
 
       <div className="card overflow-hidden">

@@ -7,6 +7,7 @@ import { DeleteButton } from "@/components/DeleteButton";
 import { deleteMaterialTransaction } from "../actions/materials";
 import { SearchBar } from "@/components/SearchBar";
 import { Pagination } from "@/components/Pagination";
+import { FilterButton } from "@/components/FilterButton";
 import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
 import type { Prisma } from "@/generated/prisma/client";
 
@@ -18,15 +19,27 @@ export default async function MaterialsStagePage({
   const params = await searchParams;
   const q = getSearchQuery(params);
   const { skip, take, page, pageSize } = getSkipTake(params);
+  const fromDate = typeof params.from === "string" ? params.from : "";
+  const toDate = typeof params.to === "string" ? params.to : "";
 
-  const where: Prisma.AddMaterialWhereInput = q
-    ? {
-        OR: [
-          { supplier: { name: { contains: q, mode: "insensitive" } } },
-          { material: { name: { contains: q, mode: "insensitive" } } },
-        ],
-      }
-    : {};
+  const where: Prisma.AddMaterialWhereInput = {
+    ...(q
+      ? {
+          OR: [
+            { supplier: { name: { contains: q, mode: "insensitive" } } },
+            { material: { name: { contains: q, mode: "insensitive" } } },
+          ],
+        }
+      : {}),
+    ...(fromDate || toDate
+      ? {
+          date: {
+            ...(fromDate ? { gte: new Date(fromDate) } : {}),
+            ...(toDate ? { lte: new Date(`${toDate}T23:59:59.999`) } : {}),
+          },
+        }
+      : {}),
+  };
 
   const [addMaterials, totalCount, suppliers, materials] = await Promise.all([
     prisma.addMaterial.findMany({
@@ -53,9 +66,23 @@ export default async function MaterialsStagePage({
           </h2>
           <p className="mt-1 text-gray-400">سجل عمليات توريد الخامات من الموردين للمخزن</p>
         </div>
-        <div className="flex items-center gap-3 flex-wrap">
-          <SearchBar basePath="/materials-stage" defaultValue={q} placeholder="بحث بالمورد أو الخامة..." />
-          <AddMaterialButton suppliers={suppliers} materials={materials} />
+        <AddMaterialButton suppliers={suppliers} materials={materials} />
+      </div>
+
+      <div className="card">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex-1 min-w-[200px]">
+            <SearchBar basePath="/materials-stage" defaultValue={q} placeholder="بحث بالمورد أو الخامة..." />
+          </div>
+          <FilterButton
+            title="تصفية عمليات التوريد"
+            basePath="/materials-stage"
+            searchParams={params}
+            fields={[
+              { type: "date", name: "from", label: "من تاريخ" },
+              { type: "date", name: "to", label: "إلى تاريخ" },
+            ]}
+          />
         </div>
       </div>
 

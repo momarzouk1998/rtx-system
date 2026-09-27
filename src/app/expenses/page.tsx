@@ -9,14 +9,17 @@ import { DeleteButton } from "@/components/DeleteButton";
 import { deleteExpense } from "../actions/expenses";
 import { SearchBar } from "@/components/SearchBar";
 import { Pagination } from "@/components/Pagination";
+import { FilterButton } from "@/components/FilterButton";
 import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
-import type { Prisma } from "@/generated/prisma/client";
+import type { Prisma, ExpenseCategory } from "@/generated/prisma/client";
 
 const categoryLabels: Record<string, string> = {
   INTERNAL: "داخلي",
   FACTORY: "مصنع",
   SUPPLIER: "مورد",
 };
+
+const categoryOptions = Object.entries(categoryLabels).map(([value, label]) => ({ value, label }));
 
 const categoryColors: Record<string, string> = {
   INTERNAL: "bg-gray-100 dark:bg-zinc-800 text-gray-600 dark:text-gray-300",
@@ -32,16 +35,30 @@ export default async function ExpensesPage({
   const params = await searchParams;
   const q = getSearchQuery(params);
   const { skip, take, page, pageSize } = getSkipTake(params);
+  const categoryFilter = typeof params.category === "string" ? params.category : "";
+  const fromDate = typeof params.from === "string" ? params.from : "";
+  const toDate = typeof params.to === "string" ? params.to : "";
 
-  const where: Prisma.ExpenseWhereInput = q
-    ? {
-        OR: [
-          { item: { contains: q, mode: "insensitive" } },
-          { factory: { name: { contains: q, mode: "insensitive" } } },
-          { supplier: { name: { contains: q, mode: "insensitive" } } },
-        ],
-      }
-    : {};
+  const where: Prisma.ExpenseWhereInput = {
+    ...(q
+      ? {
+          OR: [
+            { item: { contains: q, mode: "insensitive" } },
+            { factory: { name: { contains: q, mode: "insensitive" } } },
+            { supplier: { name: { contains: q, mode: "insensitive" } } },
+          ],
+        }
+      : {}),
+    ...(categoryFilter ? { category: categoryFilter as ExpenseCategory } : {}),
+    ...(fromDate || toDate
+      ? {
+          date: {
+            ...(fromDate ? { gte: new Date(fromDate) } : {}),
+            ...(toDate ? { lte: new Date(`${toDate}T23:59:59.999`) } : {}),
+          },
+        }
+      : {}),
+  };
 
   const [expenses, totalCount, factories, suppliers, byCategoryGroups] = await Promise.all([
     prisma.expense.findMany({
@@ -78,13 +95,10 @@ export default async function ExpensesPage({
           <Coins className="w-8 h-8 text-[#12829b]" />
           المصروفات
         </h1>
-        <div className="flex items-center gap-3 flex-wrap">
-          <SearchBar basePath="/expenses" defaultValue={q} placeholder="بحث بالوصف أو المصنع أو المورد..." />
-          <AddExpenseButton factories={factories} suppliers={suppliers} />
-        </div>
+        <AddExpenseButton factories={factories} suppliers={suppliers} />
       </div>
 
-      {/* ملخص */}
+      {/* ملخص - دايمًا من كل السجلات، مش متأثر بالبحث أو التصفية تحت */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
           <div className="text-sm text-gray-500 dark:text-gray-400">إجمالي المصروفات</div>
@@ -101,6 +115,24 @@ export default async function ExpensesPage({
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
           <div className="text-sm text-gray-500 dark:text-gray-400">مدفوعات موردين</div>
           <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{formatNumber(byCategory.SUPPLIER)}</div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex-1 min-w-[200px]">
+            <SearchBar basePath="/expenses" defaultValue={q} placeholder="بحث بالوصف أو المصنع أو المورد..." />
+          </div>
+          <FilterButton
+            title="تصفية المصروفات"
+            basePath="/expenses"
+            searchParams={params}
+            fields={[
+              { type: "select", name: "category", label: "التصنيف", options: categoryOptions },
+              { type: "date", name: "from", label: "من تاريخ" },
+              { type: "date", name: "to", label: "إلى تاريخ" },
+            ]}
+          />
         </div>
       </div>
 

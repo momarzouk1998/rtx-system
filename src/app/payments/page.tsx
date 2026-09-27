@@ -9,8 +9,9 @@ import { DeleteButton } from "@/components/DeleteButton";
 import { deletePayment } from "../actions/payments";
 import { SearchBar } from "@/components/SearchBar";
 import { Pagination } from "@/components/Pagination";
+import { FilterButton } from "@/components/FilterButton";
 import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
-import type { Prisma } from "@/generated/prisma/client";
+import type { Prisma, PaymentMethod, PaymentType } from "@/generated/prisma/client";
 
 const methodLabels: Record<string, string> = {
   CASH: "نقدي",
@@ -27,6 +28,9 @@ const typeLabels: Record<string, string> = {
   OTHER: "أخرى",
 };
 
+const methodOptions = Object.entries(methodLabels).map(([value, label]) => ({ value, label }));
+const typeOptions = Object.entries(typeLabels).map(([value, label]) => ({ value, label }));
+
 export default async function PaymentsPage({
   searchParams,
 }: {
@@ -35,15 +39,31 @@ export default async function PaymentsPage({
   const params = await searchParams;
   const q = getSearchQuery(params);
   const { skip, take, page, pageSize } = getSkipTake(params);
+  const methodFilter = typeof params.method === "string" ? params.method : "";
+  const typeFilter = typeof params.type === "string" ? params.type : "";
+  const fromDate = typeof params.from === "string" ? params.from : "";
+  const toDate = typeof params.to === "string" ? params.to : "";
 
-  const where: Prisma.PaymentWhereInput = q
-    ? {
-        OR: [
-          { notes: { contains: q, mode: "insensitive" } },
-          { client: { name: { contains: q, mode: "insensitive" } } },
-        ],
-      }
-    : {};
+  const where: Prisma.PaymentWhereInput = {
+    ...(q
+      ? {
+          OR: [
+            { notes: { contains: q, mode: "insensitive" } },
+            { client: { name: { contains: q, mode: "insensitive" } } },
+          ],
+        }
+      : {}),
+    ...(methodFilter ? { method: methodFilter as PaymentMethod } : {}),
+    ...(typeFilter ? { paymentType: typeFilter as PaymentType } : {}),
+    ...(fromDate || toDate
+      ? {
+          date: {
+            ...(fromDate ? { gte: new Date(fromDate) } : {}),
+            ...(toDate ? { lte: new Date(`${toDate}T23:59:59.999`) } : {}),
+          },
+        }
+      : {}),
+  };
 
   const [payments, totalCount, clients, totals, clientGroups] = await Promise.all([
     prisma.payment.findMany({
@@ -74,13 +94,10 @@ export default async function PaymentsPage({
           <Banknote className="w-8 h-8 text-[#12829b]" />
           المدفوعات
         </h1>
-        <div className="flex items-center gap-3 flex-wrap">
-          <SearchBar basePath="/payments" defaultValue={q} placeholder="بحث بالعميل أو الملاحظات..." />
-          <AddPaymentButton clients={clients} />
-        </div>
+        <AddPaymentButton clients={clients} />
       </div>
 
-      {/* ملخص */}
+      {/* ملخص - دايمًا من كل السجلات، مش متأثر بالبحث أو التصفية تحت */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
           <div className="text-sm text-gray-500 dark:text-gray-400">إجمالي المدفوعات</div>
@@ -95,6 +112,25 @@ export default async function PaymentsPage({
           <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">
             {formatNumber(distinctClientsCount)}
           </div>
+        </div>
+      </div>
+
+      <div className="card">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex-1 min-w-[200px]">
+            <SearchBar basePath="/payments" defaultValue={q} placeholder="بحث بالعميل أو الملاحظات..." />
+          </div>
+          <FilterButton
+            title="تصفية المدفوعات"
+            basePath="/payments"
+            searchParams={params}
+            fields={[
+              { type: "select", name: "method", label: "طريقة الدفع", options: methodOptions },
+              { type: "select", name: "type", label: "النوع", options: typeOptions },
+              { type: "date", name: "from", label: "من تاريخ" },
+              { type: "date", name: "to", label: "إلى تاريخ" },
+            ]}
+          />
         </div>
       </div>
 

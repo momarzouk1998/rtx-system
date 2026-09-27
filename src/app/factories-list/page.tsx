@@ -48,10 +48,11 @@ export default async function FactoriesListPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <p className="text-sm text-gray-500">{totalCount} مصنع</p>
-        <div className="flex items-center gap-3 flex-wrap">
-          <SearchBar basePath="/factories-list" defaultValue={q} placeholder="بحث بالاسم أو الهاتف..." />
-          <AddFactoryButton />
-        </div>
+        <AddFactoryButton />
+      </div>
+
+      <div className="card">
+        <SearchBar basePath="/factories-list" defaultValue={q} placeholder="بحث بالاسم أو الهاتف..." />
       </div>
 
       <div className="card overflow-hidden">

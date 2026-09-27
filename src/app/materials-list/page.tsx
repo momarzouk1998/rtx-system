@@ -40,10 +40,11 @@ export default async function MaterialsListPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <p className="text-sm text-gray-500">{totalCount} خامة</p>
-        <div className="flex items-center gap-3 flex-wrap">
-          <SearchBar basePath="/materials-list" defaultValue={q} placeholder="بحث بالاسم..." />
-          <AddMaterialButton />
-        </div>
+        <AddMaterialButton />
+      </div>
+
+      <div className="card">
+        <SearchBar basePath="/materials-list" defaultValue={q} placeholder="بحث بالاسم..." />
       </div>
 
       <div className="card overflow-hidden">
