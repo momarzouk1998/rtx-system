@@ -6,10 +6,26 @@ import { DeleteButton } from "@/components/DeleteButton";
 import { deleteInventoryTransactionAction } from "../actions/inventory";
 import { SearchBar } from "@/components/SearchBar";
 import { Pagination } from "@/components/Pagination";
+import { FilterButton } from "@/components/FilterButton";
 import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
-import type { Prisma } from "@/generated/prisma/client";
+import type { Prisma, TransactionType, TransactionReason } from "@/generated/prisma/client";
 
 export const dynamic = 'force-dynamic';
+
+const typeOptions = [
+  { value: "IN", label: "وارد" },
+  { value: "OUT", label: "منصرف" },
+];
+
+const reasonOptions = [
+  { value: "PURCHASE", label: "شراء وتوريد (مورد)" },
+  { value: "SALES", label: "مبيعات وخروج (عميل)" },
+  { value: "PRODUCTION_MATERIAL_OUT", label: "منصرف للتشغيل بالتصنيع" },
+  { value: "PRODUCTION_PRODUCT_IN", label: "وارد استلام منتج نهائي" },
+  { value: "PACKAGING_IN", label: "وارد من التغليف" },
+  { value: "PACKAGING_OUT", label: "منصرف للتغليف" },
+  { value: "ADJUSTMENT", label: "تسوية وجرد مخزني" },
+];
 
 export default async function InventoryDashboard({
   searchParams,
@@ -19,16 +35,22 @@ export default async function InventoryDashboard({
   const params = await searchParams;
   const q = getSearchQuery(params);
   const { skip, take, page, pageSize } = getSkipTake(params);
+  const typeFilter = typeof params.type === "string" ? params.type : "";
+  const reasonFilter = typeof params.reason === "string" ? params.reason : "";
 
-  const where: Prisma.InventoryTransactionWhereInput = q
-    ? {
-        OR: [
-          { material: { name: { contains: q, mode: "insensitive" } } },
-          { product: { name: { contains: q, mode: "insensitive" } } },
-          { notes: { contains: q, mode: "insensitive" } },
-        ],
-      }
-    : {};
+  const where: Prisma.InventoryTransactionWhereInput = {
+    ...(q
+      ? {
+          OR: [
+            { material: { name: { contains: q, mode: "insensitive" } } },
+            { product: { name: { contains: q, mode: "insensitive" } } },
+            { notes: { contains: q, mode: "insensitive" } },
+          ],
+        }
+      : {}),
+    ...(typeFilter ? { type: typeFilter as TransactionType } : {}),
+    ...(reasonFilter ? { reason: reasonFilter as TransactionReason } : {}),
+  };
 
   // Fetch materials/products (بدون كل الحركات - الأرصدة بتتحسب بالتجميع في الداتابيز تحت)
   // وسجل الحركات (مفلتر ومقسّم لصفحات للعرض فقط)، وعدد الحركات الكلي.
@@ -208,7 +230,18 @@ export default async function InventoryDashboard({
             <FileText className="w-5 h-5 text-[#0284c7]" />
             سجل حركات المخزن التفصيلي (الوارد والمنصرف والتسويات)
           </h3>
-          <SearchBar basePath="/inventory" defaultValue={q} placeholder="بحث بالصنف أو الملاحظات..." />
+          <div className="flex flex-wrap items-center gap-3">
+            <SearchBar basePath="/inventory" defaultValue={q} placeholder="بحث بالصنف أو الملاحظات..." />
+            <FilterButton
+              title="تصفية حركات المخزن"
+              basePath="/inventory"
+              searchParams={params}
+              fields={[
+                { type: "select", name: "type", label: "نوع الحركة", options: typeOptions },
+                { type: "select", name: "reason", label: "السبب", options: reasonOptions },
+              ]}
+            />
+          </div>
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-right text-sm" dir="rtl">

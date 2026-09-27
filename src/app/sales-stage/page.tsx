@@ -10,8 +10,17 @@ import { DeleteButton } from "@/components/DeleteButton";
 import { deleteInvoice } from "../actions/sales";
 import { SearchBar } from "@/components/SearchBar";
 import { Pagination } from "@/components/Pagination";
+import { FilterButton } from "@/components/FilterButton";
 import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
-import type { Prisma } from "@/generated/prisma/client";
+import type { Prisma, OrderStatus } from "@/generated/prisma/client";
+
+const statusOptions = [
+  { value: "PROCESSING", label: "قيد التشغيل" },
+  { value: "ORDERED", label: "تم الطلب" },
+  { value: "SHIPPED", label: "تم الشحن" },
+  { value: "DELIVERED", label: "تم التسليم" },
+  { value: "CANCELLED", label: "ملغي" },
+];
 
 export default async function SalesStagePage({
   searchParams,
@@ -21,16 +30,20 @@ export default async function SalesStagePage({
   const params = await searchParams;
   const q = getSearchQuery(params);
   const { skip, take, page, pageSize } = getSkipTake(params);
+  const statusFilter = typeof params.status === "string" ? params.status : "";
 
   const asNumber = q && /^\d+$/.test(q) ? parseInt(q, 10) : undefined;
-  const where: Prisma.SalesInvoiceWhereInput = q
-    ? {
-        OR: [
-          { client: { name: { contains: q, mode: "insensitive" } } },
-          ...(asNumber !== undefined ? [{ orderNumber: asNumber }] : []),
-        ],
-      }
-    : {};
+  const where: Prisma.SalesInvoiceWhereInput = {
+    ...(q
+      ? {
+          OR: [
+            { client: { name: { contains: q, mode: "insensitive" } } },
+            ...(asNumber !== undefined ? [{ orderNumber: asNumber }] : []),
+          ],
+        }
+      : {}),
+    ...(statusFilter ? { status: statusFilter as OrderStatus } : {}),
+  };
 
   const [invoices, totalCount, clients, products] = await Promise.all([
     prisma.salesInvoice.findMany({
@@ -62,9 +75,20 @@ export default async function SalesStagePage({
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <p className="text-sm text-gray-500">{totalCount} فاتورة</p>
-        <div className="flex items-center gap-3 flex-wrap">
-          <SearchBar basePath="/sales-stage" defaultValue={q} placeholder="بحث برقم الفاتورة أو اسم العميل..." />
-          <AddInvoiceButton clients={clients} products={products} />
+        <AddInvoiceButton clients={clients} products={products} />
+      </div>
+
+      <div className="card">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex-1 min-w-[200px]">
+            <SearchBar basePath="/sales-stage" defaultValue={q} placeholder="بحث برقم الفاتورة أو اسم العميل..." />
+          </div>
+          <FilterButton
+            title="تصفية الفواتير"
+            basePath="/sales-stage"
+            searchParams={params}
+            fields={[{ type: "select", name: "status", label: "الحالة", options: statusOptions }]}
+          />
         </div>
       </div>
 

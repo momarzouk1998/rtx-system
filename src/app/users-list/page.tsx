@@ -40,10 +40,11 @@ export default async function UsersListPage({
           <UsersRound className="w-8 h-8 text-[#12829b]" />
           قائمة المستخدمين
         </h1>
-        <div className="flex items-center gap-3 flex-wrap">
-          <SearchBar basePath="/users-list" defaultValue={q} placeholder="بحث بالاسم أو الهاتف أو الوظيفة..." />
-          <AddUserButton />
-        </div>
+        <AddUserButton />
+      </div>
+
+      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-4">
+        <SearchBar basePath="/users-list" defaultValue={q} placeholder="بحث بالاسم أو الهاتف أو الوظيفة..." />
       </div>
 
       <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 overflow-hidden">

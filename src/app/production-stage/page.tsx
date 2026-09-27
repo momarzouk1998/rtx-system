@@ -9,8 +9,14 @@ import { DeleteButton } from "@/components/DeleteButton";
 import { deleteProductionOrder } from "../actions/production";
 import { SearchBar } from "@/components/SearchBar";
 import { Pagination } from "@/components/Pagination";
+import { FilterButton } from "@/components/FilterButton";
 import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
-import type { Prisma } from "@/generated/prisma/client";
+import type { Prisma, ProductionCategory } from "@/generated/prisma/client";
+
+const categoryOptions = [
+  { value: "INTERNAL", label: "تصنيع داخلي" },
+  { value: "EXTERNAL", label: "مصنع آخر" },
+];
 
 export default async function ProductionStagePage({
   searchParams,
@@ -20,16 +26,20 @@ export default async function ProductionStagePage({
   const params = await searchParams;
   const q = getSearchQuery(params);
   const { skip, take, page, pageSize } = getSkipTake(params);
+  const categoryFilter = typeof params.category === "string" ? params.category : "";
 
-  const where: Prisma.ProductionOrderWhereInput = q
-    ? {
-        OR: [
-          { product: { name: { contains: q, mode: "insensitive" } } },
-          { material: { name: { contains: q, mode: "insensitive" } } },
-          { factory: { name: { contains: q, mode: "insensitive" } } },
-        ],
-      }
-    : {};
+  const where: Prisma.ProductionOrderWhereInput = {
+    ...(q
+      ? {
+          OR: [
+            { product: { name: { contains: q, mode: "insensitive" } } },
+            { material: { name: { contains: q, mode: "insensitive" } } },
+            { factory: { name: { contains: q, mode: "insensitive" } } },
+          ],
+        }
+      : {}),
+    ...(categoryFilter ? { category: categoryFilter as ProductionCategory } : {}),
+  };
 
   const [productionOrders, totalCount, factories, products] = await Promise.all([
     prisma.productionOrder.findMany({
@@ -59,9 +69,20 @@ export default async function ProductionStagePage({
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <p className="text-sm text-gray-500">{totalCount} أمر تصنيع</p>
-        <div className="flex items-center gap-3 flex-wrap">
-          <SearchBar basePath="/production-stage" defaultValue={q} placeholder="بحث بالمنتج أو الخامة أو المصنع..." />
-          <AddProductionButton factories={factories} products={products} />
+        <AddProductionButton factories={factories} products={products} />
+      </div>
+
+      <div className="card">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex-1 min-w-[200px]">
+            <SearchBar basePath="/production-stage" defaultValue={q} placeholder="بحث بالمنتج أو الخامة أو المصنع..." />
+          </div>
+          <FilterButton
+            title="تصفية أوامر التصنيع"
+            basePath="/production-stage"
+            searchParams={params}
+            fields={[{ type: "select", name: "category", label: "التصنيف", options: categoryOptions }]}
+          />
         </div>
       </div>
 

@@ -6,8 +6,9 @@ import { ClipboardList } from "lucide-react";
 import { StatusUpdater } from "./StatusUpdater";
 import { SearchBar } from "@/components/SearchBar";
 import { Pagination } from "@/components/Pagination";
+import { FilterButton } from "@/components/FilterButton";
 import { getSearchQuery, getSkipTake, getTotalPages, type RawSearchParams } from "@/lib/pagination";
-import type { Prisma } from "@/generated/prisma/client";
+import type { Prisma, OrderStatus } from "@/generated/prisma/client";
 
 type Status = "PROCESSING" | "ORDERED" | "SHIPPED" | "DELIVERED" | "CANCELLED";
 
@@ -19,6 +20,11 @@ const statusLabels: Record<Status, string> = {
   CANCELLED: "إلغاء الطلب",
 };
 
+const statusOptions = (Object.keys(statusLabels) as Status[]).map((value) => ({
+  value,
+  label: statusLabels[value],
+}));
+
 export default async function OrdersTrackPage({
   searchParams,
 }: {
@@ -27,16 +33,20 @@ export default async function OrdersTrackPage({
   const params = await searchParams;
   const q = getSearchQuery(params);
   const { skip, take, page, pageSize } = getSkipTake(params);
+  const statusFilter = typeof params.status === "string" ? params.status : "";
 
   const asNumber = q && /^\d+$/.test(q) ? parseInt(q, 10) : undefined;
-  const where: Prisma.SalesInvoiceWhereInput = q
-    ? {
-        OR: [
-          { client: { name: { contains: q, mode: "insensitive" } } },
-          ...(asNumber !== undefined ? [{ orderNumber: asNumber }] : []),
-        ],
-      }
-    : {};
+  const where: Prisma.SalesInvoiceWhereInput = {
+    ...(q
+      ? {
+          OR: [
+            { client: { name: { contains: q, mode: "insensitive" } } },
+            ...(asNumber !== undefined ? [{ orderNumber: asNumber }] : []),
+          ],
+        }
+      : {}),
+    ...(statusFilter ? { status: statusFilter as OrderStatus } : {}),
+  };
 
   const [invoices, totalCount, statusGroups] = await Promise.all([
     prisma.salesInvoice.findMany({
@@ -69,7 +79,20 @@ export default async function OrdersTrackPage({
           <ClipboardList className="w-8 h-8 text-[#12829b]" />
           متابعة الطلبات
         </h1>
-        <SearchBar basePath="/orders-track" defaultValue={q} placeholder="بحث برقم الطلب أو اسم العميل..." />
+      </div>
+
+      <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex-1 min-w-[200px]">
+            <SearchBar basePath="/orders-track" defaultValue={q} placeholder="بحث برقم الطلب أو اسم العميل..." />
+          </div>
+          <FilterButton
+            title="تصفية الطلبات"
+            basePath="/orders-track"
+            searchParams={params}
+            fields={[{ type: "select", name: "status", label: "الحالة", options: statusOptions }]}
+          />
+        </div>
       </div>
 
       {/* إحصائيات الحالات */}

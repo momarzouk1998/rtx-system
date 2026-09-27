@@ -57,10 +57,11 @@ export default async function ClientsListPage({
     <div className="space-y-4">
       <div className="flex items-center justify-between flex-wrap gap-3">
         <p className="text-sm text-gray-500">{totalCount} عميل</p>
-        <div className="flex items-center gap-3 flex-wrap">
-          <SearchBar basePath="/clients-list" defaultValue={q} placeholder="بحث بالاسم أو الهاتف..." />
-          <AddClientButton />
-        </div>
+        <AddClientButton />
+      </div>
+
+      <div className="card">
+        <SearchBar basePath="/clients-list" defaultValue={q} placeholder="بحث بالاسم أو الهاتف..." />
       </div>
 
       <div className="card overflow-hidden">
