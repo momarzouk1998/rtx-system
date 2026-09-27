@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatNumber } from "@/lib/utils";
 import { TrendingUp, Users, ShoppingCart, Package, DollarSign, Factory, Layers, CreditCard } from "lucide-react";
 
 export const dynamic = "force-dynamic";
@@ -127,17 +128,17 @@ export default async function Dashboard() {
   const netProfit = (monthSales._sum.netTotal || 0) - monthExpensesTotal;
 
   const stats = [
-    { icon: ShoppingCart, label: 'مبيعات اليوم', value: (todaySales._sum.netTotal || 0).toLocaleString('ar-EG'), subValue: `${todaySales._count} فاتورة`, color: 'green' },
-    { icon: TrendingUp, label: 'مبيعات الشهر', value: (monthSales._sum.netTotal || 0).toLocaleString('ar-EG'), subValue: `${monthSales._count} فاتورة`, color: 'blue' },
-    { icon: DollarSign, label: 'صافي ربح الشهر', value: netProfit.toLocaleString('ar-EG'), subValue: 'بعد المصروفات', color: netProfit >= 0 ? 'green' : 'red' },
-    { icon: Package, label: 'فواتير مفتوحة', value: openInvoices.toString(), subValue: 'قيد التنفيذ', color: 'purple' },
+    { icon: ShoppingCart, label: 'مبيعات اليوم', value: formatNumber(todaySales._sum.netTotal || 0), subValue: `${todaySales._count} فاتورة`, color: 'green' },
+    { icon: TrendingUp, label: 'مبيعات الشهر', value: formatNumber(monthSales._sum.netTotal || 0), subValue: `${monthSales._count} فاتورة`, color: 'blue' },
+    { icon: DollarSign, label: 'صافي ربح الشهر', value: formatNumber(netProfit), subValue: 'بعد المصروفات', color: netProfit >= 0 ? 'green' : 'red' },
+    { icon: Package, label: 'فواتير مفتوحة', value: formatNumber(openInvoices), subValue: 'قيد التنفيذ', color: 'purple' },
   ];
 
   const moneyStats = [
-    { icon: CreditCard, label: 'ديون العملاء', value: clientDebtsTotal.toLocaleString('ar-EG'), subValue: 'مستحقة لك', color: 'red' },
-    { icon: Layers, label: 'إجمالي الخامات', value: totalMaterials.toString(), subValue: 'مسجلة في النظام', color: 'blue' },
-    { icon: Package, label: 'إجمالي المنتجات', value: totalProducts.toString(), subValue: 'جاهزة للبيع', color: 'green' },
-    { icon: DollarSign, label: 'مصروفات الشهر', value: monthExpensesTotal.toLocaleString('ar-EG'), subValue: 'إجمالي المصاريف', color: 'orange' },
+    { icon: CreditCard, label: 'ديون العملاء', value: formatNumber(clientDebtsTotal), subValue: 'مستحقة لك', color: 'red' },
+    { icon: Layers, label: 'إجمالي الخامات', value: formatNumber(totalMaterials), subValue: 'مسجلة في النظام', color: 'blue' },
+    { icon: Package, label: 'إجمالي المنتجات', value: formatNumber(totalProducts), subValue: 'جاهزة للبيع', color: 'green' },
+    { icon: DollarSign, label: 'مصروفات الشهر', value: formatNumber(monthExpensesTotal), subValue: 'إجمالي المصاريف', color: 'orange' },
   ];
 
   const systemStats = [

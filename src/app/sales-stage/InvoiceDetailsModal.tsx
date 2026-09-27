@@ -1,8 +1,9 @@
-﻿"use client";
+"use client";
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { Eye, X, Printer, Package, User, Calendar, Tag, Phone, Download, Loader2 } from "lucide-react";
+import { formatNumber } from "@/lib/utils";
 import toast from "react-hot-toast";
 
 // ألوان قياسية نقية بدون oklch
@@ -450,16 +451,16 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
                         </td>
                         <td style={{ padding: "8px 12px", textAlign: "center", backgroundColor: C.lightBlue }}>
                           <span style={{ color: C.blue, fontWeight: 900, fontSize: "0.9rem" }}>
-                            {qty.toLocaleString("ar-EG")}
+                            {formatNumber(qty)}
                           </span>
                         </td>
                         <td style={{ padding: "8px 12px", textAlign: "center", backgroundColor: C.amberBg }}>
                           <span style={{ color: C.amber, fontWeight: 900, fontSize: "0.9rem" }}>
-                            {price.toLocaleString("ar-EG")}
+                            {formatNumber(price)}
                           </span>
                         </td>
                         <td style={{ padding: "8px 12px", textAlign: "left", fontWeight: 900, color: C.slateDark, fontSize: "0.9rem" }}>
-                          {total.toLocaleString("ar-EG")}
+                          {formatNumber(total)}
                         </td>
                       </tr>
                     );
@@ -483,21 +484,21 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
                   <div style={{ backgroundColor: C.lightBg, padding: "8px 4px", borderRadius: "8px", border: `1px solid ${C.border}` }}>
                     <div style={{ fontSize: "0.68rem", color: C.muted, fontWeight: "bold", marginBottom: "2px" }}>قبل الخصم</div>
                     <div style={{ fontSize: "0.95rem", fontWeight: 900, color: C.slateDark }}>
-                      {(invoice.subTotal || 0).toLocaleString("ar-EG")}
+                      {formatNumber(invoice.subTotal || 0)}
                     </div>
                   </div>
                   
                   <div style={{ backgroundColor: C.amberBg, padding: "8px 4px", borderRadius: "8px", border: `1px solid ${C.amber}` }}>
                     <div style={{ fontSize: "0.68rem", color: C.amber, fontWeight: "bold", marginBottom: "2px" }}>الخصم</div>
                     <div style={{ fontSize: "0.95rem", fontWeight: 900, color: C.amber }}>
-                      {discountAmount.toLocaleString("ar-EG")}
+                      {formatNumber(discountAmount)}
                     </div>
                   </div>
                   
                   <div style={{ backgroundColor: C.emeraldBg, padding: "8px 4px", borderRadius: "8px", border: `1px solid ${C.emerald}` }}>
                     <div style={{ fontSize: "0.68rem", color: C.emerald, fontWeight: "bold", marginBottom: "2px" }}>الصافي</div>
                     <div style={{ fontSize: "0.95rem", fontWeight: 900, color: C.emerald }}>
-                      {(invoice.netTotal || 0).toLocaleString("ar-EG")}
+                      {formatNumber(invoice.netTotal || 0)}
                     </div>
                   </div>
                 </div>
@@ -505,7 +506,7 @@ export function InvoiceDetailsModal({ invoice }: { invoice: any }) {
                 <div style={{ background: `linear-gradient(135deg, ${C.blue} 0%, ${C.darkBlue} 100%)`, color: C.white, padding: "12px 16px", borderRadius: "10px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <span style={{ fontWeight: 900, fontSize: "0.95rem" }}>صافي الفاتورة:</span>
                   <span style={{ fontSize: "1.4rem", fontWeight: 900 }}>
-                    {(invoice.netTotal || 0).toLocaleString("ar-EG")} ج.م
+                    {formatNumber(invoice.netTotal || 0)} ج.م
                   </span>
                 </div>
               )}

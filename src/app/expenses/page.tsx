@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatNumber } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 import { Coins, Edit } from "lucide-react";
@@ -56,19 +57,19 @@ export default async function ExpensesPage() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
           <div className="text-sm text-gray-500 dark:text-gray-400">إجمالي المصروفات</div>
-          <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{total.toLocaleString("ar-EG")}</div>
+          <div className="text-2xl font-bold text-red-600 dark:text-red-400 mt-1">{formatNumber(total)}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
           <div className="text-sm text-gray-500 dark:text-gray-400">مصاريف داخلية</div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{byCategory.INTERNAL.toLocaleString("ar-EG")}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{formatNumber(byCategory.INTERNAL)}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
           <div className="text-sm text-gray-500 dark:text-gray-400">مدفوعات مصانع</div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{byCategory.FACTORY.toLocaleString("ar-EG")}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{formatNumber(byCategory.FACTORY)}</div>
         </div>
         <div className="bg-white dark:bg-zinc-900 rounded-xl shadow-sm border border-gray-100 dark:border-zinc-800 p-5">
           <div className="text-sm text-gray-500 dark:text-gray-400">مدفوعات موردين</div>
-          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{byCategory.SUPPLIER.toLocaleString("ar-EG")}</div>
+          <div className="text-2xl font-bold text-gray-900 dark:text-white mt-1">{formatNumber(byCategory.SUPPLIER)}</div>
         </div>
       </div>
 
@@ -110,7 +111,8 @@ export default async function ExpensesPage() {
                       {e.factory?.name || e.supplier?.name || "—"}
                     </td>
                     <td className="px-4 py-3 font-semibold text-red-600 text-sm">
-                      {e.amount.toLocaleString("ar-EG")}                    </td>
+                      {formatNumber(e.amount)}
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <Link href={`/expenses/${e.id}/edit`} className="text-blue-600 hover:text-blue-800">

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatNumber } from "@/lib/utils";
 import { PrintButton } from "@/components/PrintButton";
 import { DeleteButton } from "@/components/DeleteButton";
 import { deleteProductionOrder } from "@/app/actions/production";
@@ -97,7 +98,7 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
     };
   });
 
-  const currentDateFormatted = new Date().toLocaleDateString("ar-EG", {
+  const currentDateFormatted = new Date().toLocaleDateString("ar-EG-u-nu-latn", {
     year: "numeric",
     month: "long",
     day: "numeric",
@@ -149,17 +150,17 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
 
           <div className="bg-blue-50 dark:bg-blue-950/30 p-3.5 rounded-xl border border-blue-200 dark:border-blue-900/50 text-center print:bg-blue-50">
             <span className="text-xs font-bold text-blue-700 dark:text-blue-400 block mb-0.5">📤 إجمالي خامات مرسلة</span>
-            <span className="text-lg font-black text-blue-800 dark:text-blue-300">{(totalMaterialSent || 0).toLocaleString("ar-EG")} كجم</span>
+            <span className="text-lg font-black text-blue-800 dark:text-blue-300">{formatNumber(totalMaterialSent || 0)} كجم</span>
           </div>
 
           <div className="bg-emerald-50 dark:bg-emerald-950/30 p-3.5 rounded-xl border border-emerald-200 dark:border-emerald-900/50 text-center print:bg-emerald-50">
             <span className="text-xs font-bold text-emerald-700 dark:text-emerald-400 block mb-0.5">📥 إجمالي منتج مستلم</span>
-            <span className="text-lg font-black text-emerald-800 dark:text-emerald-300">{(totalProductReceived || 0).toLocaleString("ar-EG")} كجم</span>
+            <span className="text-lg font-black text-emerald-800 dark:text-emerald-300">{formatNumber(totalProductReceived || 0)} كجم</span>
           </div>
 
           <div className="bg-gradient-to-r from-slate-900 via-[#0284c7] to-[#0369a1] text-white p-3.5 rounded-xl text-center shadow-md flex flex-col justify-center print:bg-slate-900 print:text-white">
             <span className="text-xs font-black text-white/90 block mb-0.5">💰 الرصيد المالي المستحق</span>
-            <span className="text-xl font-black text-white">{(runningFinancialBalance || 0).toLocaleString("ar-EG")}</span>
+            <span className="text-xl font-black text-white">{formatNumber(runningFinancialBalance || 0)}</span>
           </div>
         </div>
 
@@ -207,7 +208,7 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
                     <td className="py-2 px-2 font-black bg-blue-50/30 dark:bg-blue-950/20 text-center">
                       {row.materialSentKg > 0 ? (
                         <span className="text-blue-700 dark:text-blue-400 print:text-black font-black">
-                          {row.materialSentKg.toLocaleString("ar-EG")}
+                          {formatNumber(row.materialSentKg)}
                         </span>
                       ) : (
                         <span className="text-slate-300">—</span>
@@ -220,7 +221,7 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
                     <td className="py-2 px-2 font-black bg-emerald-50/30 dark:bg-emerald-950/20 text-center">
                       {row.productReceivedKg > 0 ? (
                         <span className="text-emerald-700 dark:text-emerald-400 print:text-black font-black">
-                          {row.productReceivedKg.toLocaleString("ar-EG")}
+                          {formatNumber(row.productReceivedKg)}
                         </span>
                       ) : (
                         <span className="text-slate-300">—</span>
@@ -228,27 +229,27 @@ export async function FactoryStatement({ factoryId }: { factoryId: string }) {
                     </td>
 
                     <td className="py-2 px-1.5 text-slate-700 dark:text-slate-300 font-bold text-center">
-                      {row.bagsCount > 0 ? row.bagsCount.toLocaleString("ar-EG") : "—"}
+                      {row.bagsCount > 0 ? formatNumber(row.bagsCount) : "—"}
                     </td>
                     
                     <td className="py-2 px-1.5 text-slate-700 dark:text-slate-300 font-bold text-center">
-                      {row.pricePerKg > 0 ? row.pricePerKg.toLocaleString("ar-EG") : "—"}
+                      {row.pricePerKg > 0 ? formatNumber(row.pricePerKg) : "—"}
                     </td>
                     
                     <td className="py-2 px-2 font-black text-amber-700 dark:text-amber-400 text-center">
-                      {row.commission > 0 ? row.commission.toLocaleString("ar-EG") : "—"}
+                      {row.commission > 0 ? formatNumber(row.commission) : "—"}
                     </td>
 
                     <td className="py-2 px-2 font-black text-rose-700 dark:text-rose-400 text-center">
-                      {row.payment > 0 ? row.payment.toLocaleString("ar-EG") : "—"}
+                      {row.payment > 0 ? formatNumber(row.payment) : "—"}
                     </td>
 
                     <td className="py-2 px-2 font-black bg-slate-50 dark:bg-zinc-800 text-slate-900 dark:text-white text-center">
-                      {row.materialBalance.toLocaleString("ar-EG")}
+                      {formatNumber(row.materialBalance)}
                     </td>
 
                     <td className="py-2 px-2 font-black bg-slate-100 dark:bg-zinc-800 text-[#0284c7] dark:text-[#38bdf8] print:text-black text-center text-xs">
-                      {row.financialBalance.toLocaleString("ar-EG")}
+                      {formatNumber(row.financialBalance)}
                     </td>
 
                     <td className="py-2 px-1 text-center print:hidden">

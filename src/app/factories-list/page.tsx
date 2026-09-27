@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatNumber } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 import { Factory, Phone, MessageCircle, PhoneCall, Edit, FileText } from "lucide-react";
@@ -87,10 +88,10 @@ export default async function FactoriesListPage() {
                         </div>
                       </td>
                       <td className="px-4 py-3 text-gray-600 text-sm">
-                        {factory.openingBalance.toLocaleString()}
+                        {formatNumber(factory.openingBalance)}
                       </td>
                       <td className="px-4 py-3 text-gray-900 font-medium text-sm">
-                        {currentBalance.toLocaleString()}
+                        {formatNumber(currentBalance)}
                       </td>
                       <td className="px-4 py-3">
                         <span className={`badge text-xs ${statusClass}`}>

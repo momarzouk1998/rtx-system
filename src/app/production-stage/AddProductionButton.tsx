@@ -4,7 +4,7 @@ import { useState, useMemo } from "react";
 import { Plus, Loader2 } from "lucide-react";
 import { Modal } from "@/components/Modal";
 import { createProductionOrder } from "../actions/production";
-import { todayDateInputValue } from "@/lib/utils";
+import { todayDateInputValue, formatNumber } from "@/lib/utils";
 import toast from "react-hot-toast";
 
 type Factory = { id: string; name: string };
@@ -272,14 +272,14 @@ export function AddProductionButton({ factories, products }: { factories: Factor
               <span className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
                 <span>📦</span> عدد الأكياس المنتجة:
               </span>
-              <span className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{expectedBags.toLocaleString()} كيس</span>
+              <span className="font-bold text-lg text-emerald-600 dark:text-emerald-400">{formatNumber(expectedBags)} كيس</span>
             </div>
             {category === 'EXTERNAL' && (
               <div className="flex justify-between items-center text-sm bg-white dark:bg-zinc-900/50 px-3 py-2 rounded-md">
                 <span className="text-gray-600 dark:text-gray-300 flex items-center gap-2">
                   <span>💰</span> إجمالي تكلفة التشغيل:
                 </span>
-                <span className="font-bold text-lg text-orange-600 dark:text-orange-400">{expectedCost.toLocaleString()} ج</span>
+                <span className="font-bold text-lg text-orange-600 dark:text-orange-400">{formatNumber(expectedCost)} ج</span>
               </div>
             )}
           </div>

@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatNumber } from "@/lib/utils";
 import { notFound } from "next/navigation";
 import Link from "next/link";
 import { ArrowRight, Edit, FileText, Phone, MessageCircle, PhoneCall, MapPin } from "lucide-react";
@@ -107,19 +108,19 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
             <div className="space-y-3">
               <div>
                 <label className="text-xs text-gray-500">الرصيد السابق</label>
-                <p className="font-medium text-gray-900">{client.openingBalance.toLocaleString()}</p>
+                <p className="font-medium text-gray-900">{formatNumber(client.openingBalance)}</p>
               </div>
               <div>
                 <label className="text-xs text-gray-500">إجمالي المسحوبات</label>
-                <p className="font-medium text-gray-900">{totalSales.toLocaleString()}</p>
+                <p className="font-medium text-gray-900">{formatNumber(totalSales)}</p>
               </div>
               <div>
                 <label className="text-xs text-gray-500">إجمالي المدفوعات</label>
-                <p className="font-medium text-gray-900">{totalPayments.toLocaleString()}</p>
+                <p className="font-medium text-gray-900">{formatNumber(totalPayments)}</p>
               </div>
               <div>
                 <label className="text-xs text-gray-500">الرصيد الحالي</label>
-                <p className="font-bold text-xl text-gray-900">{currentBalance.toLocaleString()}</p>
+                <p className="font-bold text-xl text-gray-900">{formatNumber(currentBalance)}</p>
               </div>
               <div>
                 <label className="text-xs text-gray-500">الحالة</label>
@@ -151,7 +152,7 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                   <tr key={invoice.id}>
                     <td className="px-4 py-3 text-sm">#{invoice.orderNumber}</td>
                     <td className="px-4 py-3 text-sm">{new Date(invoice.date).toISOString().split("T")[0]}</td>
-                    <td className="px-4 py-3 text-sm font-medium">{invoice.netTotal.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-sm font-medium">{formatNumber(invoice.netTotal)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -178,11 +179,11 @@ export default async function ClientDetailPage({ params }: { params: Promise<{ i
                 {client.payments.slice(0, 5).map((payment) => (
                   <tr key={payment.id}>
                     <td className="px-4 py-3 text-sm">{new Date(payment.date).toISOString().split("T")[0]}</td>
-                    <td className="px-4 py-3 text-sm font-medium">{payment.amount.toLocaleString()}</td>
+                    <td className="px-4 py-3 text-sm font-medium">{formatNumber(payment.amount)}</td>
                     <td className="px-4 py-3 text-center">
                       <DeleteButton
                         id={payment.id}
-                        itemName={`دفعة بقيمة ${payment.amount.toLocaleString()}`}
+                        itemName={`دفعة بقيمة ${formatNumber(payment.amount)}`}
                         deleteAction={deletePayment}
                       />
                     </td>

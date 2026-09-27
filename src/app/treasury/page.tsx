@@ -5,6 +5,7 @@ import { Banknote, Plus, Search, TrendingUp, TrendingDown, Wallet, Edit2, X } fr
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { getTreasuryData, setOpeningBalance } from '../actions/treasury';
+import { formatNumber } from '@/lib/utils';
 
 type Transaction = {
   id: string;
@@ -94,19 +95,19 @@ export default function Treasury() {
           </button>
           <p className="text-gray-400 text-xs md:text-sm">الرصيد الحالي بالخزينة</p>
           <h3 className="text-2xl md:text-4xl font-bold text-[#38bdf8] mt-2 break-words">
-            {loading ? '...' : currentBalance.toLocaleString()}
+            {loading ? '...' : formatNumber(currentBalance)}
           </h3>
         </div>
         <div className="glass-dark p-4 md:p-6 rounded-xl border-l-4 border-green-400">
           <p className="text-gray-400 text-xs md:text-sm">إجمالي الوارد (هذا الشهر)</p>
           <h3 className="text-xl md:text-3xl font-bold text-[#38bdf8] mt-2 break-words">
-            {loading ? '...' : monthIn.toLocaleString()}
+            {loading ? '...' : formatNumber(monthIn)}
           </h3>
         </div>
         <div className="glass-dark p-4 md:p-6 rounded-xl border-l-4 border-red-400">
           <p className="text-gray-400 text-xs md:text-sm">إجمالي المنصرف (هذا الشهر)</p>
           <h3 className="text-xl md:text-3xl font-bold text-[#38bdf8] mt-2 break-words">
-            {loading ? '...' : monthOut.toLocaleString()}
+            {loading ? '...' : formatNumber(monthOut)}
           </h3>
         </div>
       </div>
@@ -169,10 +170,10 @@ export default function Treasury() {
                   <td className="px-4 md:px-6 py-4 text-white">{trx.category}</td>
                   <td className="px-4 md:px-6 py-4 text-sm text-gray-400 whitespace-normal min-w-[200px]">{trx.description}</td>
                   <td className="px-4 md:px-6 py-4 font-bold text-green-400" dir="ltr">
-                    {trx.type === 'IN' ? `+${trx.amount.toLocaleString()}` : '-'}
+                    {trx.type === 'IN' ? `+${formatNumber(trx.amount)}` : '-'}
                   </td>
                   <td className="px-4 md:px-6 py-4 font-bold text-red-400" dir="ltr">
-                    {trx.type === 'OUT' ? `-${trx.amount.toLocaleString()}` : '-'}
+                    {trx.type === 'OUT' ? `-${formatNumber(trx.amount)}` : '-'}
                   </td>
                 </motion.tr>
               ))}

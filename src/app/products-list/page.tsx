@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/prisma";
+import { formatNumber } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
 import { Package, Edit } from "lucide-react";
@@ -60,14 +61,17 @@ export default async function ProductsListPage() {
                       </span>
                     </td>
                     <td className="px-4 py-3 text-emerald-600 font-semibold text-sm">
-                      {product.bagPrice}                    </td>
+                      {formatNumber(product.bagPrice)}
+                    </td>
                     <td className="px-4 py-3 text-orange-600 text-sm">
-                      {product.operatingCost}                    </td>
+                      {formatNumber(product.operatingCost)}
+                    </td>
                     <td className="px-4 py-3 text-gray-600 text-sm">
-                      {product.bagsPerKg}
+                      {formatNumber(product.bagsPerKg)}
                     </td>
                     <td className="px-4 py-3 text-indigo-600 font-medium text-sm">
-                      {product.profitPerBag}                    </td>
+                      {formatNumber(product.profitPerBag)}
+                    </td>
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         <Link href={`/products-list/${product.id}/edit`} className="text-blue-600 hover:text-blue-800">
