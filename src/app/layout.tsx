@@ -48,6 +48,7 @@ async function checkSubscription(): Promise<{ active: boolean; status?: string; 
 
     const res = await fetch(`${adminUrl}/api/subscription/verify?system=${systemName}`, {
       cache: "no-store", // Instant realtime checks on every refresh
+      signal: AbortSignal.timeout(3000), // ما نسيبش السيستم كله يعلّق لو سيرفر الأدمن بطيء أو مش شغال
     });
     
     if (!res.ok) return { active: true };
